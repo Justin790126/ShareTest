@@ -19,8 +19,6 @@ add_executable(l4
     ViewColEdit.cpp
     ${MOC_SOURCES}
     )
-
-    
 # Link the Qt4 libraries to the executable
 target_link_libraries(l4 ${QT_LIBRARIES})
 
@@ -30,8 +28,18 @@ qt4_wrap_cpp(MOC_SOURCES2
     )
 
 add_executable(tbl
-table.cpp
-CustomTableWidget.cpp
-${MOC_SOURCES2}
+    table.cpp
+    CustomTableWidget.cpp
+    ${MOC_SOURCES2}
 )
 target_link_libraries(tbl ${QT_LIBRARIES})
+
+add_executable(treeSetting
+treeSetting.cpp
+)
+target_link_libraries(treeSetting ${QT_LIBRARIES})
+
+add_executable(toolbtns
+toolbtns.cpp
+)
+target_link_libraries(toolbtns ${QT_LIBRARIES})
