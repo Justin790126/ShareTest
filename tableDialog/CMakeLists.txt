@@ -43,3 +43,10 @@ add_executable(toolbtns
 toolbtns.cpp
 )
 target_link_libraries(toolbtns ${QT_LIBRARIES})
+
+
+add_executable(gaugeTree
+gaugeTreeWidget.cpp
+)
+target_link_libraries(gaugeTree ${QT_LIBRARIES})
+
