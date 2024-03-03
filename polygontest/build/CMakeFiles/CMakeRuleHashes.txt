@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+d4f4abf0407bf8ad9ac54fbe7fb6d139 moc_hexagonitem.cpp
+3c1edc1f0e986b5a86a1fea9b48cbb1e moc_mainwindow.cpp
