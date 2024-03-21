@@ -55,3 +55,10 @@ find the learning rate where the loss to be the lowest
 ![confusionMatrix](./resource/confusionMatrix1.png)
 
 ![confusionMatrix2](./resource/confusionMatrix2.png)
+
+----
+
+* ML model baseline is start from the simple one, then add complexity to beat baseline
+* padding = "valid", means output tensor would shrink, otherwise output be the same shape
+* batch_size = 32, is experience size
+* radom.set_seed(42), is experience
