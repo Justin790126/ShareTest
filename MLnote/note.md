@@ -62,3 +62,16 @@ find the learning rate where the loss to be the lowest
 * padding = "valid", means output tensor would shrink, otherwise output be the same shape
 * batch_size = 32, is experience size
 * radom.set_seed(42), is experience
+
+> When a model's **validation loss starts to increase**, it's likely that the model is overfitting the training dataset
+
+### induce overfitting:
+* increase number of conv layers
+* increase number of filters
+* add another dense layer to the output of our flattened layer
+
+### reduce overfitting:
+* add data augmentation
+* add regularization layers (such as MaxPool2D)
+  * MaxPool2D: use the rolling window to preserve the most significant features
+* add more data

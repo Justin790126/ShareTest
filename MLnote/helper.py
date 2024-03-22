@@ -1,5 +1,13 @@
 #!/bin/python3
 
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPool2D, Activation
+from tensorflow.keras import Sequential
+
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import random
+
 def plot_loss_curves(his):
   loss = his.history["loss"]
   val_loss= his.history["val_loss"]
@@ -22,14 +30,6 @@ def plot_loss_curves(his):
   plt.title("acc")
   plt.xlabel("epochs")
   plt.legend()
-
-  
-
-
-
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import random
 
 def view_random_image(target_dir, target_class):
   target_folder = target_dir+target_class
