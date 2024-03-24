@@ -75,3 +75,17 @@ find the learning rate where the loss to be the lowest
 * add regularization layers (such as MaxPool2D)
   * MaxPool2D: use the rolling window to preserve the most significant features
 * add more data
+
+
+### Shuffle augemented data v.s. augemented data
+>  shuffle generate randomness on data to make model learn more generally to unseen data
+> make model to learn equally on different kinds of data
+
+### optimization direction in CNN
+
+* deeper layers
+* wider neurons
+* best learning rate
+* train more epochs
+* more data
+* transfer learning
