@@ -89,3 +89,16 @@ find the learning rate where the loss to be the lowest
 * train more epochs
 * more data
 * transfer learning
+
+
+### Step to create data set for multiclass classification
+
+* ImageDataGenerator
+  * can use data augmentation here
+* flow from directory
+
+### Callbacks
+* TensorBoard callback
+* ModelCheckpoint callback
+* EarlyStopping callback
+
