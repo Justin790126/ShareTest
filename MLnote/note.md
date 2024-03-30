@@ -101,4 +101,42 @@ find the learning rate where the loss to be the lowest
 * TensorBoard callback
 * ModelCheckpoint callback
 * EarlyStopping callback
+  * aim to find best epochs
+
+### Funtional API
+
+It is better to explore tensors layer by layer
+
+````
+base_model = tf.keras.applications.efficientnet_v2.EfficientNetV2B0(include_top=False)
+
+base_model.trainable = False
+
+inputs = tf.keras.layers.Input(shape=(224,224,3), name="input_layer")
+
+# x = tf.keras.layers.experimental.preprocessing.Rescale(1./255)(inputs)
+
+x = base_model(inputs)
+print(f"Shape after passing inputs through base model:{x.shape}")
+
+x = tf.keras.layers.GlobalAveragePooling2D(name="global_average_pooling_kayrt")(x)
+print(f"Shape after GlobalAveragePooling2D:{x.shape}")
+
+outputs = tf.keras.layers.Dense(10, activation="softmax", name="output_layer")(x)
+
+model0 = tf.keras.Model(inputs, outputs)
+
+model0.compile(loss="categorical_crossentropy",
+               optimizer=tf.keras.optimizers.Adam(),
+               metrics=["accuracy"])
+
+his0 = model0.fit(train_data_10_percent,
+                  epochs=5,
+                  steps_per_epoch=len(train_data_10_percent),
+                  validation_data=test_data,
+                  validation_steps=int(0.25*len(test_data)),
+                  callbacks=[create_tensorboard_callback("transfer_learning",
+                                                         "10_percent_feature_extraction")]
+                  )
+````
 
