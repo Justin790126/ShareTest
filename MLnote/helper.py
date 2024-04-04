@@ -286,3 +286,20 @@ def calculate_results(y_true, y_pred):
                   "recall": model_recall,
                   "f1": model_f1}
   return model_results
+
+
+
+from tensorflow.keras import layers
+from tensorflow.keras.layers.experimental import preprocessing
+from tensorflow.keras.models import Sequential
+
+
+def DataAugLayer():
+  data_aug = Sequential([
+    preprocessing.RandomFlip("horizontal"),
+    preprocessing.RandomRotation(0.2),
+    preprocessing.RandomHeight(0.2),
+    preprocessing.RandomWidth(0.2),
+    preprocessing.RandomZoom(0.2),
+    # preprocessing.Rescaling(1/255.)
+  ], name="data_aug")

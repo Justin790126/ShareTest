@@ -107,6 +107,12 @@ find the learning rate where the loss to be the lowest
 
 It is better to explore tensors layer by layer
 
+> If it is a layer, put input x outside the bracket
+> ex. GlobalAveragePooling2D()(x)
+
+> If it is a model, put input x inside the bracket
+> ex. base_model(x)
+
 ````
 base_model = tf.keras.applications.efficientnet_v2.EfficientNetV2B0(include_top=False)
 
@@ -140,3 +146,57 @@ his0 = model0.fit(train_data_10_percent,
                   )
 ````
 
+### preprocessing layer can do data augementation in GPU
+
+````
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from tensorflow.keras.layers.experimental import preprocessing
+
+data_aug = keras.Sequential([
+    preprocessing.RandomFlip("horizontal"),
+    preprocessing.RandomRotation(0.2),
+    preprocessing.RandomZoom(0.2),
+    preprocessing.RandomHeight(0.2),
+    preprocessing.RandomWidth(0.2),
+    preprocessing.Rescaling(1./255)
+], name="data_aug")
+````
+
+````
+import tensorflow as tf
+from tensorflow.keras.layers import Input, Dense, GlobalAveragePooling2D
+#define base model
+base_model = tf.keras.applications.EfficientNetB0(include_top=False)
+base_model.trainable = False
+
+#define inputs
+
+inputs = Input(shape=(224,224,3), name="inputs")
+
+x = data_aug(inputs)
+
+x = base_model(x, training=False)
+
+x = GlobalAveragePooling2D()(x)
+
+outputs = Dense(10, activation="softmax", name="outputs")(x)
+
+#define outputs
+model2 = tf.keras.Model(inputs=inputs, outputs=outputs)
+
+model2.compile(loss="categorical_crossentropy",
+               optimizer=tf.keras.optimizers.Adam(),
+               metrics=["accuracy"])
+
+his2=model2.fit(
+    train_data_10_percent,
+    epochs=5,
+    steps_per_epoch=len(train_data_10_percent),
+    validation_data=test_data,
+    validation_steps=len(test_data),
+)
+````
+
+### In fine tunning, we better lower the learning rate to 10x
