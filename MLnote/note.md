@@ -200,3 +200,10 @@ his2=model2.fit(
 ````
 
 ### In fine tunning, we better lower the learning rate to 10x
+
+* unfreeze the last 5 layers
+````
+base_model.trainable = True
+for layer in base_model.layers[:-5]:
+  layer.trainable = False
+````
