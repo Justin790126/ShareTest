@@ -207,3 +207,18 @@ base_model.trainable = True
 for layer in base_model.layers[:-5]:
   layer.trainable = False
 ````
+
+* In multi-class classification, shuffle=False means keep the order of test_data to compare with the output prediction labels
+
+> and we can unbatch to see the test_data ylabels
+````
+import tensorflow as tf
+IMG_SIZE=(224,224)
+train_data_all_10_percent = tf.keras.preprocessing.image_dataset_from_directory(train_dir,
+                                                                       label_mode="categorical",
+                                                                       image_size=IMG_SIZE)
+test_data = tf.keras.preprocessing.image_dataset_from_directory(test_dir,
+                                                                label_mode="categorical",
+                                                                image_size=IMG_SIZE,
+                                                                shuffle=False)
+````
