@@ -222,3 +222,37 @@ test_data = tf.keras.preprocessing.image_dataset_from_directory(test_dir,
                                                                 image_size=IMG_SIZE,
                                                                 shuffle=False)
 ````
+
+
+````
+data.shape = (2, 101)
+data.argmax(axis=1) will perform maximum on each 101 dimension data
+````
+
+### Evluation a mult-class classification
+
+> finally, write a random functions to predict and compare to the ground truth
+
+* inspect wrong preidctions with the highest prediction probability
+* Root cause:
+  * Data issues(wrong labels, but model is true because the wrong label had fitted in)
+  * confusing classes(get better/more diverse data)
+
+
+## Finding the most wrong predictions
+1. Get all of the image file paths in the test dataset using list_files() method
+2. Create dataframe of image filepaths, ground truth labels, predicted classes from model, max prediction probability
+3. Use DataFrame to find all wrong predictions
+4. Sort the dataframe based on wrong preidction (highest prediction probability at the top)
+5. Visualize the images with highest prediction probabilities but have the wrong prediction
+
+
+* iterate data frames
+
+````
+for i, row in enumerate(top_100_wrong[start_index: start_index+images_to_view].itertuples()):
+  print(row)
+````
+
+
+* when predict a single image on model, we should expand_dim to let batch size to be 1
