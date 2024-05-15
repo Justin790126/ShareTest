@@ -256,3 +256,22 @@ for i, row in enumerate(top_100_wrong[start_index: start_index+images_to_view].i
 
 
 * when predict a single image on model, we should expand_dim to let batch size to be 1
+
+
+----
+# NLP
+
+Tokenization : convert string to integer
+Embedding : convert string to float array, which had richer representation
+
+
+start from scikit machine learning map
+
+
+### RNN
+
+| Name        | When to use           | Code  |
+| ------------- |:-------------:| -----:|
+| LSTM        | default for sequence problems      | tf.keras.layers.LSTM |
+| GRU        | simliar to LSTM (can be default)      |   tf.keras.layers.GRU |
+| Bidirectional LSTM      | Good for sequences which may benifit from passing forwards/backwards(translation, or longer passages of text)      |    tf.keras.layers.Bidirectional |
