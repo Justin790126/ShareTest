@@ -275,3 +275,20 @@ start from scikit machine learning map
 | LSTM        | default for sequence problems      | tf.keras.layers.LSTM |
 | GRU        | simliar to LSTM (can be default)      |   tf.keras.layers.GRU |
 | Bidirectional LSTM      | Good for sequences which may benifit from passing forwards/backwards(translation, or longer passages of text)      |    tf.keras.layers.Bidirectional |
+
+
+
+
+
+````
+for (int i = 0; i < 4; i++) {
+  #pragma omp parallel
+  {
+    #pragma omp parallel for nowait
+    for (int j = 0; j < 100; j++) {
+
+    }
+    #pragma omp barrier
+  }
+}
+````
