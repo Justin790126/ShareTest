@@ -101,7 +101,10 @@ int main(int argc, char** argv) {
         #pragma omp single
         rec_dot_productMT1(a,b,n);
     } else if (mode == 2) {
-
+        int depth = 0;
+        #pragma omp parallel
+        #pragma omp single
+        rec_dot_productMT2(a,b,n, depth);
     }
     // 
     

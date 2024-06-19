@@ -56,6 +56,28 @@ int rec_dot_productMT1(int* A, int* B, int n)
     }
     return tmp1+tmp2;
 }
+#define CUTOFF 3
+int rec_dot_productMT2(int* A, int* B, int n, int depth)
+{
+    int tmp1, tmp2 = 0;
+    if (n > MIN_SIZE) {
+        int n2 = n/2;
+        if (!omp_in_final()) {
+            #pragma omp task shared(tmp1) final(depth >= CUTOFF)
+            tmp1 = rec_dot_productMT2(A,B, n2, depth+1);
+            #pragma omp task shared(tmp2) final(depth >= CUTOFF)
+            tmp2 = rec_dot_productMT2(A+n2, B+n2, n-n2, depth+1);
+            #pragma omp taskwait
+        } else {
+            tmp1 = rec_dot_productMT2(A,B, n2, depth+1);
+            tmp2 = rec_dot_productMT2(A+n2, B+n2, n-n2, depth+1);
+        }
+        
+    } else {
+        tmp1 = do_product(A,B,n);
+    }
+    return tmp1+tmp2;
+}
 
 int main(int argc, char** argv) {
     std::cout << "OpenMP version: " << _OPENMP << std::endl;
@@ -78,7 +100,12 @@ int main(int argc, char** argv) {
         #pragma omp parallel
         #pragma omp single
         result = rec_dot_product(a,b,n);
-    } 
+    } else if (mode == 2) {
+        int level = 0;
+        #pragma omp parallel
+        #pragma omp single
+        rec_dot_productMT2(a,b,n, level);
+    }
     // 
     
 
