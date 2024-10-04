@@ -4,35 +4,6 @@
 
 using namespace std;
 
-size_t extract_size_t(const char* data) {
-    size_t result = 0;
-    for (int i = 0; i < sizeof(size_t); ++i) {
-        result |= static_cast<unsigned char>(data[i]>>8*i);
-    }
-    return result;
-}
-
-int extract_int(const char* data) {
-    int result = 0;
-    for (int i = 0; i < sizeof(int); ++i) {
-        result |= static_cast<unsigned char>(data[i] >> (8 * i));
-    }
-    return result;
-}
-
-float extract_float(const char* data) {
-    float value;
-    memcpy(&value, data, sizeof(float));
-    return value;
-}
-
-double extract_double(const char* data) {
-    double val;
-    memcpy(&val, data, sizeof(double));
-    return val;
-}
-
-
 int main(int argc, char* argv[])
 {
     ModelSktMsg msg;
@@ -47,10 +18,10 @@ int main(int argc, char* argv[])
     msg.printPkt(intpkt, pktLen);
     printf("\n");
 
-    size_t numOfBytes = extract_size_t(intpkt+1);
-    int data = extract_int(intpkt+1+8);
+    size_t numOfBytes = msg.deserialize<size_t>(intpkt+1);
+    int data = msg.deserialize<int>(intpkt+1+8);
 
-    cout << extract_size_t(intpkt+1) << endl;
+    cout << msg.deserialize<size_t>(intpkt+1) << endl;
     cout << "Verify int: " << (int)(data==encapsuleData) << endl;
     cout << "--- Verify Int pkt End ----" << endl;
 
@@ -62,10 +33,10 @@ int main(int argc, char* argv[])
     cout << "pktLen: " << pktLen << endl;
     msg.printPkt(floatpkt, pktLen);
     printf("\n");
-    numOfBytes = extract_size_t(floatpkt+1);
-    float fdata = extract_float(floatpkt+1+8);
+    numOfBytes = msg.deserialize<size_t>(floatpkt+1);
+    float fdata = msg.deserialize<float>(floatpkt+1+8);
 
-    cout << extract_size_t(floatpkt+1) << endl;
+    cout << msg.deserialize<size_t>(floatpkt+1) << endl;
     cout << "Verify float: " << (int)(fdata==ftest) << endl;
     cout << "--- Verify Float pkt End ----" << endl;
 
@@ -74,9 +45,9 @@ int main(int argc, char* argv[])
     cout << "--- Verify double pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
     msg.printPkt(doublepkt, pktLen);
-    numOfBytes = extract_size_t(doublepkt+1);
-    double ddata = extract_double(doublepkt+9);
-    cout << extract_size_t(doublepkt+1) << endl;
+    numOfBytes = msg.deserialize<size_t>(doublepkt+1);
+    double ddata = msg.deserialize<double>(doublepkt+9);
+    cout << msg.deserialize<size_t>(doublepkt+1) << endl;
     cout << "Verify double: " << (int)(ddata==val) << endl;
     cout << "--- Verify Double pkt End ----" << endl;
 
@@ -90,10 +61,10 @@ int main(int argc, char* argv[])
     cout << "pktLen: " << pktLen << endl;
     msg.printPkt(farrPkt, pktLen);
     printf("\n");
-    numOfBytes = extract_size_t(farrPkt+1);
+    numOfBytes = msg.deserialize<size_t>(farrPkt+1);
     cout << "numOfBytes: " << numOfBytes << endl;
     float test[5];
-    memcpy(&test, farrPkt+9, numOfBytes);
+    msg.deserializeArr<float>(test, farrPkt+9, numOfBytes);
     bool pass = true;
     for (int i = 0; i < 5; i++) {
         if (test[i] != fatest[i]) {
@@ -113,10 +84,10 @@ int main(int argc, char* argv[])
     double dbtest[5] = {1.1111111111, 2.222222222, 3.33333333, 4.333334, 5.2345678765435};
     char* dbPkt = msg.serializeArr<double>(DTYPE_FLOAT_ARR, dbtest, 5, pktLen);
     msg.printPkt(dbPkt, pktLen);
-    numOfBytes = extract_size_t(dbPkt+1);
+    numOfBytes = msg.deserialize<size_t>(dbPkt+1);
     cout << "numOfBytes: " << numOfBytes << endl;
     double dbparsed[5];
-    memcpy(&dbparsed, dbPkt+9, numOfBytes);
+    msg.deserializeArr<double>(dbparsed, dbPkt+9, numOfBytes);
     pass = true;
     for (int i = 0; i < 5; i++) {
         if (dbparsed[i] != dbtest[i]) {
@@ -130,10 +101,10 @@ int main(int argc, char* argv[])
     int ittest[5] = {1,3,5,7,9};
     char* ipkt = msg.serializeArr<int>(DTYPE_INT_ARR, ittest, 5, pktLen);
     msg.printPkt(ipkt, pktLen);
-    numOfBytes = extract_size_t(ipkt+1);
+    numOfBytes = msg.deserialize<size_t>(ipkt+1);
     cout << "numOfBytes: " << numOfBytes << endl;
     int iparsed[5];
-    memcpy(&iparsed, ipkt+9, numOfBytes);
+    msg.deserializeArr<int>(iparsed, ipkt+9, numOfBytes);
     pass = true;
     for (int i = 0; i < 5; i++) {
         if (iparsed[i] != ittest[i]) {
@@ -143,6 +114,7 @@ int main(int argc, char* argv[])
     }
     cout << "Verify int array result : " << (int)pass << endl;
 
+    cout << "Verify total packet: " << endl;
     char* pkt = msg.createPkt(pktLen);
 
     cout << "total pkt : " << pktLen << endl;

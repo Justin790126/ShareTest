@@ -260,3 +260,26 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     
     return result;
 }
+
+template <typename T>
+T ModelSktMsg::deserialize(const char* data)
+{
+    T res=0;
+    memcpy(&res, data, sizeof(T));
+    return res;
+}
+
+template int ModelSktMsg::deserialize<int>(const char* data);
+template float ModelSktMsg::deserialize<float>(const char* data);
+template double ModelSktMsg::deserialize<double>(const char* data);
+template size_t ModelSktMsg::deserialize<size_t>(const char* data);
+
+template<typename T>
+void ModelSktMsg::deserializeArr(T* out, char* pkt, size_t numOfBytes)
+{
+    memcpy(out, pkt, numOfBytes);
+}
+
+template void ModelSktMsg::deserializeArr<int>(int* out, char* pkt, size_t numOfBytes);
+template void ModelSktMsg::deserializeArr<float>(float* out, char* pkt, size_t numOfBytes);
+template void ModelSktMsg::deserializeArr<double>(double* out, char* pkt, size_t numOfBytes);
