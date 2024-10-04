@@ -51,7 +51,7 @@ void ParsePkt(char* pkt)
     
     int numPara = 0;
     for (int i = 0;i < lenDs; i++) {
-        if ((u_char)ds[i] == '\n') numPara++;
+        if ((u_char)ds[i] == (u_char)'0xAB') numPara++;
     }
     printf("num of delimiator %d \n", numPara); // FIXME: choose proper delimtor in pkt
 
@@ -75,7 +75,7 @@ void ParsePkt(char* pkt)
             dataLen = msg.deserialize<size_t>(ds+pktOffset+1);
             iData = msg.deserialize<int>(ds+pktOffset+1+sizeof(size_t));
 
-            pktOffset += (1 + sizeof(size_t)+dataLen);
+            pktOffset += (1 + sizeof(size_t)+dataLen + 1);
 
             printf("data len: %d, data: %d\n", dataLen, iData);
             /* code */
@@ -86,7 +86,7 @@ void ParsePkt(char* pkt)
             dataLen = msg.deserialize<size_t>(ds+pktOffset+1);
             fData = msg.deserialize<float>(ds+pktOffset+1+sizeof(size_t));
 
-            pktOffset += (1 + sizeof(size_t)+dataLen);
+            pktOffset += (1 + sizeof(size_t)+dataLen + 1);
             printf("data len: %d, data: %f\n", dataLen, fData);
             /* code */
             break;
@@ -96,7 +96,7 @@ void ParsePkt(char* pkt)
             dataLen = msg.deserialize<size_t>(ds+pktOffset+1);
             dData = msg.deserialize<double>(ds+pktOffset+1+sizeof(size_t));
 
-            pktOffset += (1 + sizeof(size_t)+dataLen);
+            pktOffset += (1 + sizeof(size_t)+dataLen + 1);
             printf("data len: %d, data: %f\n", dataLen, dData);
 
             break;
@@ -111,7 +111,7 @@ void ParsePkt(char* pkt)
             msg.deserializeArr<int>(iArr, ds+pktOffset+1+sizeof(size_t), dataLen);
             for (int i = 0;i < arrSize; i++) printf("%d ", iArr[i]);
             printf("\n");
-            pktOffset += (1 + sizeof(size_t)+dataLen);
+            pktOffset += (1 + sizeof(size_t)+dataLen + 1);
             
             break;
         case DTYPE_FLOAT_ARR:
@@ -126,7 +126,7 @@ void ParsePkt(char* pkt)
             for (int i = 0;i < arrSize; i++) printf("%f ", fArr[i]);
             printf("\n");
 
-            pktOffset += (1 + sizeof(size_t)+dataLen);
+            pktOffset += (1 + sizeof(size_t)+dataLen + 1);
             break;
         case DTYPE_DOUBLE_ARR:
             /* code */
@@ -140,7 +140,7 @@ void ParsePkt(char* pkt)
             for (int i = 0;i < arrSize; i++) printf("%.15g ", dArr[i]);
             printf("\n");
 
-            pktOffset += (1 + sizeof(size_t)+dataLen);
+            pktOffset += (1 + sizeof(size_t)+dataLen + 1);
             break;
         
         default:

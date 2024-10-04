@@ -30,75 +30,6 @@ void ModelSktMsg::printPkt(char* pkg, size_t dsize)
     printf("\n");
 }
 
-template <typename T>
-char* ModelSktMsg::serialize(DType dtype, T data, size_t& outLen)
-{
-    int intDpktSize = sizeof(char) + sizeof(size_t) + sizeof(T);
-
-    char* pkt = new char[intDpktSize];
-    memset(pkt, 0, intDpktSize);
-
-    int offset = 0;
-    // dType (1bytes)
-    char dataType = (char)dtype;
-    memcpy(pkt, &dataType, sizeof(dataType));
-    offset+= sizeof(dataType);
-
-    // data length in bytes (4bytes in integer/ 8 bytes)
-    size_t sizeOfData = sizeof(data); // equal to 4
-    memcpy(pkt+offset, &sizeOfData, sizeof(size_t));
-    offset += sizeof(size_t);
-
-    // store integer data
-    memcpy(pkt+offset, &data, sizeof(T));
-    offset += sizeof(T);
-
-    outLen = offset;
-
-    m_vDataSection.push_back(
-        std::make_pair(pkt, outLen)
-    );
-    
-    return pkt;
-}
-
-template char* ModelSktMsg::serialize<int>(DType dtype, int data, size_t& outLen);
-template char* ModelSktMsg::serialize<float>(DType dtype, float data, size_t& outLen);
-template char* ModelSktMsg::serialize<double>(DType dtype, double data, size_t& outLen);
-
-template <typename T>
-char* ModelSktMsg::serializeArr(DType dtype, T* data, size_t dLen, size_t& outLen)
-{
-    int farrDpktSize = sizeof(char) + sizeof(size_t) + dLen*sizeof(T);
-    char* farrPkt = new char[farrDpktSize];
-    memset(farrPkt, 0, farrDpktSize);
-
-    int offset = 0;
-    // dType (1bytes)
-    char dataType = (char)dtype;
-    memcpy(farrPkt, &dataType, sizeof(dataType));
-    offset+= sizeof(dataType);
-
-    // data length in bytes (N bytes in integer/ 8 bytes)
-    size_t sizeOfData = dLen*sizeof(T);
-    memcpy(farrPkt+offset, &sizeOfData, sizeof(size_t));
-    offset += sizeof(size_t);
-
-    // store float array data
-    memcpy(farrPkt+offset, data, dLen*sizeof(T));
-    offset += dLen*sizeof(T);
-
-    outLen = offset;
-    m_vDataSection.push_back(
-        std::make_pair(farrPkt, outLen)
-    );
-    
-    return farrPkt;
-}
-template char* ModelSktMsg::serializeArr<int>(DType dtype, int* data, size_t dLen, size_t& outLen);
-template char* ModelSktMsg::serializeArr<float>(DType dtype, float* data, size_t dLen, size_t& outLen);
-template char* ModelSktMsg::serializeArr<double>(DType dtype, double* data, size_t dLen, size_t& outLen);
-
 void ModelSktMsg::generateChecksum(char* data, size_t sizeOfData, u_char* chksum)
 {
     SHA256(reinterpret_cast<const unsigned char*>(data), sizeOfData, chksum);
@@ -175,6 +106,96 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     return result;
 }
 
+bool ModelSktMsg::verifyChksum(u_char* clnt, u_char* svr)
+{
+    bool result = true;
+    for (size_t i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        if (clnt[i] != svr[i]) {
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
+
+
+template <typename T>
+char* ModelSktMsg::serialize(DType dtype, T data, size_t& outLen)
+{
+    int intDpktSize = sizeof(char) + sizeof(size_t) + sizeof(T);
+
+    char* pkt = new char[intDpktSize];
+    memset(pkt, 0, intDpktSize);
+
+    int offset = 0;
+    // dType (1bytes)
+    char dataType = (char)dtype;
+    memcpy(pkt, &dataType, sizeof(dataType));
+    offset+= sizeof(dataType);
+
+    // data length in bytes (4bytes in integer/ 8 bytes)
+    size_t sizeOfData = sizeof(data); // equal to 4
+    memcpy(pkt+offset, &sizeOfData, sizeof(size_t));
+    offset += sizeof(size_t);
+
+    // store integer data
+    memcpy(pkt+offset, &data, sizeof(T));
+    offset += sizeof(T);
+
+    memcpy(pkt+offset, &endByte, sizeof(char));
+    offset += sizeof(char);
+
+    outLen = offset;
+
+    m_vDataSection.push_back(
+        std::make_pair(pkt, outLen)
+    );
+    
+    return pkt;
+}
+
+template char* ModelSktMsg::serialize<int>(DType dtype, int data, size_t& outLen);
+template char* ModelSktMsg::serialize<float>(DType dtype, float data, size_t& outLen);
+template char* ModelSktMsg::serialize<double>(DType dtype, double data, size_t& outLen);
+
+template <typename T>
+char* ModelSktMsg::serializeArr(DType dtype, T* data, size_t dLen, size_t& outLen)
+{
+    int farrDpktSize = sizeof(char) + sizeof(size_t) + dLen*sizeof(T);
+    char* farrPkt = new char[farrDpktSize];
+    memset(farrPkt, 0, farrDpktSize);
+
+    int offset = 0;
+    // dType (1bytes)
+    char dataType = (char)dtype;
+    memcpy(farrPkt, &dataType, sizeof(dataType));
+    offset+= sizeof(dataType);
+
+    // data length in bytes (N bytes in integer/ 8 bytes)
+    size_t sizeOfData = dLen*sizeof(T);
+    memcpy(farrPkt+offset, &sizeOfData, sizeof(size_t));
+    offset += sizeof(size_t);
+
+    // store float array data
+    memcpy(farrPkt+offset, data, dLen*sizeof(T));
+    offset += dLen*sizeof(T);
+
+    memcpy(farrPkt+offset, &endByte, sizeof(char));
+    offset += sizeof(char);
+
+    outLen = offset;
+    m_vDataSection.push_back(
+        std::make_pair(farrPkt, outLen)
+    );
+    
+    return farrPkt;
+}
+template char* ModelSktMsg::serializeArr<int>(DType dtype, int* data, size_t dLen, size_t& outLen);
+template char* ModelSktMsg::serializeArr<float>(DType dtype, float* data, size_t dLen, size_t& outLen);
+template char* ModelSktMsg::serializeArr<double>(DType dtype, double* data, size_t dLen, size_t& outLen);
+
+
 template <typename T>
 T ModelSktMsg::deserialize(const char* data)
 {
@@ -200,16 +221,3 @@ template void ModelSktMsg::deserializeArr<u_char>(u_char* out, char* pkt, size_t
 template void ModelSktMsg::deserializeArr<int>(int* out, char* pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<float>(float* out, char* pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<double>(double* out, char* pkt, size_t numOfBytes);
-
-bool ModelSktMsg::verifyChksum(u_char* clnt, u_char* svr)
-{
-    bool result = true;
-    for (size_t i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        if (clnt[i] != svr[i]) {
-            result = false;
-            break;
-        }
-    }
-    return result;
-}

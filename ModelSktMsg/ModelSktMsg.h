@@ -52,6 +52,8 @@ public:
     void printPkt(char* pkg, size_t dsize);
 
     int getDataSectionOffset();
+
+    const char endByte='0xAB';
 private:
     // <data, pkt size>
     std::vector<std::pair<char*,size_t>> m_vDataSection;
