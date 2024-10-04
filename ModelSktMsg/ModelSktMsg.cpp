@@ -192,6 +192,11 @@ void ModelSktMsg::generateChecksum(char* data, size_t sizeOfData, u_char* chksum
     SHA256(reinterpret_cast<const unsigned char*>(data), sizeOfData, chksum);
 }
 
+int ModelSktMsg::getDataSectionOffset()
+{
+    return sizeof(size_t) + SHA256_DIGEST_LENGTH + sizeof(char) + sizeof(char) + sizeof(int);
+}
+
 char* ModelSktMsg::createPkt(size_t& outLen)
 {
     if (m_vDataSection.empty()) return NULL;
@@ -210,10 +215,8 @@ char* ModelSktMsg::createPkt(size_t& outLen)
         offset+=m_vDataSection[i].second;
     }
 
-    printf("----total data section----\n");
+    printf("----total data section : %d----\n", totalSizeOfDataSection);
     printPkt(dataSection, offset);
-
-
 
     u_char checksum[SHA256_DIGEST_LENGTH];
     generateChecksum(dataSection, totalSizeOfDataSection, checksum);
@@ -222,9 +225,8 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     char* chksum = (char*)checksum;
     printPkt(chksum, SHA256_DIGEST_LENGTH);
 
-
-    char sender = 0x03;
-    char response = 0x05;
+    char sender = 0x03;  // FIXME: api enum here
+    char response = 0x05;  // FIXME: api send 0x00, svr response with code
     int numOfParam = m_vDataSection.size();
 
     size_t pktLen = sizeof(size_t) + (size_t)SHA256_DIGEST_LENGTH + sizeof(char) + sizeof(char) + sizeof(int) + totalSizeOfDataSection;
@@ -269,6 +271,7 @@ T ModelSktMsg::deserialize(const char* data)
     return res;
 }
 
+template char ModelSktMsg::deserialize<char>(const char* data);
 template int ModelSktMsg::deserialize<int>(const char* data);
 template float ModelSktMsg::deserialize<float>(const char* data);
 template double ModelSktMsg::deserialize<double>(const char* data);
@@ -280,6 +283,21 @@ void ModelSktMsg::deserializeArr(T* out, char* pkt, size_t numOfBytes)
     memcpy(out, pkt, numOfBytes);
 }
 
+template void ModelSktMsg::deserializeArr<char>(char* out, char* pkt, size_t numOfBytes);
+template void ModelSktMsg::deserializeArr<u_char>(u_char* out, char* pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<int>(int* out, char* pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<float>(float* out, char* pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<double>(double* out, char* pkt, size_t numOfBytes);
+
+bool ModelSktMsg::verifyChksum(u_char* clnt, u_char* svr)
+{
+    bool result = true;
+    for (size_t i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        if (clnt[i] != svr[i]) {
+            result = false;
+            break;
+        }
+    }
+    return result;
+}

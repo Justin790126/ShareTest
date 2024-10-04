@@ -17,9 +17,9 @@ enum DType
 };
 
 /*
-            pkt_len (8bytes), chksum (32bytes), sender(1bytes), response(1bytes), number of parameters (4bytes), dtype(1bytes), data_len(8bytes), data ...
+            pkt_len (8bytes), chksum (32bytes), sender(1bytes), response(1bytes), number of parameters (4bytes), dtype(1bytes), data_len(8bytes), data , data_end_byte...
 
-store          size_t              char[32]          char            char                 int                        char         size_t        
+store          size_t              char[32]          char            char                 int                        char         size_t                     char   
  */
 
 class ModelSktMsg
@@ -28,6 +28,8 @@ class ModelSktMsg
 public:
     ModelSktMsg(/* args */);
     ~ModelSktMsg();
+
+    bool verifyChksum(u_char* clnt, u_char* svr);
 
     template <typename T>
     char* serialize(DType dtype, T data, size_t& outLen);
@@ -48,6 +50,8 @@ public:
     void deserializeArr(T* out, char* pkt, size_t numOfBytes);
 
     void printPkt(char* pkg, size_t dsize);
+
+    int getDataSectionOffset();
 private:
     /* Test usage */
     char* serializeInt(DType dtype, int data, size_t& outLen);
