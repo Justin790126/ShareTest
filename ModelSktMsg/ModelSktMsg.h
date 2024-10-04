@@ -53,11 +53,6 @@ public:
 
     int getDataSectionOffset();
 private:
-    /* Test usage */
-    char* serializeInt(DType dtype, int data, size_t& outLen);
-    char* serializeFloat(DType dtype, float data, size_t& outLen);
-    char* serializeFloatArr(DType dtype, float* data, size_t dLen, size_t& outLen);
-
     // <data, pkt size>
     std::vector<std::pair<char*,size_t>> m_vDataSection;
 
