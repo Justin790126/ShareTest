@@ -33,7 +33,7 @@ public:
     bool verifyChksum(u_char *clnt, u_char *svr);
 
     template <typename T>
-    char *serialize(DType dtype, T data, size_t &outLen);
+    char *serialize(T data, size_t &outLen);
 
     template <typename T>
     char *serializeArr(DType dtype, T *data, size_t dLen, size_t &outLen);

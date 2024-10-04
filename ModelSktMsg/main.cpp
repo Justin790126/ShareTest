@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 
     int encapsuleData = 99;
 
-    char *intpkt = msg.serialize<int>(DTYPE_INT, encapsuleData, pktLen);
+    char *intpkt = msg.serialize<int>(encapsuleData, pktLen);
 
     cout << "--- Verify Int pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
     cout << "--- Verify Int pkt End ----" << endl;
 
     float ftest = 9.9;
-    char *floatpkt = msg.serialize<float>(DTYPE_FLOAT, ftest, pktLen);
+    char *floatpkt = msg.serialize<float>(ftest, pktLen);
 
     cout << "--- Verify float pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
     cout << "--- Verify Float pkt End ----" << endl;
 
     double val = 3.141592543211111;
-    char *doublepkt = msg.serialize<double>(DTYPE_DOUBLE, val, pktLen);
+    char *doublepkt = msg.serialize<double>(val, pktLen);
     cout << "--- Verify double pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
     msg.printPkt(doublepkt, pktLen);
