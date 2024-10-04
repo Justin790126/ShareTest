@@ -34,7 +34,6 @@ int main(int argc, char* argv[])
 
     int encapsuleData = 99;
     
-#ifdef TEST_INT
     char* intpkt = msg.serializeInt(DTYPE_INT, encapsuleData, pktLen);
 
     cout << "--- Verify Int pkt start ----" << endl;
@@ -53,10 +52,8 @@ int main(int argc, char* argv[])
     cout << extract_size_t(intpkt+1) << endl;
     cout << "Verify int: " << (int)(data==encapsuleData) << endl;
     cout << "--- Verify Int pkt End ----" << endl;
-#endif
 
 
-#ifdef TEST_FLOAT
     float ftest = 9.9;
     char* floatpkt = msg.serializeFloat(DTYPE_FLOAT, ftest, pktLen);
 
@@ -75,7 +72,7 @@ int main(int argc, char* argv[])
     cout << extract_size_t(floatpkt+1) << endl;
     cout << "Verify float: " << (int)(fdata==ftest) << endl;
     cout << "--- Verify Float pkt End ----" << endl;
-#endif
+
     float fatest[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
     char* farrPkt = msg.serializeFloatArr(DTYPE_FLOAT_ARR, fatest, 5, pktLen);
 
@@ -88,7 +85,7 @@ int main(int argc, char* argv[])
         printf("%02x ", farrPkt[i]);
     }
     printf("\n");
-    size_t numOfBytes = extract_size_t(farrPkt+1);
+    numOfBytes = extract_size_t(farrPkt+1);
     cout << "numOfBytes: " << numOfBytes << endl;
     float test[5];
     memcpy(&test, farrPkt+9, 20);
@@ -100,5 +97,14 @@ int main(int argc, char* argv[])
         }
     }
     cout << "Verify float array result : " << (int)pass << endl;
+
+    std::vector<std::pair<char*,size_t>>* ds = msg.GetDataSections();
+    for (int i = 0; i < ds->size(); i++) {
+        cout << (*ds)[i].second << endl;
+    }
+
+    msg.createPkt(pktLen);
+
+    cout << "total pkt : " << pktLen << endl;
     return 0;
 }

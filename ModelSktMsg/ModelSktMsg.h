@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <vector>
+#include <openssl/sha.h>
 
 enum DType
 {
@@ -28,10 +30,13 @@ public:
     char* serializeFloat(DType dtype, float data, size_t& outLen);
     char* serializeFloatArr(DType dtype, float* data, size_t dLen, size_t& outLen);
 
+    std::vector<std::pair<char*, size_t>>* GetDataSections() { return &m_vDataSection; }
 
-
+    void generateChecksum(char* data, size_t sizeOfData, u_char* chksum);
+    char* createPkt(size_t& outLen);
 private:
-    char* m_pDataSection=NULL;
+    // <data, pkt size>
+    std::vector<std::pair<char*,size_t>> m_vDataSection;
 
 };
 
