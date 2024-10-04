@@ -49,13 +49,35 @@ void ParsePkt(char *pkt)
     // lenDs
 
     int numPara = 0;
+    vector<int> endIdxes;
+    endIdxes.reserve(numOfParams);
     for (int i = 0; i < lenDs; i++)
     {
-        if ((u_char)ds[i] == (u_char)'0xAB')
+        if ((u_char)ds[i] == (u_char)'0xAB') {
+            endIdxes.emplace_back(i);
             numPara++;
+        }
     }
     printf("num of delimiator %d \n", numPara); // FIXME: choose proper delimtor in pkt
-
+    int st = 0, end=0, numOfdata=0;
+    for (size_t i = 0; i < numOfParams; i++)
+    {
+        
+        if (i == 0) {
+            st = 0;
+            end = endIdxes[i];
+            numOfdata = end-st+1;
+        } else {
+            st = endIdxes[i-1]+1;
+            end = endIdxes[i];
+            numOfdata = endIdxes[i]-endIdxes[i-1];
+        }
+        printf("number of bytes: %d :", numOfdata);
+        char* data = new char[numOfdata];
+        memcpy(data, ds+st, numOfdata);
+        msg.printPkt(data, numOfdata);
+    }
+    
     int pktOffset = 0;
     size_t dataLen = 0;
     double dData = 0.0;
@@ -238,6 +260,7 @@ int main(int argc, char *argv[])
     double dbtest[5] = {1.1111111111, 2.222222222, 3.33333333, 4.333334, 5.2345678765435};
     char *dbPkt = msg.serializeArr<double>(DTYPE_DOUBLE_ARR, dbtest, 5, pktLen);
     msg.printPkt(dbPkt, pktLen);
+    cout << "pktLen: " << pktLen << endl;
     numOfBytes = msg.deserialize<size_t>(dbPkt + 1);
     cout << "numOfBytes: " << numOfBytes << endl;
     double dbparsed[5];
@@ -258,6 +281,7 @@ int main(int argc, char *argv[])
     char *ipkt = msg.serializeArr<int>(DTYPE_INT_ARR, ittest, 5, pktLen);
     msg.printPkt(ipkt, pktLen);
     numOfBytes = msg.deserialize<size_t>(ipkt + 1);
+    cout << "pktLen: " << pktLen << endl;
     cout << "numOfBytes: " << numOfBytes << endl;
     int iparsed[5];
     msg.deserializeArr<int>(iparsed, ipkt + 9, numOfBytes);
