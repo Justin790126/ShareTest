@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
     numOfBytes = extract_size_t(farrPkt+1);
     cout << "numOfBytes: " << numOfBytes << endl;
     float test[5];
-    memcpy(&test, farrPkt+9, 20);
+    memcpy(&test, farrPkt+9, numOfBytes);
     bool pass = true;
     for (int i = 0; i < 5; i++) {
         if (test[i] != fatest[i]) {
@@ -103,13 +103,32 @@ int main(int argc, char* argv[])
     }
     cout << "Verify float array result : " << (int)pass << endl;
 
+#ifdef DATA_SECTION_TEST
     std::vector<std::pair<char*,size_t>>* ds = msg.GetDataSections();
     for (int i = 0; i < ds->size(); i++) {
         cout << (*ds)[i].second << endl;
     }
+#endif
+    cout << "--- Verify double array pkt start ----" << endl;
+    double dbtest[5] = {1.1111111111, 2.222222222, 3.33333333, 4.333334, 5.2345678765435};
+    char* dbPkt = msg.serializeArr<double>(DTYPE_FLOAT_ARR, dbtest, 5, pktLen);
+    msg.printPkt(dbPkt, pktLen);
+    numOfBytes = extract_size_t(dbPkt+1);
+    cout << "numOfBytes: " << numOfBytes << endl;
+    double dbparsed[5];
+    memcpy(&dbparsed, dbPkt+9, numOfBytes);
+    pass = true;
+    for (int i = 0; i < 5; i++) {
+        if (dbparsed[i] != dbtest[i]) {
+            pass = false;
+            break;
+        }
+    }
+    cout << "Verify double array result : " << (int)pass << endl;
 
-    msg.createPkt(pktLen);
+    char* pkt = msg.createPkt(pktLen);
 
     cout << "total pkt : " << pktLen << endl;
+    msg.printPkt(pkt, pktLen);
     return 0;
 }

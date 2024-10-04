@@ -154,7 +154,9 @@ char* ModelSktMsg::serializeArr(DType dtype, T* data, size_t dLen, size_t& outLe
     
     return farrPkt;
 }
+template char* ModelSktMsg::serializeArr<int>(DType dtype, int* data, size_t dLen, size_t& outLen);
 template char* ModelSktMsg::serializeArr<float>(DType dtype, float* data, size_t dLen, size_t& outLen);
+template char* ModelSktMsg::serializeArr<double>(DType dtype, double* data, size_t dLen, size_t& outLen);
 
 char* ModelSktMsg::serializeFloatArr(DType dtype, float* data, size_t dLen, size_t& outLen)
 {
@@ -210,7 +212,6 @@ char* ModelSktMsg::createPkt(size_t& outLen)
 
     printf("----total data section----\n");
     printPkt(dataSection, offset);
-    printf("\n");
 
 
 
@@ -220,7 +221,7 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     printf("---checksum----\n");
     char* chksum = (char*)checksum;
     printPkt(chksum, SHA256_DIGEST_LENGTH);
-    printf("\n");
+
 
     char sender = 0x03;
     char response = 0x05;
@@ -249,10 +250,6 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     // data section
     memcpy(result+totalPktOffset, dataSection, totalSizeOfDataSection);
     totalPktOffset += totalSizeOfDataSection;
-
-    printf("----total size: %d----\n", totalPktOffset);
-    printPkt(result, totalPktOffset);
-    printf("\n");
 
     // clear data
     ClearDataSection();
