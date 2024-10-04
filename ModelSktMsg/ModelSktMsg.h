@@ -8,12 +8,13 @@
 
 enum DType
 {
-    DTYPE_INT = 0x09,
+    DTYPE_INT=0x11,
     DTYPE_FLOAT,
     DTYPE_DOUBLE,
     DTYPE_INT_ARR,
     DTYPE_FLOAT_ARR,
     DTYPE_DOUBLE_ARR,
+    DTYPE_CHAR_ARR
 };
 
 /*

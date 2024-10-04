@@ -86,15 +86,17 @@ void ParsePkt(char *pkt)
     float *fArr = NULL;
     double *dArr = NULL;
     int *iArr = NULL;
+    char* cArr=NULL;
     int arrSize = 0;
     while (pktOffset < lenDs)
     {
         u_char ch = ds[pktOffset];
-        // cout << pktOffset << "/ " << lenDs << endl;
+        printf("\n %d/ %d, 0x%02x ", pktOffset, lenDs, ch);
+
         switch (ch)
         {
         case DTYPE_INT:
-            printf("\n---- parse DTYPE_INT\n");
+            printf("---- parse DTYPE_INT\n");
 
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             iData = msg.deserialize<int>(ds + pktOffset + 1 + sizeof(size_t));
@@ -105,7 +107,7 @@ void ParsePkt(char *pkt)
             /* code */
             break;
         case DTYPE_FLOAT:
-            printf("\n---- parse DTYPE_FLOAT\n");
+            printf("---- parse DTYPE_FLOAT\n");
             // pktOffset++;
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             fData = msg.deserialize<float>(ds + pktOffset + 1 + sizeof(size_t));
@@ -115,7 +117,7 @@ void ParsePkt(char *pkt)
             /* code */
             break;
         case DTYPE_DOUBLE:
-            printf("\n---- parse DTYPE_DOUBLE\n");
+            printf("---- parse DTYPE_DOUBLE\n");
             /* code */
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             dData = msg.deserialize<double>(ds + pktOffset + 1 + sizeof(size_t));
@@ -126,7 +128,7 @@ void ParsePkt(char *pkt)
             break;
         case DTYPE_INT_ARR:
             /* code */
-            printf("\n---- parse DTYPE_INT_ARR\n");
+            printf("---- parse DTYPE_INT_ARR\n");
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             printf("iarr size in bytes: %zu\n", dataLen);
             arrSize = dataLen / sizeof(int);
@@ -141,7 +143,7 @@ void ParsePkt(char *pkt)
             break;
         case DTYPE_FLOAT_ARR:
             /* code */
-            printf("\n---- parse DTYPE_FLOAT_ARR\n");
+            printf("---- parse DTYPE_FLOAT_ARR\n");
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             printf("farr size in bytes: %zu\n", dataLen);
             arrSize = dataLen / sizeof(float);
@@ -156,7 +158,7 @@ void ParsePkt(char *pkt)
             break;
         case DTYPE_DOUBLE_ARR:
             /* code */
-            printf("\n---- parse DTYPE_DOUBLE_ARR\n");
+            printf("---- parse DTYPE_DOUBLE_ARR\n");
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             printf("darr size in bytes: %zu\n", dataLen);
             arrSize = dataLen / sizeof(double);
@@ -166,6 +168,18 @@ void ParsePkt(char *pkt)
             for (int i = 0; i < arrSize; i++)
                 printf("%.15g ", dArr[i]);
             printf("\n");
+
+            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            break;
+        case DTYPE_CHAR_ARR:
+            printf("---- parse DTYPE_CHAR_ARR\n");
+            dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
+            printf("darr size in bytes: %zu\n", dataLen);
+            arrSize = dataLen / sizeof(char);
+            printf("darr size : %d\n", arrSize);
+            cArr = new char[arrSize];
+            msg.deserializeArr<char>(cArr, ds + pktOffset + 1 + sizeof(size_t), dataLen);
+            printf("result : %s \n", cArr);
 
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             break;
@@ -296,13 +310,31 @@ int main(int argc, char *argv[])
     }
     cout << "Verify int array result : " << (int)pass << endl;
 
-    cout << "Verify total packet: " << endl;
+    cout << "--- Verify string(char array with null terminator) pkt start ----" << endl;
+    string path = "qq.qmdl";
+    int sizePath = sizeof(path.c_str());
+    char* cpath = new char[sizePath];
+    strcpy(cpath, path.c_str());
+    char *spkt = msg.serializeArr<char>(DTYPE_CHAR_ARR, cpath, sizeof(cpath), pktLen);
+    msg.printPkt(spkt, pktLen);
+    numOfBytes = msg.deserialize<size_t>(spkt + 1);
+    cout << "pktLen: " << pktLen << endl;
+    cout << "numOfBytes: " << numOfBytes << endl;
+    char* parsePath = new char[sizePath];
+    msg.deserializeArr<char>(parsePath, spkt + 9, numOfBytes);
+    if (strcmp(cpath, parsePath) == 0) {
+        printf("----- verify pass : %s ------ \n", parsePath);
+    }
+    
+
+    cout << "\n=========Verify total packet: =========\n" << endl;
     char *pkt = msg.createPkt(pktLen);
 
     cout << "total pkt : " << pktLen << endl;
     msg.printPkt(pkt, pktLen);
 
     cout << "--------- Start parse all packet ---------" << endl;
+
 
     ParsePkt(pkt);
     return 0;
