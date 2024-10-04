@@ -38,12 +38,7 @@ int main(int argc, char* argv[])
 
     cout << "--- Verify Int pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
-
-    for (size_t i = 0; i < pktLen; i++)
-    {
-        printf("%02x ", intpkt[i]);
-        
-    }
+    msg.printPkt(intpkt, pktLen);
     printf("\n");
 
     size_t numOfBytes = extract_size_t(intpkt+1);
@@ -59,12 +54,7 @@ int main(int argc, char* argv[])
 
     cout << "--- Verify float pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
-
-    for (size_t i = 0; i < pktLen; i++)
-    {
-        printf("%02x ", floatpkt[i]);
-        
-    }
+    msg.printPkt(floatpkt, pktLen);
     printf("\n");
     numOfBytes = extract_size_t(floatpkt+1);
     float fdata = extract_float(floatpkt+1+8);
@@ -79,11 +69,7 @@ int main(int argc, char* argv[])
     cout << "--- Verify float array pkt start ----" << endl;
     
     cout << "pktLen: " << pktLen << endl;
-
-    for (size_t i = 0; i < pktLen; i++)
-    {
-        printf("%02x ", farrPkt[i]);
-    }
+    msg.printPkt(farrPkt, pktLen);
     printf("\n");
     numOfBytes = extract_size_t(farrPkt+1);
     cout << "numOfBytes: " << numOfBytes << endl;

@@ -31,9 +31,12 @@ public:
     char* serializeFloatArr(DType dtype, float* data, size_t dLen, size_t& outLen);
 
     std::vector<std::pair<char*, size_t>>* GetDataSections() { return &m_vDataSection; }
-
+    void ClearDataSection();
     void generateChecksum(char* data, size_t sizeOfData, u_char* chksum);
+
     char* createPkt(size_t& outLen);
+
+    void printPkt(char* pkg, size_t dsize);
 private:
     // <data, pkt size>
     std::vector<std::pair<char*,size_t>> m_vDataSection;

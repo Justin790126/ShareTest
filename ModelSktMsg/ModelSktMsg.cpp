@@ -6,8 +6,28 @@ ModelSktMsg::ModelSktMsg(/* args */)
     m_vDataSection.clear();
 }
 
+void ModelSktMsg::ClearDataSection()
+{
+    for (int i = 0; i < m_vDataSection.size(); i++) {
+        if (m_vDataSection[i].first) {
+            delete [] m_vDataSection[i].first;
+        }
+    }
+    m_vDataSection.clear();
+}
+
 ModelSktMsg::~ModelSktMsg()
 {
+    ClearDataSection();
+}
+
+void ModelSktMsg::printPkt(char* pkg, size_t dsize)
+{
+    for (size_t i = 0; i < dsize; i++)
+    {
+        printf("%02x ", (u_char)pkg[i]);
+    }
+    printf("\n");
 }
 
 char* ModelSktMsg::serializeInt(DType dtype, int data, size_t& outLen)
@@ -123,7 +143,7 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     }
 
     printf("----total data section----\n");
-    for (int i = 0; i < totalSizeOfDataSection; i++) printf("%02x ", dataSection[i]);
+    printPkt(dataSection, offset);
     printf("\n");
 
 
@@ -132,9 +152,8 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     generateChecksum(dataSection, totalSizeOfDataSection, checksum);
     // Calculate the SHA-256 checksum
     printf("---checksum----\n");
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-        printf("%02x ", checksum[i]);
-    }
+    char* chksum = (char*)checksum;
+    printPkt(chksum, SHA256_DIGEST_LENGTH);
     printf("\n");
 
     char sender = 0x03;
@@ -166,19 +185,11 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     totalPktOffset += totalSizeOfDataSection;
 
     printf("----total size: %d----\n", totalPktOffset);
-    for (size_t i = 0; i < totalPktOffset; i++)
-    {
-        printf("%02x ", (u_char)result[i]);
-    }
+    printPkt(result, totalPktOffset);
     printf("\n");
 
     // clear data
-    for (int i = 0; i < m_vDataSection.size(); i++) {
-        if (m_vDataSection[i].first) {
-            delete [] m_vDataSection[i].first;
-        }
-    }
-    m_vDataSection.clear();
+    ClearDataSection();
     if (dataSection) delete []dataSection;
 
     outLen = totalPktOffset;
