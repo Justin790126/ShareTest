@@ -6,7 +6,7 @@ ModelSktMsg::ModelSktMsg(/* args */)
     m_vDataSection.clear();
 }
 
-void ModelSktMsg::ClearDataSection()
+void ModelSktMsg::clearDataSection()
 {
     for (int i = 0; i < m_vDataSection.size(); i++) {
         if (m_vDataSection[i].first) {
@@ -18,7 +18,7 @@ void ModelSktMsg::ClearDataSection()
 
 ModelSktMsg::~ModelSktMsg()
 {
-    ClearDataSection();
+    clearDataSection();
 }
 
 void ModelSktMsg::printPkt(char* pkg, size_t dsize)
@@ -252,7 +252,7 @@ char* ModelSktMsg::createPkt(size_t& outLen)
     totalPktOffset += totalSizeOfDataSection;
 
     // clear data
-    ClearDataSection();
+    clearDataSection();
     if (dataSection) delete []dataSection;
 
     outLen = totalPktOffset;

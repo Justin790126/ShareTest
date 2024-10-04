@@ -126,6 +126,23 @@ int main(int argc, char* argv[])
     }
     cout << "Verify double array result : " << (int)pass << endl;
 
+    cout << "--- Verify int array pkt start ----" << endl;
+    int ittest[5] = {1,3,5,7,9};
+    char* ipkt = msg.serializeArr<int>(DTYPE_INT_ARR, ittest, 5, pktLen);
+    msg.printPkt(ipkt, pktLen);
+    numOfBytes = extract_size_t(ipkt+1);
+    cout << "numOfBytes: " << numOfBytes << endl;
+    int iparsed[5];
+    memcpy(&iparsed, ipkt+9, numOfBytes);
+    pass = true;
+    for (int i = 0; i < 5; i++) {
+        if (iparsed[i] != ittest[i]) {
+            pass = false;
+            break;
+        }
+    }
+    cout << "Verify int array result : " << (int)pass << endl;
+
     char* pkt = msg.createPkt(pktLen);
 
     cout << "total pkt : " << pktLen << endl;
