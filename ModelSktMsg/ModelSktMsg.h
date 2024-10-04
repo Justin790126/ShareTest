@@ -10,7 +10,10 @@ enum DType
 {
     DTYPE_INT=0x09,
     DTYPE_FLOAT,
-    DTYPE_FLOAT_ARR
+    DTYPE_DOUBLE,
+    DTYPE_INT_ARR,
+    DTYPE_FLOAT_ARR,
+    DTYPE_DOUBLE_ARR,
 };
 
 /*
@@ -26,8 +29,13 @@ public:
     ModelSktMsg(/* args */);
     ~ModelSktMsg();
 
+    template <typename T>
+    char* serialize(DType dtype, T data, size_t& outLen);
     char* serializeInt(DType dtype, int data, size_t& outLen);
     char* serializeFloat(DType dtype, float data, size_t& outLen);
+
+    template <typename T>
+    char* serializeArr(DType dtype, T* data, size_t dLen, size_t& outLen);
     char* serializeFloatArr(DType dtype, float* data, size_t dLen, size_t& outLen);
 
     std::vector<std::pair<char*, size_t>>* GetDataSections() { return &m_vDataSection; }

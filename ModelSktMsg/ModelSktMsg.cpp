@@ -30,6 +30,42 @@ void ModelSktMsg::printPkt(char* pkg, size_t dsize)
     printf("\n");
 }
 
+template <typename T>
+char* ModelSktMsg::serialize(DType dtype, T data, size_t& outLen)
+{
+    int intDpktSize = sizeof(char) + sizeof(size_t) + sizeof(T);
+
+    char* pkt = new char[intDpktSize];
+    memset(pkt, 0, intDpktSize);
+
+    int offset = 0;
+    // dType (1bytes)
+    char dataType = (char)dtype;
+    memcpy(pkt, &dataType, sizeof(dataType));
+    offset+= sizeof(dataType);
+
+    // data length in bytes (4bytes in integer/ 8 bytes)
+    size_t sizeOfData = sizeof(data); // equal to 4
+    memcpy(pkt+offset, &sizeOfData, sizeof(size_t));
+    offset += sizeof(size_t);
+
+    // store integer data
+    memcpy(pkt+offset, &data, sizeof(T));
+    offset += sizeof(T);
+
+    outLen = offset;
+
+    m_vDataSection.push_back(
+        std::make_pair(pkt, outLen)
+    );
+    
+    return pkt;
+}
+
+template char* ModelSktMsg::serialize<int>(DType dtype, int data, size_t& outLen);
+template char* ModelSktMsg::serialize<float>(DType dtype, float data, size_t& outLen);
+template char* ModelSktMsg::serialize<double>(DType dtype, double data, size_t& outLen);
+
 char* ModelSktMsg::serializeInt(DType dtype, int data, size_t& outLen)
 {
     int intDpktSize = sizeof(char) + sizeof(size_t) + sizeof(data);
@@ -60,7 +96,6 @@ char* ModelSktMsg::serializeInt(DType dtype, int data, size_t& outLen)
     return intPkt;
 }
 
-
 char* ModelSktMsg::serializeFloat(DType dtype, float data, size_t& outLen)
 {
     int intDpktSize = sizeof(char) + sizeof(size_t) + sizeof(data);
@@ -79,7 +114,7 @@ char* ModelSktMsg::serializeFloat(DType dtype, float data, size_t& outLen)
     offset += sizeof(size_t);
 
     // store float data
-    memcpy(intPkt+offset, &data, sizeof(int));
+    memcpy(intPkt+offset, &data, sizeof(float));
     offset += sizeof(int);
 
     outLen = offset;
@@ -89,6 +124,37 @@ char* ModelSktMsg::serializeFloat(DType dtype, float data, size_t& outLen)
     
     return intPkt;
 }
+
+template <typename T>
+char* ModelSktMsg::serializeArr(DType dtype, T* data, size_t dLen, size_t& outLen)
+{
+    int farrDpktSize = sizeof(char) + sizeof(size_t) + dLen*sizeof(T);
+    char* farrPkt = new char[farrDpktSize];
+    memset(farrPkt, 0, farrDpktSize);
+
+    int offset = 0;
+    // dType (1bytes)
+    char dataType = (char)dtype;
+    memcpy(farrPkt, &dataType, sizeof(dataType));
+    offset+= sizeof(dataType);
+
+    // data length in bytes (N bytes in integer/ 8 bytes)
+    size_t sizeOfData = dLen*sizeof(T);
+    memcpy(farrPkt+offset, &sizeOfData, sizeof(size_t));
+    offset += sizeof(size_t);
+
+    // store float array data
+    memcpy(farrPkt+offset, data, dLen*sizeof(T));
+    offset += dLen*sizeof(T);
+
+    outLen = offset;
+    m_vDataSection.push_back(
+        std::make_pair(farrPkt, outLen)
+    );
+    
+    return farrPkt;
+}
+template char* ModelSktMsg::serializeArr<float>(DType dtype, float* data, size_t dLen, size_t& outLen);
 
 char* ModelSktMsg::serializeFloatArr(DType dtype, float* data, size_t dLen, size_t& outLen)
 {

@@ -26,6 +26,12 @@ float extract_float(const char* data) {
     return value;
 }
 
+double extract_double(const char* data) {
+    double val;
+    memcpy(&val, data, sizeof(double));
+    return val;
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -34,7 +40,7 @@ int main(int argc, char* argv[])
 
     int encapsuleData = 99;
     
-    char* intpkt = msg.serializeInt(DTYPE_INT, encapsuleData, pktLen);
+    char* intpkt = msg.serialize<int>(DTYPE_INT, encapsuleData, pktLen);
 
     cout << "--- Verify Int pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
@@ -50,7 +56,7 @@ int main(int argc, char* argv[])
 
 
     float ftest = 9.9;
-    char* floatpkt = msg.serializeFloat(DTYPE_FLOAT, ftest, pktLen);
+    char* floatpkt = msg.serialize<float>(DTYPE_FLOAT, ftest, pktLen);
 
     cout << "--- Verify float pkt start ----" << endl;
     cout << "pktLen: " << pktLen << endl;
@@ -63,8 +69,21 @@ int main(int argc, char* argv[])
     cout << "Verify float: " << (int)(fdata==ftest) << endl;
     cout << "--- Verify Float pkt End ----" << endl;
 
+    double val = 3.141592543211111;
+    char* doublepkt = msg.serialize<double>(DTYPE_DOUBLE, val, pktLen);
+    cout << "--- Verify double pkt start ----" << endl;
+    cout << "pktLen: " << pktLen << endl;
+    msg.printPkt(doublepkt, pktLen);
+    numOfBytes = extract_size_t(doublepkt+1);
+    double ddata = extract_double(doublepkt+9);
+    cout << extract_size_t(doublepkt+1) << endl;
+    cout << "Verify double: " << (int)(ddata==val) << endl;
+    cout << "--- Verify Double pkt End ----" << endl;
+
+
+
     float fatest[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
-    char* farrPkt = msg.serializeFloatArr(DTYPE_FLOAT_ARR, fatest, 5, pktLen);
+    char* farrPkt = msg.serializeArr<float>(DTYPE_FLOAT_ARR, fatest, 5, pktLen);
 
     cout << "--- Verify float array pkt start ----" << endl;
     
