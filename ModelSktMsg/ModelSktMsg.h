@@ -45,7 +45,7 @@ public:
     char *serialize(T data, size_t &outLen);
 
     template <typename T>
-    char *serializeArr(DType dtype, T *data, size_t dLen, size_t &outLen);
+    char *serializeArr(T *data, size_t dLen, size_t &outLen);
 
     std::vector<std::pair<char *, size_t>> *GetDataSections() { return &m_vDataSection; }
     void clearDataSection();

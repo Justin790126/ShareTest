@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
     cout << "--- Verify Double pkt End ----" << endl;
 
     float fatest[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
-    char *farrPkt = msg.serializeArr<float>(DTYPE_FLOAT_ARR, fatest, 5, pktLen);
+    char *farrPkt = msg.serializeArr<float>(fatest, 5, pktLen);
 
     cout << "--- Verify float array pkt start ----" << endl;
 
@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
 #endif
     cout << "--- Verify double array pkt start ----" << endl;
     double dbtest[5] = {1.1111111111, 2.222222222, 3.33333333, 4.333334, 5.2345678765435};
-    char *dbPkt = msg.serializeArr<double>(DTYPE_DOUBLE_ARR, dbtest, 5, pktLen);
+    char *dbPkt = msg.serializeArr<double>(dbtest, 5, pktLen);
     msg.printPkt(dbPkt, pktLen);
     cout << "pktLen: " << pktLen << endl;
     numOfBytes = msg.deserialize<size_t>(dbPkt + 1);
@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
 
     cout << "--- Verify int array pkt start ----" << endl;
     int ittest[5] = {1, 3, 5, 7, 9};
-    char *ipkt = msg.serializeArr<int>(DTYPE_INT_ARR, ittest, 5, pktLen);
+    char *ipkt = msg.serializeArr<int>(ittest, 5, pktLen);
     msg.printPkt(ipkt, pktLen);
     numOfBytes = msg.deserialize<size_t>(ipkt + 1);
     cout << "pktLen: " << pktLen << endl;
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
     int sizePath = sizeof(path.c_str());
     char* cpath = new char[sizePath];
     strcpy(cpath, path.c_str());
-    char *spkt = msg.serializeArr<char>(DTYPE_CHAR_ARR, cpath, sizeof(cpath), pktLen);
+    char *spkt = msg.serializeArr<char>(cpath, sizeof(cpath), pktLen);
     msg.printPkt(spkt, pktLen);
     numOfBytes = msg.deserialize<size_t>(spkt + 1);
     cout << "pktLen: " << pktLen << endl;

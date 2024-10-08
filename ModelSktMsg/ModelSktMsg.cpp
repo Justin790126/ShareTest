@@ -145,6 +145,9 @@ char *ModelSktMsg::serialize(T data, size_t &outLen)
         dtype = DTYPE_FLOAT;
     } else if (typeid(T) == typeid(double)) {
         dtype = DTYPE_DOUBLE;
+    } else {
+        printf("[serialize] unsupported type\n");
+        return NULL;
     }
     int intDpktSize = sizeof(char) + sizeof(size_t) + sizeof(T);
 
@@ -182,8 +185,22 @@ template char *ModelSktMsg::serialize<float>(float data, size_t &outLen);
 template char *ModelSktMsg::serialize<double>(double data, size_t &outLen);
 
 template <typename T>
-char *ModelSktMsg::serializeArr(DType dtype, T *data, size_t dLen, size_t &outLen)
+char *ModelSktMsg::serializeArr(T *data, size_t dLen, size_t &outLen)
 {
+    DType dtype;
+    if (typeid(T) == typeid(char)) {
+        dtype = DTYPE_CHAR_ARR;
+    } else if (typeid(T) == typeid(int)) {
+        dtype = DTYPE_INT_ARR;
+    } else if (typeid(T) == typeid(float)) {
+        dtype = DTYPE_FLOAT_ARR;
+    } else if (typeid(T) == typeid(double)) {
+        dtype = DTYPE_DOUBLE_ARR;
+    } else {
+        printf("[serializeArr] unsupported type");
+        return NULL;
+    }
+
     int farrDpktSize = sizeof(char) + sizeof(size_t) + dLen * sizeof(T);
     char *farrPkt = new char[farrDpktSize];
     memset(farrPkt, 0, farrDpktSize);
@@ -213,10 +230,10 @@ char *ModelSktMsg::serializeArr(DType dtype, T *data, size_t dLen, size_t &outLe
     return farrPkt;
 }
 
-template char *ModelSktMsg::serializeArr<char>(DType dtype, char *data, size_t dLen, size_t &outLen);
-template char *ModelSktMsg::serializeArr<int>(DType dtype, int *data, size_t dLen, size_t &outLen);
-template char *ModelSktMsg::serializeArr<float>(DType dtype, float *data, size_t dLen, size_t &outLen);
-template char *ModelSktMsg::serializeArr<double>(DType dtype, double *data, size_t dLen, size_t &outLen);
+template char *ModelSktMsg::serializeArr<char>(char *data, size_t dLen, size_t &outLen);
+template char *ModelSktMsg::serializeArr<int>(int *data, size_t dLen, size_t &outLen);
+template char *ModelSktMsg::serializeArr<float>(float *data, size_t dLen, size_t &outLen);
+template char *ModelSktMsg::serializeArr<double>(double *data, size_t dLen, size_t &outLen);
 
 template <typename T>
 T ModelSktMsg::deserialize(const char *data)
