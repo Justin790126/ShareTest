@@ -17,10 +17,17 @@ enum DType
     DTYPE_CHAR_ARR
 };
 
-/*
-            pkt_len (8bytes), chksum (32bytes), sender(1bytes), response(1bytes), number of parameters (4bytes), dtype(1bytes), data_len(8bytes), data , data_end_byte...
+enum SyncFlag
+{
+    SYNC_START,
+    SYNC_INPROGRESS,
+    SYNC_END
+};
 
-store          size_t              char[32]          char            char                 int                        char         size_t                     char
+/*
+            pkt_len (8bytes), chksum (32bytes), sender(1bytes), response(1bytes), sync_flag, pkt_id, number of parameters (4bytes), dtype(1bytes), data_len(8bytes), data , data_end_byte...
+
+store          size_t              char[32]          char            char             char       int          int                        char         size_t                     char
  */
 
 class ModelSktMsg
@@ -32,6 +39,8 @@ public:
 
     bool verifyChksum(u_char *clnt, u_char *svr);
 
+    size_t getChksumSize() {return (size_t)SHA256_DIGEST_LENGTH;}
+
     template <typename T>
     char *serialize(T data, size_t &outLen);
 
@@ -42,7 +51,7 @@ public:
     void clearDataSection();
     void generateChecksum(char *data, size_t sizeOfData, u_char *chksum);
 
-    char *createPkt(size_t &outLen);
+    char *createPkt(size_t &outLen, char sender=0x00, char response=0x00, char syncFlag=0x00, int pktId=0);
 
     template <typename T>
     T deserialize(const char *data);
@@ -57,7 +66,7 @@ public:
 private:
     // <data, pkt size>
     std::vector<std::pair<char *, size_t>> m_vDataSection;
-    char endByte = '0xAB';
+    char endByte = 0xAB;
 };
 
 #endif /* MODEL_SKT_MSG */

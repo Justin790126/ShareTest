@@ -38,10 +38,10 @@ void ModelSktMsg::generateChecksum(char *data, size_t sizeOfData, u_char *chksum
 
 int ModelSktMsg::getDataSectionOffset()
 {
-    return sizeof(size_t) + SHA256_DIGEST_LENGTH + sizeof(char) + sizeof(char) + sizeof(int);
+    return sizeof(size_t) + SHA256_DIGEST_LENGTH + sizeof(char) + sizeof(char) + sizeof(char) + sizeof(int) + sizeof(int);
 }
 
-char *ModelSktMsg::createPkt(size_t &outLen)
+char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char syncFlag, int pktId)
 {
     if (m_vDataSection.empty())
         return NULL;
@@ -72,11 +72,17 @@ char *ModelSktMsg::createPkt(size_t &outLen)
     char *chksum = (char *)checksum;
     printPkt(chksum, SHA256_DIGEST_LENGTH);
 
-    char sender = 0x03;   // FIXME: api enum here
-    char response = 0x05; // FIXME: api send 0x00, svr response with code
+    char senderByte = sender;   // FIXME: api enum here
+    char responseByte = response; // FIXME: api send 0x00, svr response with code
+    char syncFlagByte = syncFlag;
+    int pktIdByte = pktId;
+    
     int numOfParam = m_vDataSection.size();
 
-    size_t pktLen = sizeof(size_t) + (size_t)SHA256_DIGEST_LENGTH + sizeof(char) + sizeof(char) + sizeof(int) + totalSizeOfDataSection;
+    size_t pktLen = sizeof(size_t) + (size_t)SHA256_DIGEST_LENGTH + 
+        sizeof(char) + sizeof(char) + 
+        sizeof(char) + sizeof(int) + sizeof(int) + 
+        totalSizeOfDataSection;
 
     char *result = new char[pktLen];
     int totalPktOffset = 0;
@@ -87,11 +93,17 @@ char *ModelSktMsg::createPkt(size_t &outLen)
     memcpy(result + totalPktOffset, &checksum, SHA256_DIGEST_LENGTH);
     totalPktOffset += SHA256_DIGEST_LENGTH;
     // sender
-    memcpy(result + totalPktOffset, &sender, sizeof(char));
+    memcpy(result + totalPktOffset, &senderByte, sizeof(char));
     totalPktOffset += sizeof(char);
     // response
-    memcpy(result + totalPktOffset, &response, sizeof(char));
+    memcpy(result + totalPktOffset, &responseByte, sizeof(char));
     totalPktOffset += sizeof(char);
+    // sync_flag
+    memcpy(result + totalPktOffset, &syncFlagByte, sizeof(char));
+    totalPktOffset += sizeof(char);
+    // pkt_id
+    memcpy(result + totalPktOffset, &pktIdByte, sizeof(int));
+    totalPktOffset += sizeof(int);
     // number of parameters
     memcpy(result + totalPktOffset, &numOfParam, sizeof(int));
     totalPktOffset += sizeof(int);

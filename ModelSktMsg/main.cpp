@@ -25,6 +25,9 @@ void ParsePkt(char *pkt)
     cout << "parsed data section" << endl;
     msg.printPkt(ds, lenDs);
     cout << "----- verify chksum -----" << endl;
+
+    
+    
     u_char svrChksum[32];
     msg.generateChecksum(ds, lenDs, svrChksum);
     msg.printPkt((char *)svrChksum, 32);
@@ -34,13 +37,22 @@ void ParsePkt(char *pkt)
     cout << "chksumSame result : " << chksumSame << endl;
 
     cout << "--- Response code" << endl;
-    char sender = msg.deserialize<char>(pkt + sizeof(size_t) + 32);
+    int headerOffset = msg.getChksumSize();
+    char sender = msg.deserialize<char>(pkt + sizeof(size_t) + headerOffset);
+    headerOffset += sizeof(char);
     printf("clnt sender: 0x%02x \n", sender);
-    char response = msg.deserialize<char>(pkt + sizeof(size_t) + 33);
+    char response = msg.deserialize<char>(pkt + sizeof(size_t) + headerOffset);
+    headerOffset += sizeof(char);
     printf("svr response: 0x%02x \n", response);
+    char syncFlag = msg.deserialize<char>(pkt + sizeof(size_t) + headerOffset);
+    printf("sync flag: 0x%02x \n", syncFlag);
+    headerOffset += sizeof(char);
+    int pktid = msg.deserialize<int>(pkt + sizeof(size_t) + headerOffset);
+    printf("pktid: %x \n", pktid);
+    headerOffset += sizeof(int);
 
     cout << "--- Number of parameters " << endl;
-    int numOfParams = msg.deserialize<int>(pkt + sizeof(size_t) + 34);
+    int numOfParams = msg.deserialize<int>(pkt + sizeof(size_t) + headerOffset);
     printf(" %d \n", numOfParams);
 
     cout << "---- deserialize pkt by pkt " << endl;
@@ -53,7 +65,7 @@ void ParsePkt(char *pkt)
     endIdxes.reserve(numOfParams);
     for (int i = 0; i < lenDs; i++)
     {
-        if ((u_char)ds[i] == (u_char)'0xAB') {
+        if ((u_char)ds[i] == (u_char)0xAB) {
             endIdxes.emplace_back(i);
             numPara++;
         }
@@ -328,7 +340,7 @@ int main(int argc, char *argv[])
     
 
     cout << "\n=========Verify total packet: =========\n" << endl;
-    char *pkt = msg.createPkt(pktLen);
+    char *pkt = msg.createPkt(pktLen, 0x01, 0x03, 0x05, 0x07);
 
     cout << "total pkt : " << pktLen << endl;
     msg.printPkt(pkt, pktLen);
