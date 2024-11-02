@@ -9,11 +9,17 @@ add_executable(skt
                 ModelSktMsg.cpp)
 target_link_libraries(skt ssl crypto)
 
+SET(SKT_SRC 
+    ModelSktMsg.cpp
+    ModelSktBase.cpp
+    ModelSktSvr.cpp
+    ModelSktClnt.cpp)
+
 add_executable(skt_clnt
                 socket_client.cpp
-                ModelSktMsg.cpp)
+                ${SKT_SRC})
 target_link_libraries(skt_clnt ssl crypto)
 add_executable(skt_svr
                 socket_server.cpp
-                ModelSktMsg.cpp)
+                ${SKT_SRC})
 target_link_libraries(skt_svr ssl crypto)
