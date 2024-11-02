@@ -5,55 +5,72 @@
 #include <unistd.h>
 #include <string.h>
 #include "ModelSktMsg.h"
+#include "ModelSktClnt.h"
 
 using namespace std;
 
+ModelSktClnt clnt;
+
+void DlClose()
+{
+    ModelSktMsg msg;
+    size_t pktLen;
+    msg.serialize<char>(0x00, pktLen);
+    char* pkt = msg.createPkt(pktLen, SVR_DLCLOSE);
+    clnt.Send(pkt, pktLen);
+
+    vector<PktRes> response;
+    clnt.Receive(response);
+
+    
+}
 
 int main() {
-    int client_socket;
-    struct sockaddr_in server_addr;
-
-    // Create a socket
-    client_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (client_socket < 0) {
-        std::cerr << "Error creating socket: " << strerror(errno) << std::endl;
-        return 1;
+    // int client_socket;
+    // struct sockaddr_in server_addr;
+    
+    if (!clnt.connect()) {
+        printf("%s\n", clnt.GetStatusMsg().c_str());
+        return -1;
     }
+    printf("%s\n", clnt.GetStatusMsg().c_str());
+    // // Send a message to the server
 
-    // Connect to the server
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1"); // Replace with server IP
-    server_addr.sin_port = htons(8080); // Replace with server port
-
-    if (connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        std::cerr << "Error connecting to server: " << strerror(errno) << std::endl;
-        return 1;
-    }
-
-    std::cout << "Connected to server..." << std::endl;
-
-    // Send a message to the server
-
+    
+#if TEST_ALL
     ModelSktMsg msg;
-    string path = "qq.qmdl";
-    size_t sizePath = sizeof(path.c_str());
+    string path = "aasdfghjkjhgfdsasdfgh.qmdl";
+    size_t sizePath = strlen(path.c_str())+1;
     char* cpath = new char[sizePath];
     strcpy(cpath, path.c_str());
 
+    size_t pktLen;
+    msg.serialize<int>(999, pktLen);
+    msg.serializeArr<char>(cpath, sizePath, pktLen);
+    msg.serialize<float>(1.234, pktLen);
+    float fatest[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
+    char *farrPkt = msg.serializeArr<float>(fatest, 5, pktLen);
+    msg.serialize<double>(3.141592654321, pktLen);
+    double dbtest[5] = {1.1111111111, 2.222222222, 3.33333333, 4.333334, 5.2345678765435};
+    msg.serializeArr<double>(dbtest, 5, pktLen);
+    int ittest[5] = {1, 3, 5, 7, 9};
+    msg.serializeArr<int>(ittest, 5, pktLen);
+    char* pkt = msg.createPkt(pktLen);
 
-    const char* message = "Hello from the client!";
-    send(client_socket, message, strlen(message), 0);
+    // char* message = "Hello from the client!";
+    printf("[socket_client] pktLen = %zu \n", pktLen);
+    msg.printPkt(pkt, pktLen);
+    clnt.Send(pkt, pktLen);
 
-    // Receive a response from the server
-    char buffer[1024];
-    memset(buffer, 0, sizeof(buffer));
-    int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-    if (bytes_received <= 0) {
-        std::cerr << "Error receiving from server: " << strerror(errno) << std::endl;
-    } else {
-        std::cout << "Received from server: " << buffer << std::endl;
-    }
+    vector<PktRes> res;
+    clnt.Receive(res);
 
-    close(client_socket);
+    char* resMsg = (char*)res[0].arr;
+    printf("[socket_client] res = %s\n", resMsg);
+#endif
+
+    DlClose();
+
+    clnt.Close();
     return 0;
 }

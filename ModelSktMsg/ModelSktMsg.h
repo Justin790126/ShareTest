@@ -4,13 +4,25 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
+#include <string>
 #include <openssl/sha.h>
+
+using namespace std;
+
+enum SvrCmd
+{
+    SVR_DLCLOSE = 0x01,
+    SVR_DLOPEN,
+    SVR_SETLYT,
+    SVR_CONTOUR_MAKE
+};
 
 enum DType
 {
     DTYPE_INT=0x11,
     DTYPE_FLOAT,
     DTYPE_DOUBLE,
+    DTYPE_CHAR,
     DTYPE_INT_ARR,
     DTYPE_FLOAT_ARR,
     DTYPE_DOUBLE_ARR,
@@ -22,6 +34,23 @@ enum SyncFlag
     SYNC_START,
     SYNC_INPROGRESS,
     SYNC_END
+};
+
+class PktRes
+{
+    public:
+        DType dType;
+        char cResCode;
+        char cSyncFlg;
+        int pktId;
+
+        void* arr;
+        size_t arrSize;
+
+        int iData;
+        double dData;
+        float fData;
+        char cData;
 };
 
 /*

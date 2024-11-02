@@ -62,15 +62,15 @@ char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char sy
         offset += m_vDataSection[i].second;
     }
 
-    printf("----total data section : %zu----\n", totalSizeOfDataSection);
-    printPkt(dataSection, offset);
+    //printf("----total data section : %zu----\n", totalSizeOfDataSection);
+    //printPkt(dataSection, offset);
 
     u_char checksum[SHA256_DIGEST_LENGTH];
     generateChecksum(dataSection, totalSizeOfDataSection, checksum);
     // Calculate the SHA-256 checksum
-    printf("---checksum----\n");
+    //printf("---checksum----\n");
     char *chksum = (char *)checksum;
-    printPkt(chksum, SHA256_DIGEST_LENGTH);
+    //printPkt(chksum, SHA256_DIGEST_LENGTH);
 
     char senderByte = sender;   // FIXME: api enum here
     char responseByte = response; // FIXME: api send 0x00, svr response with code
@@ -145,6 +145,8 @@ char *ModelSktMsg::serialize(T data, size_t &outLen)
         dtype = DTYPE_FLOAT;
     } else if (typeid(T) == typeid(double)) {
         dtype = DTYPE_DOUBLE;
+    } else if (typeid(T) == typeid(double)) {
+        dtype = DTYPE_CHAR;
     } else {
         printf("[serialize] unsupported type\n");
         return NULL;
@@ -183,6 +185,7 @@ char *ModelSktMsg::serialize(T data, size_t &outLen)
 template char *ModelSktMsg::serialize<int>(int data, size_t &outLen);
 template char *ModelSktMsg::serialize<float>(float data, size_t &outLen);
 template char *ModelSktMsg::serialize<double>(double data, size_t &outLen);
+template char *ModelSktMsg::serialize<char>(char data, size_t &outLen);
 
 template <typename T>
 char *ModelSktMsg::serializeArr(T *data, size_t dLen, size_t &outLen)
