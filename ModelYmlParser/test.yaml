@@ -1,0 +1,68 @@
+# Simple YAML File
+name: Alice
+age: 30
+city: New York
+hobbies:
+  - reading
+  - coding
+  - hiking
+
+# YAML File with Nested Structures
+person:
+  name: Bob
+  age: 25
+  address:
+    street: 123 Main St
+    city: Los Angeles
+    state: CA
+    zip: 90001
+  contact:
+    phone: 123-456-7890
+    email: bob@example.com
+
+# YAML File with Lists and Maps
+fruits:
+  - apple
+  - banana
+  - orange
+colors:
+  red: "#FF0000"
+  green: "#00FF00"
+  blue: "#0000FF"
+
+# YAML File with Anchors and Aliases
+&person
+name: Charlie
+age: 35
+
+person1: *person
+person2:
+  <<: *person
+  city: Chicago
+
+# YAML File with Different Data Types
+string: "Hello, world!"
+integer: 42
+float: 3.14
+boolean: true
+null: ~
+list:
+  - 1
+  - 2
+  - 3
+map:
+  key1: value1
+  key2: value2
+
+# YAML File with Comments
+# This is a comment
+name: David
+# Age is a sensitive information
+# age: 40
+city: London
+
+# YAML File with Special Characters
+string_with_escape: "This is a string with \"double quotes\""
+string_with_newline: |
+  This is a multi-line
+  string with a newline.
