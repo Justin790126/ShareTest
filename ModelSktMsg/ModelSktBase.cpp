@@ -3,7 +3,8 @@
 
 void ModelSktBase::Send(char* pkt, size_t pktLen)
 {
-    send(client_socket, pkt, pktLen, 0);
+    int sendbytes = send(client_socket, pkt, pktLen, 0);
+    // printf("[ModelSktBase] send %d bytes\n", sendbytes);
 }
 
 bool ModelSktBase::Receive(vector<PktRes>& oRes)
@@ -145,6 +146,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
         
         PktRes param;
         param.dType = (DType)ch;
+        param.cSender = sender;
         param.cResCode = response;
         param.cSyncFlg = syncFlag;
         param.pktId = pktid;
@@ -274,6 +276,9 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     }
     sprintf(resMsg, "[ModelSktSvr] EOF parsing");
     m_sStatusMsg = std::move(resMsg);
+
+    if (m_pPkt) delete[] m_pPkt;
+    m_pPkt = NULL;
 
     result = true;
     return result;

@@ -27,8 +27,8 @@ bool ModelSktClnt::connect()
         return result;
     }
 
-    sprintf(resMsg, "[ModelSktClnt] Connected to server...");
-        m_sStatusMsg = std::move(resMsg);
+    sprintf(resMsg, "[ModelSktClnt] Connected to server sucessfully");
+    m_sStatusMsg = std::move(resMsg);
     result = true;
     return result;
 }

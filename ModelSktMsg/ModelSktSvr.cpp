@@ -16,6 +16,12 @@ bool ModelSktSvr::init()
         return result;
     }
 
+    int opt = 1;
+    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+        sprintf(resMsg, "[ModelSktSvr] Error setup socket: %s", strerror(errno));
+        m_sStatusMsg = std::move(resMsg);
+        return result;
+    }
     // Bind the socket to a port
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr(m_sIp.c_str());
@@ -28,7 +34,7 @@ bool ModelSktSvr::init()
     }
 
     // Listen for incoming connections
-    if (listen(server_socket, 5) < 0) {
+    if (listen(server_socket, 30) < 0) {
         sprintf(resMsg, "[ModelSktSvr] Error listening on socket: %s", strerror(errno));
         m_sStatusMsg = std::move(resMsg);
         return result;
@@ -53,6 +59,33 @@ bool ModelSktSvr::Accept()
     return true;
 }
 
+int ModelSktSvr::DlClose(u_char syncFlg)
+{
+    size_t resMsgLen = 0;
+    size_t pktLen = 0;
+    char* resMsg = NULL;
+    if (syncFlg == 0x00) {
+        m_sStatusMsg = "[ModelSktSvr] DlClose successfully";
+    } else if (syncFlg == 0x01) {
+        m_sStatusMsg = "[ModelSktSvr] Free DlClose memory successfully";
+    }
+    resMsgLen = m_sStatusMsg.length()+1;
+    resMsg = new char[resMsgLen];
+    strcpy(resMsg, m_sStatusMsg.c_str());
+
+    if (syncFlg == 0x00) {
+        printf("---> dlopen action: %s\n", resMsg);
+        ModelSktMsg msg;
+        msg.serializeArr<char>(resMsg, resMsgLen, pktLen);
+        m_pDlClosePkt = msg.createPkt(pktLen, SVR_DLCLOSE, 0x01, 0x00, 0x00);
+        Send(m_pDlClosePkt, pktLen);
+    } else if (syncFlg == 0x01) {
+        printf("----> free previous pkt\n");
+        if (m_pDlClosePkt) delete []m_pDlClosePkt;
+        m_pDlClosePkt = NULL;   
+    }
+}
+
 void ModelSktSvr::start()
 {
     while (!m_bSvrStop) {
@@ -68,7 +101,7 @@ void ModelSktSvr::start()
             break;
         }
 
-        if (res.empty()) {
+        if (res.size() != 1) {
             m_bSvrStop = true;
             m_sStatusMsg = "[ModelSktSvr] Parsing Result is empty";
             break;
@@ -85,6 +118,17 @@ void ModelSktSvr::start()
         char* respkt = msg.createPkt(respktlen);
         Send(respkt, respktlen);
         #endif
+
+        PktRes resFromClnt = res[0];
+        char cmdFrClnt = resFromClnt.cSender;
+        switch (cmdFrClnt)
+        {
+        case SVR_DLCLOSE:
+            DlClose((u_char)resFromClnt.cSyncFlg);
+            break;
+        default:
+            break;
+        }
 
         close(client_socket);
     }

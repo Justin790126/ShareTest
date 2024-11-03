@@ -32,6 +32,11 @@ class ModelSktSvr : public ModelSktBase
         socklen_t client_addr_len;
 
         bool m_bSvrStop = false;
+    
+    private:
+        int DlClose(u_char syncFlg=0x00);
+        char* m_pDlClosePkt=NULL;
+
 
 };
 

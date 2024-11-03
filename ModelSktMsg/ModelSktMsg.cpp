@@ -145,7 +145,7 @@ char *ModelSktMsg::serialize(T data, size_t &outLen)
         dtype = DTYPE_FLOAT;
     } else if (typeid(T) == typeid(double)) {
         dtype = DTYPE_DOUBLE;
-    } else if (typeid(T) == typeid(double)) {
+    } else if (typeid(T) == typeid(char)) {
         dtype = DTYPE_CHAR;
     } else {
         printf("[serialize] unsupported type\n");

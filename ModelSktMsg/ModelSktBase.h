@@ -30,6 +30,7 @@ class ModelSktBase
 
     protected:
         char* m_pPkt=NULL;
+        ushort m_usVerbose = 0;
     private:
 };
 

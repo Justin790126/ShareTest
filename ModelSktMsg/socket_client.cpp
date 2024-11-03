@@ -11,29 +11,44 @@ using namespace std;
 
 ModelSktClnt clnt;
 
-void DlClose()
+void DlClose(u_char flg)
 {
     ModelSktMsg msg;
     size_t pktLen;
     msg.serialize<char>(0x00, pktLen);
-    char* pkt = msg.createPkt(pktLen, SVR_DLCLOSE);
-    clnt.Send(pkt, pktLen);
+    char* pktSt = msg.createPkt(pktLen, SVR_DLCLOSE, 0x00, (char)flg);
+    clnt.Send(pktSt, pktLen);
 
     vector<PktRes> response;
     clnt.Receive(response);
 
+    if (response.size() != 1) {
+        printf("[socket_client/DlClose]: response pkt wrong :%zu\n", response.size());
+        return;
+    }
+    PktRes resFrmSvr = response[0];
+    char* resMsg = (char*)resFrmSvr.arr;
+    printf("[socket_client/DlClose]: %s\n", resMsg);
+
+
+    if (pktSt) delete[] pktSt;
+
     
+    clnt.Close();
+}
+
+void ContourMake()
+{
+
 }
 
 int main() {
     // int client_socket;
     // struct sockaddr_in server_addr;
+    // if (!clnt.connect()) {
+    //     printf("%s\n", clnt.GetStatusMsg().c_str());
+    // }
     
-    if (!clnt.connect()) {
-        printf("%s\n", clnt.GetStatusMsg().c_str());
-        return -1;
-    }
-    printf("%s\n", clnt.GetStatusMsg().c_str());
     // // Send a message to the server
 
     
@@ -69,8 +84,40 @@ int main() {
     printf("[socket_client] res = %s\n", resMsg);
 #endif
 
-    DlClose();
+    // DlClose();
+    int c;
+    printf("Enter key\n");
+    while (true) {
+        
+        c = getchar();
+        printf("Enter key %c\n", c);
+        
+        switch (c)
+        {
+        case 'c':
+            if (!clnt.connect()) {
+                printf("%s\n", clnt.GetStatusMsg().c_str());
+                break;
+            }
+            DlClose(0x00);
+            break;
+        case 'f':
+            if (!clnt.connect()) {
+                printf("%s\n", clnt.GetStatusMsg().c_str());
+                break;
+            }
+            DlClose(0x01);
+            break;
+        case 'q':
+            break;
+        default:
+            break;
+        }
+    }
+
 
     clnt.Close();
+    cout << "eof client" << endl;
+    
     return 0;
 }

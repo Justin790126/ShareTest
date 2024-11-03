@@ -40,6 +40,7 @@ class PktRes
 {
     public:
         DType dType;
+        char cSender;
         char cResCode;
         char cSyncFlg;
         int pktId;
