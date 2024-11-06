@@ -29,18 +29,69 @@ void DlClose(u_char flg)
     PktRes resFrmSvr = response[0];
     char* resMsg = (char*)resFrmSvr.arr;
     printf("[socket_client/DlClose]: %s\n", resMsg);
-
+    printf("[socket_client/DlClose]: %s\n", clnt.GetStatusMsg().c_str());
 
     if (pktSt) delete[] pktSt;
-
     
     clnt.Close();
 }
 
-void ContourMake()
+int contRecvTime = 0;
+bool firstime = false;
+int sendTime = 0;
+void ContourMake(u_char flg=0x00)
 {
+    ModelSktMsg msg;
+    size_t pktLen;
+    msg.serialize<char>(0x00, pktLen);
+    char* pktSt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x00, (char)flg);
+    clnt.Send(pktSt, pktLen);
 
+    
+    
+
+    // if (response.size() != 1)
+    // {
+    //     printf("[socket_client/DlClose]: response pkt wrong :%zu\n", response.size());
+    //     return;
+    // }
+    if (flg == 0x00) {
+        vector<PktRes> response;
+        clnt.Receive(response);
+        PktRes res1 = response[0];
+        PktRes res2 = response[1];
+
+        contRecvTime = res1.iData;
+        sendTime = res2.iData;
+
+
+        printf("[socket_client]: should receive %d times per request, request %d times to get all data \n", res1.iData, res2.iData);
+
+
+    } else if (flg == 0x01) {
+        
+        for (int i = 0; i < contRecvTime; i++) {
+            vector<PktRes> response;
+            clnt.Receive(response);
+            // float* resMsg = (float*)response[0].arr;
+            printf("[socket_client/ContourMake]: pktid = %d\n", response[0].pktId);
+            // printf("  Received data:\n    ");
+            // for (int j = 0; j < 10; j++) {
+            //     printf("%.2f ", resMsg[j]);
+            // }
+            // printf("\n");
+        }
+
+        
+        if (pktSt) delete[] pktSt;
+
+        
+        // clnt.Close();
+    }
+
+    
 }
+
 
 int main() {
     // int client_socket;
@@ -74,7 +125,7 @@ int main() {
 
     // char* message = "Hello from the client!";
     printf("[socket_client] pktLen = %zu \n", pktLen);
-    msg.printPkt(pkt, pktLen);
+    // msg.printPkt(pkt, pktLen);
     clnt.Send(pkt, pktLen);
 
     vector<PktRes> res;
@@ -107,6 +158,27 @@ int main() {
                 break;
             }
             DlClose(0x01);
+            break;
+        case 'm':
+            
+            if (!firstime) {
+                if (!clnt.connect()) {
+                    printf("%s\n", clnt.GetStatusMsg().c_str());
+                    break;
+                }
+                ContourMake();
+                firstime = true;
+            } else {
+                // sendTime
+                for (int i = 0;i < sendTime; i++) {
+                    if (!clnt.connect()) {
+                        printf("%s\n", clnt.GetStatusMsg().c_str());
+                        break;
+                    }
+                    ContourMake(0x01);
+                }
+            }
+            
             break;
         case 'q':
             break;

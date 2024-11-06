@@ -2,7 +2,6 @@
 
 ModelSktSvr::ModelSktSvr()
 {
-
 }
 
 bool ModelSktSvr::init()
@@ -10,14 +9,16 @@ bool ModelSktSvr::init()
     bool result = false;
     char resMsg[1024];
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket < 0) {
+    if (server_socket < 0)
+    {
         sprintf(resMsg, "[ModelSktSvr] Error creating socket: %s", strerror(errno));
         m_sStatusMsg = std::move(resMsg);
         return result;
     }
 
     int opt = 1;
-    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
+    {
         sprintf(resMsg, "[ModelSktSvr] Error setup socket: %s", strerror(errno));
         m_sStatusMsg = std::move(resMsg);
         return result;
@@ -27,14 +28,16 @@ bool ModelSktSvr::init()
     server_addr.sin_addr.s_addr = inet_addr(m_sIp.c_str());
     server_addr.sin_port = htons(8080); // Replace with desired port
 
-    if (::bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+    if (::bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
         sprintf(resMsg, "[ModelSktSvr] Error binding socket: %s", strerror(errno));
         m_sStatusMsg = std::move(resMsg);
         return result;
     }
 
     // Listen for incoming connections
-    if (listen(server_socket, 30) < 0) {
+    if (listen(server_socket, 30) < 0)
+    {
         sprintf(resMsg, "[ModelSktSvr] Error listening on socket: %s", strerror(errno));
         m_sStatusMsg = std::move(resMsg);
         return result;
@@ -50,9 +53,10 @@ bool ModelSktSvr::Accept()
 {
     char resMsg[1024];
     client_addr_len = sizeof(client_addr);
-    client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_addr_len);
-    if (client_socket < 0) {
-        sprintf(resMsg, "[ModelSktSvr] Error accepting connection: %s", strerror(errno)); 
+    client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_addr_len);
+    if (client_socket < 0)
+    {
+        sprintf(resMsg, "[ModelSktSvr] Error accepting connection: %s", strerror(errno));
         m_sStatusMsg = std::move(resMsg);
         return false;
     }
@@ -63,69 +67,164 @@ int ModelSktSvr::DlClose(u_char syncFlg)
 {
     size_t resMsgLen = 0;
     size_t pktLen = 0;
-    char* resMsg = NULL;
-    if (syncFlg == 0x00) {
-        m_sStatusMsg = "[ModelSktSvr] DlClose successfully";
-    } else if (syncFlg == 0x01) {
-        m_sStatusMsg = "[ModelSktSvr] Free DlClose memory successfully";
+    char resMsg[128];
+    if (syncFlg == 0x00)
+    {
+        sprintf(resMsg, "[ModelSktSvr] DlClose successfully");
     }
-    resMsgLen = m_sStatusMsg.length()+1;
-    resMsg = new char[resMsgLen];
-    strcpy(resMsg, m_sStatusMsg.c_str());
+    else if (syncFlg == 0x01)
+    {
+        sprintf(resMsg, "[ModelSktSvr] Free DlClose memory successfully");
+    }
+    resMsgLen = strlen(resMsg) + 1;
 
-    if (syncFlg == 0x00) {
+    if (syncFlg == 0x00)
+    {
         printf("---> dlopen action: %s\n", resMsg);
         ModelSktMsg msg;
         msg.serializeArr<char>(resMsg, resMsgLen, pktLen);
         m_pDlClosePkt = msg.createPkt(pktLen, SVR_DLCLOSE, 0x01, 0x00, 0x00);
         Send(m_pDlClosePkt, pktLen);
-    } else if (syncFlg == 0x01) {
-        printf("----> free previous pkt\n");
-        if (m_pDlClosePkt) delete []m_pDlClosePkt;
-        m_pDlClosePkt = NULL;   
     }
+    else if (syncFlg == 0x01)
+    {
+        printf("----> free previous pkt\n");
+        if (m_pDlClosePkt)
+            delete[] m_pDlClosePkt;
+        m_pDlClosePkt = NULL;
+    }
+    m_sStatusMsg = std::move(resMsg);
+}
+
+void ModelSktSvr::ContourMake(u_char flg)
+{
+    ModelSktMsg msg;
+    vector<char *> pkts(10);
+
+    size_t cntSize = 4096 * 4096;
+    int batchSize = 16*1024;
+    int resPktNum = cntSize/batchSize;
+    char *pkt = NULL;
+
+    if (flg == 0x00)
+    {
+        // start send
+        // compute resist image
+        if (!m_pfCurContour)
+            m_pfCurContour = new float[cntSize];
+        for (size_t i = 0; i < cntSize; i++)
+        {
+            m_pfCurContour[i] = i;
+        }
+        m_dCurContourIdx = 0;
+        m_dContourPktId = 0;
+        m_iBatchId = 0;
+
+        size_t pktLen;
+        int numOfRecvInClnt = resPktNum;
+        int numOfSendTimesForClnt = cntSize/batchSize/resPktNum;
+        msg.serialize<int>(numOfRecvInClnt, pktLen);
+        msg.serialize<int>(numOfSendTimesForClnt, pktLen);
+        pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, m_dContourPktId);
+        // pkts[i] = pkt;
+        printf("contour make start\n");
+        // Send data to client
+        Send(pkt, pktLen);
+        if (pkt) delete[] pkt;
+
+        printf("first send--->%f \n", m_dCurContourIdx);
+    }
+    else if (flg == 0x01)
+    {
+        for (int i = 0; i < resPktNum; i++)
+        {
+            size_t pktLen;
+            msg.serializeArr<float>(m_pfCurContour + m_iBatchId * batchSize, batchSize, pktLen);
+            pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, m_iBatchId);
+            // pkts[i] = pkt;
+            printf("gid : %d \n", m_iBatchId);
+            // Send data to client
+            Send(pkt, pktLen);
+            if (pkt) delete[] pkt;
+
+            m_iBatchId++;
+        }
+
+        printf("keep send--->%f \n", m_dCurContourIdx);
+    }
+
+    // for (int i = 0; i < 10; i++) {
+    //     float data[1024];
+    //     for (int j = 0; j < 1024; j++) {
+    //         data[j] = (float)j; // Replace with your desired values
+    //     }
+    //     size_t pktLen;
+    //     msg.serializeArr<float>(data, 1024, pktLen);
+    //     char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, i);
+    //     pkts[i] = pkt;
+    //     printf("contour make : %d \n", i);
+    //     // Send data to client
+    //     Send(pkt, pktLen);
+    // }
+    // for (size_t i = 0; i < 10; i++)
+    // {
+    //     if (pkts[i]) delete[] pkts[i];
+    //     pkts[i] = NULL;
+    // }
+    // pkts.clear();
 }
 
 void ModelSktSvr::start()
 {
-    while (!m_bSvrStop) {
+    while (!m_bSvrStop)
+    {
         client_addr_len = sizeof(client_addr);
-        if (!Accept()) {
+        if (!Accept())
+        {
             m_bSvrStop = true;
             break;
         }
 
         vector<PktRes> res;
-        if (!Receive(res)) {
+        if (!Receive(res))
+        {
             m_bSvrStop = true;
             break;
         }
 
-        if (res.size() != 1) {
+        if (res.size() != 1)
+        {
             m_bSvrStop = true;
             m_sStatusMsg = "[ModelSktSvr] Parsing Result is empty";
             break;
         }
 
-        // Getstatusmsg
-        #if TEST_ALL
+// Getstatusmsg
+#if TEST_ALL
         ModelSktMsg msg;
-        size_t msgSize = m_sStatusMsg.length()+1;
+        size_t msgSize = m_sStatusMsg.length() + 1;
         size_t respktlen;
-        char* response = new char[msgSize];
+        char *response = new char[msgSize];
         strcpy(response, m_sStatusMsg.c_str());
         msg.serializeArr<char>(response, msgSize, respktlen);
-        char* respkt = msg.createPkt(respktlen);
+        char *respkt = msg.createPkt(respktlen);
         Send(respkt, respktlen);
-        #endif
+#endif
 
         PktRes resFromClnt = res[0];
         char cmdFrClnt = resFromClnt.cSender;
         switch (cmdFrClnt)
         {
         case SVR_DLCLOSE:
+        {
             DlClose((u_char)resFromClnt.cSyncFlg);
             break;
+        }
+        case SVR_CONTOUR_MAKE:
+        {
+            ContourMake((u_char)resFromClnt.cSyncFlg);
+            break;
+        }
         default:
             break;
         }
@@ -133,11 +232,11 @@ void ModelSktSvr::start()
         close(client_socket);
     }
 
-    if (m_bSvrStop) {
+    if (m_bSvrStop)
+    {
         // send response to client and close
         close(client_socket);
     }
-    
 }
 
 void ModelSktSvr::Close()

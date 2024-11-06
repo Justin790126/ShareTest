@@ -37,6 +37,12 @@ class ModelSktSvr : public ModelSktBase
         int DlClose(u_char syncFlg=0x00);
         char* m_pDlClosePkt=NULL;
 
+        void ContourMake(u_char flg=0x00);
+        float* m_pfCurContour=NULL;
+        double m_dCurContourIdx=0;
+        double m_dContourPktId = 0;
+        int m_iBatchId = 0;
+
 
 };
 

@@ -12,20 +12,20 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     bool result = false;
     char resMsg[1024];
     ModelSktMsg msg;
-    int verbose = 0;
+    int verbose = 1;
 
     char sizeBytes[8];
     int bytes_received = recv(client_socket, sizeBytes, sizeof(size_t), 0);
     if (bytes_received <= 0)
     {
-        sprintf(resMsg, "[ModelSktSvr] Receive size bytes failed");
+        sprintf(resMsg, "[ModelSktBase] Receive size bytes failed");
         m_sStatusMsg = std::move(resMsg);
         return result; // Connection closed or error
     }
     size_t pktLen = msg.deserialize<size_t>(sizeBytes);
 
     if (verbose > 0) {
-        printf("[ModelSktSvr] pktLen = %zu \n", pktLen);
+        printf("[ModelSktBase] pktLen = %zu \n", pktLen);
     }
 
     size_t remainPkt = pktLen - sizeof(size_t);
@@ -35,12 +35,12 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     bytes_received = recv(client_socket, m_pPkt+sizeof(size_t), remainPkt, 0);
     if (bytes_received <= 0)
     {
-        sprintf(resMsg, "[ModelSktSvr] Receive remain all bytes failed");
+        sprintf(resMsg, "[ModelSktBase] Receive remain all bytes failed");
         m_sStatusMsg = std::move(resMsg);
         return result; // Connection closed or error
     }
     if (verbose > 0) {
-        msg.printPkt(m_pPkt, pktLen);
+        // msg.printPkt(m_pPkt, pktLen);
     }
 
     // Get data section
@@ -52,7 +52,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     // Verify checksum
     u_char svrChksum[32];
     msg.generateChecksum(ds, lenDs, svrChksum);
-    if (verbose > 0) msg.printPkt((char *)svrChksum, 32);
+    // if (verbose > 0) msg.printPkt((char *)svrChksum, 32);
     u_char clntChksum[32];
     msg.deserializeArr<u_char>(clntChksum, pkt + sizeof(size_t), 32);
     bool chksumSame = msg.verifyChksum(clntChksum, svrChksum);
@@ -60,12 +60,12 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     {
         cout << "dataOffset: " << dataOffset << endl;
         cout << "parsed data section" << endl;
-        msg.printPkt(ds, lenDs);
+        // msg.printPkt(ds, lenDs);
         cout << "----- verify chksum -----" << endl;
         cout << "chksumSame result : " << chksumSame << endl;
     }
     if (!chksumSame) {
-        sprintf(resMsg, "[ModelSktSvr] Verify checksum failed");
+        sprintf(resMsg, "[ModelSktBase] Verify checksum failed");
         m_sStatusMsg = std::move(resMsg);
         return result;
     }
@@ -104,31 +104,31 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
         printf("num of parameter: %d \n", numOfParams);
         printf("num of delimiator %d \n", numPara); // FIXME: choose proper delimtor in pkt
     }
-    if (numOfParams != numPara) {
-        sprintf(resMsg, "[ModelSktSvr] Verify number of data failed");
-        m_sStatusMsg = std::move(resMsg);
-        return result;
-    }
+    // if (numOfParams != numPara) {
+    //     sprintf(resMsg, "[ModelSktBase] Verify number of data failed");
+    //     m_sStatusMsg = std::move(resMsg);
+    //     return result;
+    // }
 
     if (verbose > 0) {
-        int st = 0, end=0, numOfdata=0;
-        for (size_t i = 0; i < numOfParams; i++)
-        {
+        // int st = 0, end=0, numOfdata=0;
+        // for (size_t i = 0; i < numOfParams; i++)
+        // {
             
-            if (i == 0) {
-                st = 0;
-                end = endIdxes[i];
-                numOfdata = end-st+1;
-            } else {
-                st = endIdxes[i-1]+1;
-                end = endIdxes[i];
-                numOfdata = endIdxes[i]-endIdxes[i-1];
-            }
-            printf("number of bytes: %d :", numOfdata);
-            char* data = new char[numOfdata];
-            memcpy(data, ds+st, numOfdata);
-            msg.printPkt(data, numOfdata);
-        }
+        //     if (i == 0) {
+        //         st = 0;
+        //         end = endIdxes[i];
+        //         numOfdata = end-st+1;
+        //     } else {
+        //         st = endIdxes[i-1]+1;
+        //         end = endIdxes[i];
+        //         numOfdata = endIdxes[i]-endIdxes[i-1];
+        //     }
+        //     printf("number of bytes: %d :", numOfdata);
+        //     char* data = new char[numOfdata];
+        //     memcpy(data, ds+st, numOfdata);
+        //     msg.printPkt(data, numOfdata);
+        // }
     }
 
     int pktOffset = 0;
@@ -223,14 +223,14 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.arrSize = arrSize;
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
-                printf("---- parse DTYPE_FLOAT_ARR\n");
-                printf("farr size in bytes: %zu\n", dataLen);
-                printf("farr size : %d \n", arrSize);
-                for (int i = 0; i < arrSize; i++)
-                    printf("%f ", fArr[i]);
-                printf("\n");
-            }
+            // if (verbose > 0) {
+            //     printf("---- parse DTYPE_FLOAT_ARR\n");
+            //     printf("farr size in bytes: %zu\n", dataLen);
+            //     printf("farr size : %d \n", arrSize);
+            //     for (int i = 0; i < arrSize; i++)
+            //         printf("%f ", fArr[i]);
+            //     printf("\n");
+            // }
             break;
         case DTYPE_DOUBLE_ARR:
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
@@ -269,12 +269,12 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
 
         default:
             pktOffset = lenDs;
-            sprintf(resMsg, "[ModelSktSvr] Parse data failed");
+            sprintf(resMsg, "[ModelSktBase] Parse data failed");
             m_sStatusMsg = std::move(resMsg);
             return result;
         }
     }
-    sprintf(resMsg, "[ModelSktSvr] EOF parsing");
+    sprintf(resMsg, "[ModelSktBase] EOF parsing");
     m_sStatusMsg = std::move(resMsg);
 
     if (m_pPkt) delete[] m_pPkt;

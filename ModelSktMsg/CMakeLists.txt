@@ -1,6 +1,8 @@
 project(sktmsg)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_BUILD_TYPE Debug)
+
 
 include_directories(/opt/homebrew/opt/openssl@1.1/include)
 
