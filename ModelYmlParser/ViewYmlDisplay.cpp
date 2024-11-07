@@ -17,6 +17,16 @@ void ViewYmlDisplay::Widgets()
     headers << "Key" << "Type" << "Value";
     twYmlDisplay->setHeaderLabels(headers);
 
+
+    QTreeWidgetItem *topLevelItem = new QTreeWidgetItem(twYmlDisplay);
+    topLevelItem->setText(0, "");
+    twYmlDisplay->addTopLevelItem(topLevelItem);
+    QPushButton *button = new QPushButton("Click me");
+
+    // Set the button as the widget for the first column of the item
+    twYmlDisplay->setItemWidget(topLevelItem, 0, button);
+
+
     teManual = new QTextEdit;
 }
 
