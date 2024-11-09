@@ -404,11 +404,61 @@ cmdline_callback(int opt, char const* value, void* data)
     return 0;
 }
 
+
+static char* process_string(const char* input)
+{
+    size_t n;
+    struct membuffer buf_in = {0};
+    struct membuffer buf_out = {0};
+    int ret = -1;
+    clock_t t0, t1;
+    unsigned p_flags = parser_flags;
+    unsigned r_flags = renderer_flags;
+
+    membuf_init(&buf_in, 32 * 1024);
+
+    /* Read the input file into a buffer. */
+    buf_in.size = strlen(input);
+    strcpy(buf_in.data, input);
+
+    /* Input size is good estimation of output size. Add some more reserve to
+     * deal with the HTML header/footer and tags. */
+    membuf_init(&buf_out, (MD_SIZE)(buf_in.size + buf_in.size/8 + 64));
+
+    /* Special mode for reproduce test case found with fuzzing a tool.
+     * We assume file format as produced by test/fuzzers/fuzz-mdhtml.c. */
+    
+
+    /* Parse the document. This shall call our callbacks provided via the
+     * md_renderer_t structure. */
+    t0 = clock();
+
+    ret = md_html(buf_in.data, (MD_SIZE)buf_in.size, process_output,
+                (void*) &buf_out, p_flags, r_flags);
+
+    t1 = clock();
+    if(ret != 0) {
+        fprintf(stderr, "Parsing failed.\n");
+        goto out;
+    }
+
+    return buf_out.data;
+
+
+out:
+    membuf_fini(&buf_in);
+    membuf_fini(&buf_out);
+
+    return NULL;
+}
+
+
+
 int
 main(int argc, char** argv)
 {
-    FILE* in = stdin;
-    FILE* out = stdout;
+    // FILE* in = stdin;
+    // FILE* out = stdout;
     int ret = 0;
 
     if(cmdline_read(cmdline_options, argc, argv, cmdline_callback, NULL) != 0) {
@@ -416,26 +466,29 @@ main(int argc, char** argv)
         exit(1);
     }
 
-    if(input_path != NULL && strcmp(input_path, "-") != 0) {
-        in = fopen(input_path, "rb");
-        if(in == NULL) {
-            fprintf(stderr, "Cannot open %s.\n", input_path);
-            exit(1);
-        }
-    }
-    if(output_path != NULL && strcmp(output_path, "-") != 0) {
-        out = fopen(output_path, "wt");
-        if(out == NULL) {
-            fprintf(stderr, "Cannot open %s.\n", output_path);
-            exit(1);
-        }
-    }
-    char* html = process_file((input_path != NULL) ? input_path : "<stdin>", in, out);
-    ret = html ? 0 : -1;
-    if(in != stdin)
-        fclose(in);
-    if(out != stdout)
-        fclose(out);
+    // if(input_path != NULL && strcmp(input_path, "-") != 0) {
+    //     in = fopen(input_path, "rb");
+    //     if(in == NULL) {
+    //         fprintf(stderr, "Cannot open %s.\n", input_path);
+    //         exit(1);
+    //     }
+    // }
+    // if(output_path != NULL && strcmp(output_path, "-") != 0) {
+    //     out = fopen(output_path, "wt");
+    //     if(out == NULL) {
+    //         fprintf(stderr, "Cannot open %s.\n", output_path);
+    //         exit(1);
+    //     }
+    // }
+
+    char* html = process_string("# title");
+    printf("html : %s\n", html);
+    // char* html = process_file((input_path != NULL) ? input_path : "<stdin>", in, out);
+    // ret = html ? 0 : -1;
+    // if(in != stdin)
+    //     fclose(in);
+    // if(out != stdout)
+    //     fclose(out);
 
     printf("------html:------\n%s\n", html);
     if (html) free(html);
