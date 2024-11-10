@@ -28,66 +28,32 @@
 #include <string.h>
 #include <time.h>
 
-#include "md4c-html.h"
-#include "cmdline.h"
+#include "md2html.h"
 
 
 
-/* Global options. */
-static unsigned parser_flags = 0;
-#ifndef MD4C_USE_ASCII
-    static unsigned renderer_flags = MD_HTML_FLAG_DEBUG | MD_HTML_FLAG_SKIP_UTF8_BOM;
-#else
-    static unsigned renderer_flags = MD_HTML_FLAG_DEBUG;
-#endif
-static int want_fullhtml = 0;
-static int want_xhtml = 0;
-static int want_stat = 0;
-static int want_replay_fuzz = 0;
 
-static const char* html_title = NULL;
-static const char* css_path = NULL;
-
-
-/*********************************
- ***  Simple grow-able buffer  ***
- *********************************/
-
-/* We render to a memory buffer instead of directly outputting the rendered
- * documents, as this allows using this utility for evaluating performance
- * of MD4C (--stat option). This allows us to measure just time of the parser,
- * without the I/O.
- */
-
-struct membuffer {
-    char* data;
-    size_t asize;
-    size_t size;
-};
-
-static void
-membuf_init(struct membuffer* buf, MD_SIZE new_asize)
+void membuf_init(struct membuffer* buf, MD_SIZE new_asize)
 {
     buf->size = 0;
     buf->asize = new_asize;
-    buf->data = malloc(buf->asize);
+    buf->data = (char*)malloc(buf->asize);
     if(buf->data == NULL) {
         fprintf(stderr, "membuf_init: malloc() failed.\n");
         exit(1);
     }
 }
 
-static void
-membuf_fini(struct membuffer* buf)
+void membuf_fini(struct membuffer* buf)
 {
     if(buf->data)
         free(buf->data);
 }
 
-static void
-membuf_grow(struct membuffer* buf, size_t new_asize)
+
+void membuf_grow(struct membuffer* buf, size_t new_asize)
 {
-    buf->data = realloc(buf->data, new_asize);
+    buf->data = (char*)realloc(buf->data, new_asize);
     if(buf->data == NULL) {
         fprintf(stderr, "membuf_grow: realloc() failed.\n");
         exit(1);
@@ -95,8 +61,8 @@ membuf_grow(struct membuffer* buf, size_t new_asize)
     buf->asize = new_asize;
 }
 
-static void
-membuf_append(struct membuffer* buf, const char* data, MD_SIZE size)
+
+void membuf_append(struct membuffer* buf, const char* data, MD_SIZE size)
 {
     if(buf->asize < buf->size + size)
         membuf_grow(buf, buf->size + buf->size / 2 + size);
@@ -105,18 +71,13 @@ membuf_append(struct membuffer* buf, const char* data, MD_SIZE size)
 }
 
 
-/**********************
- ***  Main program  ***
- **********************/
-
-static void
-process_output(const MD_CHAR* text, MD_SIZE size, void* userdata)
+void process_output(const MD_CHAR* text, MD_SIZE size, void* userdata)
 {
     membuf_append((struct membuffer*) userdata, text, size);
 }
 
-static char*
-process_file(const char* in_path, FILE* in, FILE* out)
+
+char* process_file(const char* in_path, FILE* in, FILE* out)
 {
     size_t n;
     struct membuffer buf_in = {0};
@@ -236,48 +197,7 @@ out:
 }
 
 
-static const CMDLINE_OPTION cmdline_options[] = {
-    { 'o', "output",                        'o', CMDLINE_OPTFLAG_REQUIREDARG },
-    { 'f', "full-html",                     'f', 0 },
-    { 'x', "xhtml",                         'x', 0 },
-    { 's', "stat",                          's', 0 },
-    { 'h', "help",                          'h', 0 },
-    { 'v', "version",                       'v', 0 },
-
-    {  0,  "html-title",                    '1', CMDLINE_OPTFLAG_REQUIREDARG },
-    {  0,  "html-css",                      '2', CMDLINE_OPTFLAG_REQUIREDARG },
-
-    {  0,  "commonmark",                    'c', 0 },
-    {  0,  "github",                        'g', 0 },
-
-    {  0,  "fcollapse-whitespace",          'W', 0 },
-    {  0,  "flatex-math",                   'L', 0 },
-    {  0,  "fpermissive-atx-headers",       'A', 0 },
-    {  0,  "fpermissive-autolinks",         'V', 0 },
-    {  0,  "fhard-soft-breaks",             'B', 0 },
-    {  0,  "fpermissive-email-autolinks",   '@', 0 },
-    {  0,  "fpermissive-url-autolinks",     'U', 0 },
-    {  0,  "fpermissive-www-autolinks",     '.', 0 },
-    {  0,  "fstrikethrough",                'S', 0 },
-    {  0,  "ftables",                       'T', 0 },
-    {  0,  "ftasklists",                    'X', 0 },
-    {  0,  "funderline",                    '_', 0 },
-    {  0,  "fverbatim-entities",            'E', 0 },
-    {  0,  "fwiki-links",                   'K', 0 },
-
-    {  0,  "fno-html-blocks",               'F', 0 },
-    {  0,  "fno-html-spans",                'G', 0 },
-    {  0,  "fno-html",                      'H', 0 },
-    {  0,  "fno-indented-code",             'I', 0 },
-
-    /* Undocumented option for replaying test cases from fuzzers. */
-    {  0,  "replay-fuzz",                   'r', 0 },
-
-    {  0,  NULL,                             0,  0 }
-};
-
-static void
-usage(void)
+void usage(void)
 {
     printf(
         "Usage: md2html [OPTION]... [FILE]\n"
@@ -337,17 +257,14 @@ usage(void)
     );
 }
 
-static void
-version(void)
+
+void version(void)
 {
     printf("%d.%d.%d\n", MD_VERSION_MAJOR, MD_VERSION_MINOR, MD_VERSION_RELEASE);
 }
 
-static const char* input_path = NULL;
-static const char* output_path = NULL;
 
-static int
-cmdline_callback(int opt, char const* value, void* data)
+int cmdline_callback(int opt, char const* value, void* data)
 {
     (void) data;   /* unused parameter */
 
@@ -405,7 +322,7 @@ cmdline_callback(int opt, char const* value, void* data)
 }
 
 
-static char* process_string(const char* input)
+char* process_string(const char* input)
 {
     size_t n;
     struct membuffer buf_in = {0};
@@ -452,45 +369,12 @@ out:
     return NULL;
 }
 
-
-
-int
-main(int argc, char** argv)
+int initMdParser(int argc, char** argv)
 {
-    // FILE* in = stdin;
-    // FILE* out = stdout;
-    int ret = 0;
-
     if(cmdline_read(cmdline_options, argc, argv, cmdline_callback, NULL) != 0) {
         usage();
-        exit(1);
+        return  -1;
     }
-
-    // if(input_path != NULL && strcmp(input_path, "-") != 0) {
-    //     in = fopen(input_path, "rb");
-    //     if(in == NULL) {
-    //         fprintf(stderr, "Cannot open %s.\n", input_path);
-    //         exit(1);
-    //     }
-    // }
-    // if(output_path != NULL && strcmp(output_path, "-") != 0) {
-    //     out = fopen(output_path, "wt");
-    //     if(out == NULL) {
-    //         fprintf(stderr, "Cannot open %s.\n", output_path);
-    //         exit(1);
-    //     }
-    // }
-
-    char* html = process_string("# title");
-    printf("html : %s\n", html);
-    // char* html = process_file((input_path != NULL) ? input_path : "<stdin>", in, out);
-    // ret = html ? 0 : -1;
-    // if(in != stdin)
-    //     fclose(in);
-    // if(out != stdout)
-    //     fclose(out);
-
-    printf("------html:------\n%s\n", html);
-    if (html) free(html);
-    return ret;
+    return 0;
 }
+

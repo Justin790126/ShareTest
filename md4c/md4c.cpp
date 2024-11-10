@@ -1746,7 +1746,7 @@ md_build_ref_def_hashtable(MD_CTX* ctx)
         return 0;
 
     ctx->ref_def_hashtable_size = (ctx->n_ref_defs * 5) / 4;
-    ctx->ref_def_hashtable = malloc(ctx->ref_def_hashtable_size * sizeof(void*));
+    ctx->ref_def_hashtable = (void**)malloc(ctx->ref_def_hashtable_size * sizeof(void*));
     if(ctx->ref_def_hashtable == NULL) {
         MD_LOG("malloc() failed.");
         goto abort;
@@ -2604,7 +2604,7 @@ md_add_mark(MD_CTX* ctx)
         ctx->alloc_marks = (ctx->alloc_marks > 0
                 ? ctx->alloc_marks + ctx->alloc_marks / 2
                 : 64);
-        new_marks = realloc(ctx->marks, ctx->alloc_marks * sizeof(MD_MARK));
+        new_marks = (MD_MARK*)realloc(ctx->marks, ctx->alloc_marks * sizeof(MD_MARK));
         if(new_marks == NULL) {
             MD_LOG("realloc() failed.");
             return NULL;
@@ -4349,14 +4349,23 @@ md_process_inlines(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
                     title_mark = opener+2;
                     MD_ASSERT(title_mark->ch == 'D');
 
-                    MD_CHECK(md_enter_leave_span_a(ctx, (mark->ch != ']'),
-                                (opener->ch == '!' ? MD_SPAN_IMG : MD_SPAN_A),
-                                STR(dest_mark->beg), dest_mark->end - dest_mark->beg, FALSE,
-                                md_mark_get_ptr(ctx, (int)(title_mark - ctx->marks)),
-								title_mark->prev));
+                    // MD_CTX* ctx, int enter, MD_SPANTYPE type,
+                    //   const CHAR* dest, SZ dest_size, int is_autolink,
+                    //   const CHAR* title, SZ title_size
 
-                    /* link/image closer may span multiple lines. */
-                    if(mark->ch == ']') {
+                    MD_CHECK(md_enter_leave_span_a(ctx,
+                                (int)(mark->ch != ']'),
+                                (MD_SPANTYPE)(opener->ch == '!' ? MD_SPAN_IMG : MD_SPAN_A),
+                                (const CHAR* )STR(dest_mark->beg),
+                                (SZ)(dest_mark->end - dest_mark->beg),
+                                (int)FALSE,
+                                (const CHAR* )md_mark_get_ptr(ctx, (int)(title_mark - ctx->marks)),
+								(SZ)title_mark->prev));
+                    
+
+                        /* link/image closer may span multiple lines. */
+                        if (mark->ch == ']')
+                    {
                         while(mark->end > line->end)
                             line++;
                     }
@@ -4399,10 +4408,31 @@ md_process_inlines(MD_CTX* ctx, const MD_LINE* lines, MD_SIZE n_lines)
                         (opener->ch == '<' && (opener->flags & MD_MARK_AUTOLINK_MISSING_MAILTO)))
                     {
                         dest_size += 7;
-                        MD_TEMP_BUFFER(dest_size * sizeof(CHAR));
-                        memcpy(ctx->buffer,
-                                (opener->ch == '.' ? _T("http://") : _T("mailto:")),
-                                7 * sizeof(CHAR));
+
+                        int sz = dest_size * sizeof(CHAR);
+                        do
+                        {
+                            if (sz > ctx->alloc_buffer)
+                            {
+                                CHAR *new_buffer;
+                                SZ new_size = ((sz) + (sz) / 2 + 128) & ~127;
+
+                                new_buffer = (CHAR *)realloc(ctx->buffer, new_size);
+                                if (new_buffer == NULL)
+                                {
+                                    MD_LOG("realloc() failed.");
+                                    ret = -1;
+                                    goto abort;
+                                }
+
+                                ctx->buffer = new_buffer;
+                                ctx->alloc_buffer = new_size;
+                            }
+                        } while (0);
+
+                            memcpy(ctx->buffer,
+                                   (opener->ch == '.' ? _T("http://") : _T("mailto:")),
+                                   7 * sizeof(CHAR));
                         memcpy(ctx->buffer + 7, dest, (dest_size-7) * sizeof(CHAR));
                         dest = ctx->buffer;
                     }
@@ -4618,7 +4648,7 @@ md_process_table_block_contents(MD_CTX* ctx, int col_count, const MD_LINE* lines
      * with the underlines. */
     MD_ASSERT(n_lines >= 2);
 
-    align = malloc(col_count * sizeof(MD_ALIGN));
+    align = (MD_ALIGN*)malloc(col_count * sizeof(MD_ALIGN));
     if(align == NULL) {
         MD_LOG("malloc() failed.");
         ret = -1;
@@ -5635,7 +5665,7 @@ md_push_container(MD_CTX* ctx, const MD_CONTAINER* container)
         ctx->alloc_containers = (ctx->alloc_containers > 0
                 ? ctx->alloc_containers + ctx->alloc_containers / 2
                 : 16);
-        new_containers = realloc(ctx->containers, ctx->alloc_containers * sizeof(MD_CONTAINER));
+        new_containers = (MD_CONTAINER*)realloc(ctx->containers, ctx->alloc_containers * sizeof(MD_CONTAINER));
         if(new_containers == NULL) {
             MD_LOG("realloc() failed.");
             return -1;
