@@ -9,6 +9,76 @@ ViewYmlDisplay::ViewYmlDisplay(QWidget *parent)
     Layouts();
 }
 
+std::string test = R"(
+
+# 123
+
+* abc
+* 2345
+* juytbjhrvgrdr
+
+----
+
+**qqqqqqq**
+
+*titl*
+
+
+## 456
+### 789
+
+1. qaz
+2. wsx
+3. rfv
+
+- dfghj
+- ikj
+
+
+
+````
+#include <iostream>
+
+
+using namespace std;
+
+int main()
+{
+    cout << "hello " << endl;
+    return 0;
+}
+
+````
+
+
+Column 1 | Column 2
+---------|---------
+foo      | bar
+baz      | qux
+quux     | quuz
+
+
+[title](https://www.google.com)
+
+![alt text](./icon48.png)
+
+
+
+![alt text](./icon48.png "Logo Title Text 1")
+
+
+
+| Syntax | Description |
+| ----------- | ----------- |
+| Header | Title |
+| Paragraph | Text |
+
+
+- [ ] 2345
+- [x] 9999
+
+)";
+
 void ViewYmlDisplay::Widgets()
 {
     twYmlDisplay = new QTreeWidget();
@@ -28,6 +98,16 @@ void ViewYmlDisplay::Widgets()
 
 
     teManual = new QTextEdit;
+
+    
+    int argc=3;
+    char* argv[3] = {"md2html", "--github", "--html-css=style.css"};
+    if(initMdParser(argc,argv) != 0) {
+        exit(1);
+    }
+    char* html = process_string(test.c_str());
+    printf("%s\n",html);
+    teManual->setHtml(html);
 }
 
 void ViewYmlDisplay::Layouts()

@@ -4,6 +4,8 @@ project(yaml_parser)
 include_directories(/opt/homebrew/include/yaml-cpp)
 # Check for nullptr support
 
+set(MD4C_SRC md4c.cpp)
+set(MD4C_HTML md2html.cpp cmdline.cpp md4c-html.cpp entity.cpp )
 
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
 
@@ -24,7 +26,9 @@ qt5_wrap_cpp(SOURCES ${HEADERS})
 
 
 add_executable(${PROJECT_NAME}
-    ${SOURCES})
+    ${SOURCES}
+    ${MD4C_SRC}
+    ${MD4C_HTML})
     target_link_directories(${PROJECT_NAME} PUBLIC /opt/homebrew/lib/)
 target_link_libraries(${PROJECT_NAME} Qt5::Core Qt5::Gui Qt5::Widgets yaml-cpp)
 

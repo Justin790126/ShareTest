@@ -6,6 +6,8 @@
 
 #include <QWidget>
 
+#include "md2html.h"
+
 class ViewYmlDisplay : public QWidget
 {
     Q_OBJECT
