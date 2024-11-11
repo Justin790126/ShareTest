@@ -42,6 +42,7 @@ class ModelSktSvr : public ModelSktBase
         double m_dCurContourIdx=0;
         double m_dContourPktId = 0;
         int m_iBatchId = 0;
+        int m_iNumPktSent = 0;
 
 
 };
