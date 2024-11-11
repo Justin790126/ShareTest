@@ -23,6 +23,7 @@ enum DType
     DTYPE_FLOAT,
     DTYPE_DOUBLE,
     DTYPE_CHAR,
+    DTYPE_SIZE_T,
     DTYPE_INT_ARR,
     DTYPE_FLOAT_ARR,
     DTYPE_DOUBLE_ARR,
@@ -52,6 +53,7 @@ class PktRes
         double dData;
         float fData;
         char cData;
+        size_t sData;
 };
 
 /*

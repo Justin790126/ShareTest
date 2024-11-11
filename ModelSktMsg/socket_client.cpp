@@ -39,6 +39,7 @@ void DlClose(u_char flg)
 int contRecvTime = 0;
 bool firstime = false;
 int sendTime = 0;
+size_t totalBytes = 0;
 void ContourMake(u_char flg=0x00)
 {
     ModelSktMsg msg;
@@ -60,11 +61,13 @@ void ContourMake(u_char flg=0x00)
         clnt.Receive(response);
         PktRes res1 = response[0];
         PktRes res2 = response[1];
+        PktRes res3 = response[2];
 
         contRecvTime = res1.iData;
         sendTime = res2.iData;
+        totalBytes = res3.sData;
 
-
+        printf("totalBytes = %zu\n", totalBytes);
         printf("[socket_client]: should receive %d times per request, request %d times to get all data \n", res1.iData, res2.iData);
 
 

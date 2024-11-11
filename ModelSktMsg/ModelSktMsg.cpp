@@ -147,6 +147,8 @@ char *ModelSktMsg::serialize(T data, size_t &outLen)
         dtype = DTYPE_DOUBLE;
     } else if (typeid(T) == typeid(char)) {
         dtype = DTYPE_CHAR;
+    } else if (typeid(T) == typeid(size_t)) {
+        dtype = DTYPE_SIZE_T;
     } else {
         printf("[serialize] unsupported type\n");
         return NULL;
@@ -186,6 +188,7 @@ template char *ModelSktMsg::serialize<int>(int data, size_t &outLen);
 template char *ModelSktMsg::serialize<float>(float data, size_t &outLen);
 template char *ModelSktMsg::serialize<double>(double data, size_t &outLen);
 template char *ModelSktMsg::serialize<char>(char data, size_t &outLen);
+template char *ModelSktMsg::serialize<size_t>(size_t data, size_t &outLen);
 
 template <typename T>
 char *ModelSktMsg::serializeArr(T *data, size_t dLen, size_t &outLen)

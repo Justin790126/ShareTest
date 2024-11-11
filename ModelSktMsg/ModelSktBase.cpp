@@ -196,6 +196,16 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
                 printf("data len: %zu, data: %f\n", dataLen, param.dData);
             }
             break;
+        case DTYPE_SIZE_T:
+            dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
+            param.sData = msg.deserialize<size_t>(ds + pktOffset + 1 + sizeof(size_t));
+            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            oRes.emplace_back(param);
+            if (verbose > 0) {
+                printf("---- parse DTYPE_SIZE_T\n");
+                printf("data len: %zu, data: %f\n", dataLen, param.sData);
+            }
+            break;
         case DTYPE_INT_ARR:
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             arrSize = dataLen / sizeof(int);

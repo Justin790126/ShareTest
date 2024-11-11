@@ -101,9 +101,10 @@ void ModelSktSvr::ContourMake(u_char flg)
     ModelSktMsg msg;
     vector<char *> pkts(10);
 
-    size_t cntSize = 4096 * 4096;
+    size_t cntSize = (4096 * 4096)+1024;
     int batchSize = 16*1024;
-    int resPktNum = cntSize/batchSize;
+    int resPktNum = ceil(cntSize/(float)batchSize);
+    printf("resPktNum = %d\n", resPktNum);
     char *pkt = NULL;
 
     if (flg == 0x00)
@@ -125,6 +126,7 @@ void ModelSktSvr::ContourMake(u_char flg)
         int numOfSendTimesForClnt = cntSize/batchSize/resPktNum;
         msg.serialize<int>(numOfRecvInClnt, pktLen);
         msg.serialize<int>(numOfSendTimesForClnt, pktLen);
+        msg.serialize<size_t>(cntSize, pktLen);
         pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, m_dContourPktId);
         // pkts[i] = pkt;
         printf("contour make start\n");
