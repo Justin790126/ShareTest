@@ -2,7 +2,7 @@
 // #include <iostream>
 // #include <stdlib.h>
 
-// using namespace std;
+using namespace std;
 
 #include <QApplication>
 #include <QWidget>
@@ -19,6 +19,75 @@ int main(int argc, char *argv[]) {
     return a.exec();
 }
 
+#if WS_TEST
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <cwchar>
+#include <codecvt>
+#include <locale>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <iomanip>
+
+using namespace std;
+
+std::vector<std::wstring> split(const std::wstring& str, const std::wstring& delimiters) {
+    std::vector<std::wstring> tokens;
+    std::wstring token;
+    std::wstringstream ss(str);
+
+    while (std::getline(ss, token, delimiters[0])) {
+        tokens.push_back(token);
+    }
+
+    return tokens;
+}
+
+std::vector<std::string> split(const std::string& str, const std::string& delimiter) {
+    std::vector<std::string> tokens;
+    std::stringstream ss(str);
+    std::string token;
+
+    while (std::getline(ss, token, delimiter[0])) {
+        cout << std::stod(token) << endl;
+        tokens.push_back(token);
+    }
+
+    return tokens;
+}
+
+int main() {
+    std::wstring str = L"1.234\t999\t123\t3.1415\t9.2622222543\r\n";
+    str = str.substr(0, str.find_last_not_of(L"\r\n") + 1);
+    std::wstring delimiters = L" \t\r\n,";
+
+    std::vector<std::wstring> tokens = split(str, delimiters);
+
+
+    // std::cout << str << std::endl;
+    
+    for (const auto& token : tokens) {
+        double val = stod(wstring(token.begin(),token.end()));
+        
+        cout << val << endl;
+    }
+
+    // split_to_double(str, delimiters);
+    cout << "convert from wstring to string, and split by delimeter and convert" << endl;
+
+    std::wcout << std::endl;
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    std::string str2 = conv.to_bytes(str);
+
+    vector<string> tks = split(str2, "\t");
+
+    return 0;
+}
+#endif
 
 // int main() {
 //     YAML::Node config = YAML::LoadFile("test1.yaml");

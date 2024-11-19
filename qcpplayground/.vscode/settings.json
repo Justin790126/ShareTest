@@ -6,6 +6,9 @@
         "ios": "cpp",
         "array": "cpp",
         "string_view": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "bitset": "cpp",
+        "istream": "cpp",
+        "locale": "cpp"
     }
 }

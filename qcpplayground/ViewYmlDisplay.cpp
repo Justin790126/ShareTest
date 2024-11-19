@@ -1359,11 +1359,193 @@ void ViewYmlDisplay::interactWaferMap(QCustomPlot *qcp)
     qcp->replot();
 }
 
-void ViewYmlDisplay::overlapWaferMapAndContour(QCustomPlot* qcp)
+void ViewYmlDisplay::test(QCustomPlot *qcp, const vector<float> &x, const vector<float> &y, const vector<float> &z)
+{
+    // int gridSizeX = 100; // Adjust as needed
+    // int gridSizeY = 100; // Adjust as needed
+
+    // // Create a 2D grid to store interpolated z-values
+    // double **data = new double*[gridSizeX];
+    // for (int i = 0; i < gridSizeX; ++i) {
+    //     data[i] = new double[gridSizeY];
+    //     for (int j = 0; j < gridSizeY; ++j) {
+    //         data[i][j] = 0.0;
+    //     }
+    // }
+    int nx = 200;
+    int ny = 200;
+    // // Interpolate z-values onto the grid
+    double minX = *std::min_element(x.begin(), x.end());
+    double maxX = *std::max_element(x.begin(), x.end());
+    double minY = *std::min_element(y.begin(), y.end());
+    double maxY = *std::max_element(y.begin(), y.end());
+
+    double **data = new double *[nx];
+    for (int i = 0; i < nx; ++i)
+    {
+        data[i] = new double[ny];
+        for (int j = 0; j < ny; ++j)
+        {
+            data[i][j] = 0.0;
+        }
+    }
+
+    for (int i = 0; i < nx; ++i)
+    {
+        for (int j = 0; j < ny; ++j)
+        {
+            float xGrid = minX + i * (maxX - minX) / nx;
+            float yGrid = minY + j * (maxY - minY) / ny;
+
+            // Find the four nearest data points
+            int i1 = 0, i2 = 0, j1 = 0, j2 = 0;
+            for (int k = 0; k < x.size(); ++k)
+            {
+                if (x[k] <= xGrid && y[k] <= yGrid)
+                {
+                    i1 = k;
+                    j1 = k;
+                }
+                else if (x[k] <= xGrid && y[k] >= yGrid)
+                {
+                    i2 = k;
+                    j2 = k;
+                }
+            }
+
+            // Calculate weights for bilinear interpolation
+            float dx1 = std::abs(xGrid - x[i1]);
+            float dx2 = std::abs(xGrid - x[i2]);
+            float dy1 = std::abs(yGrid - y[j1]);
+            float dy2 = std::abs(yGrid - y[j2]);
+
+            float w1 = dx2 * dy2 / ((dx1 + dx2) * (dy1 + dy2));
+            float w2 = dx1 * dy2 / ((dx1 + dx2) * (dy1 + dy2));
+            float w3 = dx2 * dy1 / ((dx1 + dx2) * (dy1 + dy2));
+            float w4 = dx1 * dy1 / ((dx1 + dx2) * (dy1 + dy2));
+
+            // Interpolate z-value
+            float zInterpolated = w1 * z[i1] + w2 * z[i2] + w3 * z[j1] + w4 * z[j2];
+            data[i][j] = zInterpolated;
+        }
+    }
+    // for (int i = 0; i < x.size(); ++i) {
+    //     int gridX = (x[i] - minX) / (maxX - minX) * gridSizeX;
+    //     int gridY = (y[i] - minY) / (maxY - minY) * gridSizeY;
+    //     data[gridX][gridY] = z[i];
+    // }
+    // qcp->addGraph(); // Graph 0
+
+    // qcp->graph(0)->setVisible(true);
+    // qcp->xAxis->setLabel("x-axis (contour)");
+    // qcp->yAxis->setLabel("y-axis (contour)");
+    // qcp->xAxis->setRange(-3, 3);
+    // qcp->yAxis->setRange(-3, 3);
+
+    // QCPColorMap *colorMap = new QCPColorMap(qcp->xAxis, qcp->yAxis);
+    // int nx = 200;
+    // int ny = 200;
+    // colorMap->data()->setSize(nx, ny);                            // we want the color map to have nx * ny data points
+    // colorMap->data()->setRange(QCPRange(-3, 3), QCPRange(-3, 3)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
+    // // now we assign some data, by accessing the QCPColorMapData instance of the color map:
+    // double xx, yy, zz;
+    // for (int xIndex = 0; xIndex < nx; ++xIndex)
+    // {
+    //     for (int yIndex = 0; yIndex < ny; ++yIndex)
+    //     {
+    //         colorMap->data()->cellToCoord(xIndex, yIndex, &xx, &yy);
+    //         double r = 3 * qSqrt(xx * xx + yy * yy) + 1e-2;
+    //         zz = 2 * xx * (qCos(r + 2) / r - qSin(r + 2) / r); // the B field strength of dipole radiation (modulo physical constants)
+    //         colorMap->data()->setCell(xIndex, yIndex, zz);
+    //     }
+    // }
+
+    // // add a color scale:
+    // QCPColorScale *colorScale = new QCPColorScale(qcp);
+    // qcp->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
+    // colorScale->setType(QCPAxis::atRight);                  // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+    // colorMap->setColorScale(colorScale);                    // associate the color map with the color scale
+    // colorScale->axis()->setLabel("Magnetic Field Strength");
+
+    // // set the color gradient of the color map to one of the presets:
+    // QCPColorGradient *gradient = new QCPColorGradient();
+    // gradient->setColorStopAt(0.0, QColor(0, 0, 143)); // Dark blue
+    // gradient->setColorStopAt(0.125, QColor(0, 0, 255)); // Blue
+    // gradient->setColorStopAt(0.25, QColor(0, 255, 255)); // Cyan
+    // gradient->setColorStopAt(0.375, QColor(0, 255, 0)); // Green
+    // gradient->setColorStopAt(0.5, QColor(255, 255, 0)); // Yellow
+    // gradient->setColorStopAt(0.625, QColor(255, 127, 0)); // Orange
+    // gradient->setColorStopAt(0.75, QColor(255, 0, 0)); // Red
+    // gradient->setColorStopAt(0.875, QColor(128, 0, 0)); // Dark red
+    // gradient->setColorStopAt(1.0, QColor(64, 0, 0)); // Dark brown
+    // colorMap->setGradient(*gradient);
+
+    // // Remember to deallocate the 2D array to avoid memory leaks
+
+    qcp->addGraph(); // Graph 0
+
+    qcp->graph(0)->setVisible(true);
+    qcp->xAxis->setLabel("x-axis (contour)");
+    qcp->yAxis->setLabel("y-axis (contour)");
+    qcp->xAxis->setRange(minX, maxX);
+    qcp->yAxis->setRange(minY, maxY);
+
+    QCPColorMap *colorMap = new QCPColorMap(qcp->xAxis, qcp->yAxis);
+
+    colorMap->data()->setSize(nx, ny);                                      // we want the color map to have nx * ny data points
+    colorMap->data()->setRange(QCPRange(minX, maxX), QCPRange(minY, maxY)); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
+    // now we assign some data, by accessing the QCPColorMapData instance of the color map:
+    double xx, yy, zz;
+    for (int xIndex = 0; xIndex < nx; ++xIndex)
+    {
+        for (int yIndex = 0; yIndex < ny; ++yIndex)
+        {
+
+            colorMap->data()->cellToCoord(xIndex, yIndex, &xx, &yy);
+            // printf("%f ,%f\n", xx,yy);
+            // double r = 3 * qSqrt(xx * xx + yy * yy) + 1e-2;
+            // zz = 2 * xx * (qCos(r + 2) / r - qSin(r + 2) / r); // the B field strength of dipole radiation (modulo physical constants)
+            zz = data[xIndex][yIndex];
+            colorMap->data()->setCell(xIndex, yIndex, zz);
+        }
+    }
+
+    // add a color scale:
+    QCPColorScale *colorScale = new QCPColorScale(qcp);
+    qcp->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
+    colorScale->setType(QCPAxis::atRight);           // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+    colorMap->setColorScale(colorScale);             // associate the color map with the color scale
+    colorScale->axis()->setLabel("Magnetic Field Strength");
+
+    // set the color gradient of the color map to one of the presets:
+    QCPColorGradient *gradient = new QCPColorGradient();
+    gradient->setColorStopAt(0.0, QColor(0, 0, 143));     // Dark blue
+    gradient->setColorStopAt(0.125, QColor(0, 0, 255));   // Blue
+    gradient->setColorStopAt(0.25, QColor(0, 255, 255));  // Cyan
+    gradient->setColorStopAt(0.375, QColor(0, 255, 0));   // Green
+    gradient->setColorStopAt(0.5, QColor(255, 255, 0));   // Yellow
+    gradient->setColorStopAt(0.625, QColor(255, 127, 0)); // Orange
+    gradient->setColorStopAt(0.75, QColor(255, 0, 0));    // Red
+    gradient->setColorStopAt(0.875, QColor(128, 0, 0));   // Dark red
+    gradient->setColorStopAt(1.0, QColor(64, 0, 0));      // Dark brown
+    colorMap->setGradient(*gradient);
+
+    double minZ = *std::min_element(z.begin(), z.end());
+double maxZ = *std::max_element(z.begin(), z.end());
+colorMap->rescaleDataRange(true);
+    // colorMap->setGradient(QCPColorGradient::gpPolar);
+
+    for (int i = 0; i < nx; ++i)
+    {
+        delete[] data[i];
+    }
+    delete[] data;
+}
+
+void ViewYmlDisplay::overlapWaferMapAndContour(QCustomPlot *qcp)
 {
     qcp->addGraph(); // Graph 0
     qcp->addGraph();
-    
 
     qcp->graph(0)->setVisible(true);
     qcp->xAxis->setLabel("x-axis (contour)");
@@ -1392,24 +1574,24 @@ void ViewYmlDisplay::overlapWaferMapAndContour(QCustomPlot* qcp)
     // add a color scale:
     QCPColorScale *colorScale = new QCPColorScale(qcp);
     qcp->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
-    colorScale->setType(QCPAxis::atRight);                  // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
-    colorMap->setColorScale(colorScale);                    // associate the color map with the color scale
+    colorScale->setType(QCPAxis::atRight);           // scale shall be vertical bar with tick/axis labels right (actually atRight is already the default)
+    colorMap->setColorScale(colorScale);             // associate the color map with the color scale
     colorScale->axis()->setLabel("Magnetic Field Strength");
 
     // set the color gradient of the color map to one of the presets:
     QCPColorGradient *gradient = new QCPColorGradient();
-    gradient->setColorStopAt(0.0, QColor(0, 0, 143)); // Dark blue
-    gradient->setColorStopAt(0.125, QColor(0, 0, 255)); // Blue
-    gradient->setColorStopAt(0.25, QColor(0, 255, 255)); // Cyan
-    gradient->setColorStopAt(0.375, QColor(0, 255, 0)); // Green
-    gradient->setColorStopAt(0.5, QColor(255, 255, 0)); // Yellow
+    gradient->setColorStopAt(0.0, QColor(0, 0, 143));     // Dark blue
+    gradient->setColorStopAt(0.125, QColor(0, 0, 255));   // Blue
+    gradient->setColorStopAt(0.25, QColor(0, 255, 255));  // Cyan
+    gradient->setColorStopAt(0.375, QColor(0, 255, 0));   // Green
+    gradient->setColorStopAt(0.5, QColor(255, 255, 0));   // Yellow
     gradient->setColorStopAt(0.625, QColor(255, 127, 0)); // Orange
-    gradient->setColorStopAt(0.75, QColor(255, 0, 0)); // Red
-    gradient->setColorStopAt(0.875, QColor(128, 0, 0)); // Dark red
-    gradient->setColorStopAt(1.0, QColor(64, 0, 0)); // Dark brown
+    gradient->setColorStopAt(0.75, QColor(255, 0, 0));    // Red
+    gradient->setColorStopAt(0.875, QColor(128, 0, 0));   // Dark red
+    gradient->setColorStopAt(1.0, QColor(64, 0, 0));      // Dark brown
     colorMap->setGradient(*gradient);
     // colorMap->setGradient(QCPColorGradient::gpPolar);
-    
+
     qcp->graph(1)->setVisible(true);
     qcp->xAxis2->setLabel("x-axis");
     qcp->yAxis2->setLabel("y-axis");
@@ -1433,7 +1615,31 @@ void ViewYmlDisplay::overlapWaferMapAndContour(QCustomPlot* qcp)
     rectItem->bottomRight->setCoords(1, 1);
 
     connect(qcp, SIGNAL(itemClick(QCPAbstractItem *, QMouseEvent *)), this, SLOT(handleQcpItemClick(QCPAbstractItem *, QMouseEvent *)));
+}
+#include <vector>
+#include <cmath>
+std::vector<float> generateSincFunction(int size) {
+    std::vector<float> data;
+    for (int i = 0; i < size; ++i) {
+        float x = (i - size / 2) / (float)size;
+        data.push_back(std::sin(x));
+    }
+    return data;
+}
 
+std::vector<float> generateRandomData(int size)
+{
+    std::vector<float> data;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(-10.0, 10.0);
+
+    for (int i = 0; i < size; ++i)
+    {
+        data.push_back(dis(gen));
+    }
+
+    return data;
 }
 
 void ViewYmlDisplay::Layouts()
@@ -1462,7 +1668,14 @@ void ViewYmlDisplay::Layouts()
     qcp->setMinimumSize(widQcp->size());
 
     connect(cbb, SIGNAL(currentIndexChanged(int)), this, SLOT(onComboBoxChanged(int)));
-    overlapWaferMapAndContour(qcp);
+    int size = 4096;
+
+    std::vector<float> x = generateSincFunction(size);
+    std::vector<float> y = generateSincFunction(size);
+    std::vector<float> z = generateSincFunction(size);
+
+    test(qcp, x, y, z);
+    // overlapWaferMapAndContour(qcp);
 }
 
 void ViewYmlDisplay::handleQcpItemClick(QCPAbstractItem *item, QMouseEvent *event)
@@ -1478,7 +1691,9 @@ void ViewYmlDisplay::handleQcpItemClick(QCPAbstractItem *item, QMouseEvent *even
     else if (item == rect1)
     {
         printf("rect1\n");
-    } else if (item == rectItem) {
+    }
+    else if (item == rectItem)
+    {
         printf("rect2\n");
     }
 }

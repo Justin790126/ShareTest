@@ -57,6 +57,7 @@ private:
 
     void interactWaferMap(QCustomPlot* qcp);
     void overlapWaferMapAndContour(QCustomPlot* qcp);
+    void test(QCustomPlot* qcp, const vector<float>& x, const vector<float>& y, const vector<float>& z);
 
 private slots:
     void onComboBoxChanged(int idx);
