@@ -164,7 +164,23 @@ void ViewManual::Layouts()
             
             vlytManualTitle = new QVBoxLayout;
             {
-                vlytManualTitle->addWidget(lwManualTitle);
+                // vlytManualTitle->addWidget(lwManualTitle);
+                Section* section = new Section("Section", 300);
+                auto* anyLayout = new QVBoxLayout();
+                anyLayout->addWidget(new QLabel("Some Text in Section", section));
+                anyLayout->addWidget(new QPushButton("Button in Section", section));
+
+                section->setContentLayout(*anyLayout);
+                vlytManualTitle->addWidget(section);
+
+                Section* section1 = new Section("Section1", 300);
+                anyLayout = new QVBoxLayout();
+                anyLayout->addWidget(new QLabel("Some Text in Section1", section1));
+                anyLayout->addWidget(new QPushButton("Button in Section1", section1));
+
+                section1->setContentLayout(*anyLayout);
+                vlytManualTitle->addWidget(section1);
+                vlytManualTitle->addStretch();
             }
             vlytManualContent = new QVBoxLayout;
             {

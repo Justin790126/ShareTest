@@ -10,6 +10,7 @@
 
 using namespace std;
 #include "md2html.h"
+#include "Section.h"
 
 class ViewManual : public QWidget
 {
@@ -28,6 +29,7 @@ private:
     QVBoxLayout* vlytManualTitle;
     QListWidget* lwManualTitle;
     QVBoxLayout* vlytManualContent;
+    QTreeView* twManualTitle;
 
     QStackedWidget* stkwManualPages;
 

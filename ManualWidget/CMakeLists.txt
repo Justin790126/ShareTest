@@ -13,11 +13,13 @@ find_package(Qt5 COMPONENTS PrintSupport REQUIRED)
 
 set(SOURCES
     main.cpp
+    Section.cpp
     ViewManual.cpp
 )
 
 set(HEADERS
 ViewManual.h
+Section.h
 )
 
 qt5_wrap_cpp(SOURCES ${HEADERS})
