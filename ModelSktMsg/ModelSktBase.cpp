@@ -7,6 +7,38 @@ void ModelSktBase::Send(char* pkt, size_t pktLen)
     // printf("[ModelSktBase] send %d bytes\n", sendbytes);
 }
 
+size_t ModelSktBase::BatchReceive(float* img)
+{
+    size_t recvBytes = 0;
+    char resMsg[1024];
+    ModelSktMsg msg;
+    size_t gid = 0;
+   
+    char sizeBytes[8];
+    int bytes_received = recv(client_socket, sizeBytes, sizeof(size_t), 0);
+    if (bytes_received <= 0)
+    {
+        sprintf(resMsg, "[ModelSktBase] Batch Receive size bytes failed");
+        m_sStatusMsg = std::move(resMsg);
+        return -1;
+    }
+    size_t pktLen = msg.deserialize<size_t>(sizeBytes);
+
+    char* arr = new char[pktLen];
+    bytes_received = recv(client_socket, arr, pktLen, 0);
+    if (bytes_received <= 0) {
+        sprintf(resMsg, "[ModelSktBase] Batch Receive size bytes failed");
+        m_sStatusMsg = std::move(resMsg);
+        return -1;
+    }
+    printf("gid %zu: , recv pkt = %zu\n", gid, pktLen);
+    memcpy(img+recvBytes, arr, pktLen);
+    if (arr) delete[] arr;
+    recvBytes += pktLen;
+    gid++;
+    return recvBytes;
+}
+
 bool ModelSktBase::Receive(vector<PktRes>& oRes)
 {
     bool result = false;

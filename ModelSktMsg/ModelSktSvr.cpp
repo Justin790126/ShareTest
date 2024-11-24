@@ -104,7 +104,7 @@ void ModelSktSvr::ContourMake(u_char flg)
     size_t cntSize = (4096 * 4096)+10449;
     int batchSize = 16*1024;
     int resPktNum = ceil(cntSize/(float)batchSize);
-    printf("resPktNum = %d\n", resPktNum);
+    printf("cntSize : %zu , resPktNum = %d\n", cntSize, resPktNum);
     char *pkt = NULL;
 
     if (flg == 0x00)
@@ -128,7 +128,7 @@ void ModelSktSvr::ContourMake(u_char flg)
             if (bytes_sent + batchSize > cntSize) {
                 bytes_to_send = cntSize - bytes_sent;
             }
-            printf("gid = %d with size = %zu\n", m_iNumPktSent, bytes_to_send);
+            // printf("gid = %d with size = %zu\n", m_iNumPktSent, bytes_to_send);
             bytes_sent += bytes_to_send;
             m_iNumPktSent++;
         }
@@ -148,8 +148,8 @@ void ModelSktSvr::ContourMake(u_char flg)
     else if (flg == 0x01)
     {
         size_t bytes_sent = 0;
-        for (int i = 0; i < m_iNumPktSent; i++)
-        {
+        // for (int i = 0; i < m_iNumPktSent; i++)
+        // {
             int bytes_to_send = batchSize;
             if (bytes_sent + batchSize > cntSize) {
                 bytes_to_send = cntSize - bytes_sent;
@@ -157,7 +157,7 @@ void ModelSktSvr::ContourMake(u_char flg)
             bytes_sent += bytes_to_send;
 
             size_t pktLen;
-            msg.serializeArr<float>(m_pfCurContour + i * batchSize, bytes_to_send, pktLen);
+            msg.serializeArr<float>(m_pfCurContour + m_iBatchId * batchSize, bytes_to_send, pktLen);
             pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, m_iBatchId);
             // pkts[i] = pkt;
             printf("gid : %d with bytes size %zu\n", m_iBatchId, bytes_to_send);
@@ -166,7 +166,7 @@ void ModelSktSvr::ContourMake(u_char flg)
             if (pkt) delete[] pkt;
 
             m_iBatchId++;
-        }
+        // }
 
         printf("keep sent--->%zu \n", bytes_sent);
     }

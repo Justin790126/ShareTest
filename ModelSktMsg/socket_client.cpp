@@ -40,13 +40,14 @@ int contRecvTime = 0;
 bool firstime = false;
 int sendTime = 0;
 size_t totalBytes = 0;
+float* m_pfImg = NULL;
 void ContourMake(u_char flg=0x00)
 {
     ModelSktMsg msg;
     size_t pktLen;
     msg.serialize<char>(0x00, pktLen);
     char* pktSt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x00, (char)flg);
-    clnt.Send(pktSt, pktLen);
+    
 
     
     
@@ -57,34 +58,55 @@ void ContourMake(u_char flg=0x00)
     //     return;
     // }
     if (flg == 0x00) {
+        clnt.Send(pktSt, pktLen);
         vector<PktRes> response;
         clnt.Receive(response);
         PktRes res1 = response[0];
-        // PktRes res2 = response[1];
+        PktRes res2 = response[1];
         PktRes res3 = response[2];
 
         contRecvTime = res1.iData;
         // sendTime = res2.iData;
-        totalBytes = res3.sData;
+        totalBytes = res2.sData;
 
-        printf("totalBytes = %zu\n", totalBytes);
+        printf("total number of float = %zu\n", totalBytes);
         printf("[socket_client]: should receive %d times per request \n", res1.iData);
 
 
     } else if (flg == 0x01) {
-        
-        for (int i = 0; i < contRecvTime; i++) {
-            vector<PktRes> response;
-            clnt.Receive(response);
-            // float* resMsg = (float*)response[0].arr;
-            printf("[socket_client/ContourMake]: pktid = %d with size = %zu\n", 
-            response[0].pktId, response[0].arrSize);
-            // printf("  Received data:\n    ");
-            // for (int j = 0; j < 10; j++) {
-            //     printf("%.2f ", resMsg[j]);
-            // }
-            // printf("\n");
+
+        int rcvBts = 0;
+        if (!m_pfImg) {
+            m_pfImg = new float[totalBytes];
         }
+
+        while (rcvBts < totalBytes)
+        {
+            if (!clnt.connect())
+            {
+                printf("%s\n", clnt.GetStatusMsg().c_str());
+                break;
+            }
+            clnt.Send(pktSt, pktLen);
+            rcvBts += clnt.BatchReceive(m_pfImg);
+        }
+        printf("rcvBts : %zu \n", rcvBts);
+
+        // for (int i = 0; i < contRecvTime; i++) {
+        //     
+
+            
+        //     // vector<PktRes> response;
+        //     // clnt.Receive(response);
+        //     // // float* resMsg = (float*)response[0].arr;
+        //     // printf("[socket_client/ContourMake]: pktid = %d with size = %zu\n", 
+        //     // response[0].pktId, response[0].arrSize);
+        //     // printf("  Received data:\n    ");
+        //     // for (int j = 0; j < 10; j++) {
+        //     //     printf("%.2f ", resMsg[j]);
+        //     // }
+        //     // printf("\n");
+        // }
 
         
         if (pktSt) delete[] pktSt;
@@ -175,10 +197,7 @@ int main() {
             } else {
                 // sendTime
                 
-                if (!clnt.connect()) {
-                    printf("%s\n", clnt.GetStatusMsg().c_str());
-                    break;
-                }
+                
                 ContourMake(0x01);
                 
             }

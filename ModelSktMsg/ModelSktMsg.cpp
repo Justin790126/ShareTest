@@ -266,3 +266,44 @@ template void ModelSktMsg::deserializeArr<u_char>(u_char *out, char *pkt, size_t
 template void ModelSktMsg::deserializeArr<int>(int *out, char *pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<float>(float *out, char *pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<double>(double *out, char *pkt, size_t numOfBytes);
+
+
+
+template <typename T>
+char *ModelSktMsg::createBatchPkt(T *data, size_t dLen, size_t &outLen)
+{
+    DType dtype;
+    if (typeid(T) == typeid(char)) {
+        dtype = DTYPE_CHAR_ARR;
+    } else if (typeid(T) == typeid(int)) {
+        dtype = DTYPE_INT_ARR;
+    } else if (typeid(T) == typeid(float)) {
+        dtype = DTYPE_FLOAT_ARR;
+    } else if (typeid(T) == typeid(double)) {
+        dtype = DTYPE_DOUBLE_ARR;
+    } else {
+        printf("[serializeArr] unsupported type");
+        return NULL;
+    }
+
+    int pktSize = sizeof(size_t) + dLen;
+    outLen = pktSize;
+    char* pkt = new char[pktSize];
+
+    memset(pkt, 0x00, pktSize);
+
+    int offset = 0;
+    memcpy(pkt, &dLen, sizeof(size_t));
+    offset += sizeof(size_t);
+    memcpy(pkt+offset, data, sizeof(T)*dLen);
+    offset += sizeof(T)*dLen;
+
+    outLen = offset;
+    return pkt;
+}
+
+
+template char *ModelSktMsg::createBatchPkt<char>(char *data, size_t dLen, size_t &outLen);
+template char *ModelSktMsg::createBatchPkt<int>(int *data, size_t dLen, size_t &outLen);
+template char *ModelSktMsg::createBatchPkt<float>(float *data, size_t dLen, size_t &outLen);
+template char *ModelSktMsg::createBatchPkt<double>(double *data, size_t dLen, size_t &outLen);
