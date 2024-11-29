@@ -15,11 +15,13 @@ set(SOURCES
     main.cpp
     Section.cpp
     ViewManual.cpp
+    ModelMdReader.cpp
 )
 
 set(HEADERS
 ViewManual.h
 Section.h
+ModelMdReader.h
 )
 
 qt5_wrap_cpp(SOURCES ${HEADERS})

@@ -9,7 +9,7 @@
 #include <vector>
 
 using namespace std;
-#include "md2html.h"
+
 #include "Section.h"
 
 class ViewManual : public QWidget
@@ -21,25 +21,31 @@ public:
 
     QTextEdit*  teManual;
 
+    QTreeWidget* GetTreeWidget() { return twTblOfContent; }
+
+    void AddManuals(const vector<QPushButton*>& buttons, const vector<QTextEdit*>& contents);
+
 private:
     QHBoxLayout* hlytToolbar;
     QComboBox* cbbSearchBar;
     QPushButton* btnSearch;
     QHBoxLayout* hlytManualMain;
     QVBoxLayout* vlytManualTitle;
-    QListWidget* lwManualTitle;
+    QListWidget* lwSearchResult;
     QVBoxLayout* vlytManualContent;
-    QTreeView* twManualTitle;
+    QTreeWidget* twTblOfContent;
+
+    vector<QPushButton*> m_vBtns;
+    vector<QTextEdit*> m_vTes;
 
     QStackedWidget* stkwManualPages;
 
-    QWidget* addManualPage(const string& btnText);
     void Widgets();
     void Layouts();
 
 
 private slots:
-    void handleListWidgetItemClick(QListWidgetItem *item);
+    void handleButtonClick();
 
 };
 
