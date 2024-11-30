@@ -57,9 +57,14 @@ public:
         sprintf(buf, "%s found at line %d in [%s](%s)", m_sResultLine.c_str(), m_iLineNum, m_sKey.c_str(), m_sUrl.c_str());
         return buf;
     }
-    bool compInfo(const string& info) {
-        string srcInfo = GetInfo();
-        return strcmp(srcInfo.c_str(), info.c_str()) == 0;
+    string GetSearchResultFromInfo(const string &info)
+    {
+        int idx = info.find("found at line");
+        string resultLine = "";
+        if (idx!= string::npos) {
+            resultLine = info.substr(0, idx);
+        }
+        return resultLine;
     }
     
     void GetKeyUrlFromInfo(const string& iInfo, string &key, string &url) {
@@ -77,6 +82,8 @@ public:
 
     void SetNode(MdNode* node) { m_sNode = node; }
     MdNode* GetNode() { return m_sNode; }
+    void SetBtnIdx(int idx) { m_iBtnIdx = idx; }
+    int GetBtnIdx() { return m_iBtnIdx; }
 
     friend ostream &operator<<(ostream &os, const SearchInfo &info)
     {
@@ -89,6 +96,7 @@ private:
     string m_sUrl;
     string m_sResultLine;
     int m_iLineNum;
+    int m_iBtnIdx;
     MdNode* m_sNode=NULL;
 };
 

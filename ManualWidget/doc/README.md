@@ -6,18 +6,16 @@ content here
 
 [Ch1](./L1/L1.md)
 
-123456 ![img](./1.jpeg)
-
-qq <a href="./1.jpeg" />
+chapter 1 ![img](./1.jpeg) 123124
 
 ## ch2
 
 [Ch2](./L2/L2.md)
 
-abcd <img src="./1.jpeg"></img>
+charp 2 <img src="./1.jpeg"  /> qq
 
 ## ch3
 
 [Ch3](./L3/L3.md)
 
-efgh <img src="./1.jpeg" />
+chap 3 <img src="./1.jpeg"  > </img> qqq

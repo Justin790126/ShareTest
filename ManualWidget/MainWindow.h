@@ -60,8 +60,7 @@ public:
                                       QTextEdit *te = new QTextEdit(QString::fromStdString(node->GetHtmlContent()));
                                       te->setReadOnly(true);
                                       tes.push_back(te);
-                                  }
-                              });
+                                  } });
 
         tw->expandAll();
         tw->resizeColumnToContents(1);
@@ -112,23 +111,48 @@ private slots:
         lw->clear();
         for (SearchInfo info : *infos)
         {
-            lw->addItem(QString::fromStdString(info.GetInfo().c_str()));
+            QListWidgetItem *item = new QListWidgetItem(QString::fromStdString(info.GetInfo().c_str()));
+            item->setData(Qt::UserRole, QVariant::fromValue(info.GetBtnIdx()));
+            lw->addItem(item);
         }
         lw->setVisible(true);
     }
 
     void handleSearchResultClicked(QListWidgetItem *item)
     {
-        cout << item->text().toStdString() << endl;
-        string info = item->text().toStdString();
-        string key, url;
-        SearchInfo si;
-        si.GetKeyUrlFromInfo(info, key, url);
-        cout << "Key: " << key << ", URL: " << url << endl;
+        string selText = item->text().toStdString();
+        SearchInfo info;
+        // string resultText = info.GetSearchResultFromInfo(selText);
+        int btnIdx = item->data(Qt::UserRole).toInt();
         vector<QPushButton *> *btns = view->GetButtons();
-        vector<QTextEdit *> *tes = view->GetTextEdits();
-        for (size_t i = 0; i < btns->size(); i++)
+        if (btnIdx >= 0 && btnIdx < btns->size())
         {
+            QPushButton *btn = btns->at(btnIdx);
+            btn->click();
         }
+
+        // highlight text in text edit
+        QTextEdit *te = view->GetTextEdits()->at(btnIdx);
+        te->setFocus();
+        QString htmlContent = te->toHtml();
+
+        // FIXME: find search key, and find position in html content
+        // and set cursor to the position
+        // TODO: optimize this part by using QTextDocument::find() or QTextDocument::findText() method
+        // int pos = htmlContent.indexOf(QString::fromStdString(selText));
+        // if (pos >= 0)
+        // {
+        //     cout << "pos: " << pos << endl;
+        //     QTextCursor c = te->textCursor();
+            
+        //     c.setPosition(pos);
+            
+        //     c.setPosition(pos + selText.length(), QTextCursor::KeepAnchor);
+        //     // c.movePosition(QTextCursor::Start);
+        //     // c.movePosition(QTextCursor::WordRight, QTextCursor::KeepAnchor);
+        //     // Set the cursor back to the textEdit and ensure it's visible
+        //     te->setTextCursor(c);
+        //     te->ensureCursorVisible();
+        // }
     }
 };

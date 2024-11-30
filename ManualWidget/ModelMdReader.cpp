@@ -96,7 +96,8 @@ void ModelMdReader::testRun()
 void ModelMdReader::Search(const std::string &key)
 {
     m_vSearchInfos.clear();
-    TraverseMdNode(m_sRoot, [this, &key](MdNode *node)
+    int btnIdx = 0;
+    TraverseMdNode(m_sRoot, [this, &key, &btnIdx](MdNode *node)
                    {
         string htmlContent = node->GetHtmlContent();
         // split htmlContent by '\n'
@@ -112,11 +113,14 @@ void ModelMdReader::Search(const std::string &key)
                     node->GetUrl(),
                     word,
                     lineCount);
+                searchInfo.SetBtnIdx(btnIdx);
                 searchInfo.SetNode(node);
                 m_vSearchInfos.push_back(searchInfo);
             }
             lineCount++;
-        } });
+        } 
+        btnIdx++;
+        });
 
     // print m_vSearchInfos;
     for (const SearchInfo &info : m_vSearchInfos)
