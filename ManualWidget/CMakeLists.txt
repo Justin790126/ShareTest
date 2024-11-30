@@ -22,6 +22,7 @@ set(HEADERS
 ViewManual.h
 Section.h
 ModelMdReader.h
+MainWindow.h
 )
 
 qt5_wrap_cpp(SOURCES ${HEADERS})

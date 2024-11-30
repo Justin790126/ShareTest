@@ -81,7 +81,33 @@ void ModelMdReader::testRun()
 
 void ModelMdReader::Search(const std::string &key)
 {
-    vector<string> result;
+    TraverseMdNode(m_sRoot, [this, &key](MdNode *node)
+    {
+        string htmlContent = node->GetHtmlContent();
+        // split htmlContent by '\n'
+        int lineCount = 1;
+        // split line by''
+        std::istringstream iss(htmlContent);
+        std::string word;
+        while (iss >> word) {
+            size_t found = word.find(key);
+            if (found!= std::string::npos) {
+                SearchInfo searchInfo(
+                    node->GetKey(),
+                    node->GetUrl(),
+                    word,
+                    lineCount);
+                m_vSearchInfos.push_back(searchInfo);
+            }
+            lineCount++;
+        }
+    });
+
+    // print m_vSearchInfos;
+    for (const SearchInfo &info : m_vSearchInfos) {
+        cout << info << endl;
+    }
+
 }
 void ModelMdReader::run()
 {

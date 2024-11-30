@@ -22,7 +22,8 @@ public:
     QTextEdit*  teManual;
 
     QTreeWidget* GetTreeWidget() { return twTblOfContent; }
-
+    QPushButton* GetSearchButton() { return btnSearch; }
+    QListWidget* GetSearchResultList() { return lwSearchResult; }
     void AddManuals(const vector<QPushButton*>& buttons, const vector<QTextEdit*>& contents);
 
 private:

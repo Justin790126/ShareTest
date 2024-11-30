@@ -6,6 +6,8 @@
 #include <fstream>
 #include <regex>
 #include "md2html.h"
+#include <sstream>
+
 using namespace std;
 
 class MdNode
@@ -42,6 +44,36 @@ private:
     vector<MdNode *> m_vsChildren;
 };
 
+class SearchInfo
+{
+    public:
+        SearchInfo(const string& key, const string& url, const string& resultLine, int lineNum) :
+        m_sKey(key), m_sUrl(url), m_sResultLine(resultLine), m_iLineNum(lineNum)
+         {
+
+         }
+
+         string GetInfo() {
+            char buf[1024];
+            sprintf(buf, "%s found at line %d in file: %s", m_sResultLine.c_str(), m_iLineNum, m_sUrl.c_str());
+            return buf;
+         }
+
+         friend ostream &operator<<(ostream &os, const SearchInfo &info)
+         {
+
+             os << "[Search Result] Key: " << info.m_sKey << ", Url: " << info.m_sUrl << ", Result Line: " << info.m_sResultLine << ", Line Number: " << info.m_iLineNum << endl;
+
+             return os;
+         }
+
+    private:
+        string m_sKey;
+        string m_sUrl;
+        string m_sResultLine;
+        int m_iLineNum;
+};
+
 class ModelMdReader : public QThread
 {
     Q_OBJECT
@@ -61,6 +93,8 @@ public:
     void testRun();
 
     void Search(const std::string &key);
+
+    vector<SearchInfo> *GetSearchInfos() { return &m_vSearchInfos; }
 signals:
     void allReaded();
 
@@ -69,6 +103,8 @@ private:
     string m_sFname;
     MdNode *m_sRoot = NULL;
     int m_iMaxLevel = 0;
+
+    vector<SearchInfo> m_vSearchInfos;
 };
 
 #endif /* MODEL_MD_READER_H */
