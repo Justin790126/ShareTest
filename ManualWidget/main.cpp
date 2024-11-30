@@ -8,10 +8,11 @@
 #include <QWidget>
 #include "MainWindow.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     QApplication a(argc, argv);
 
-    MainWindow* wid = new MainWindow();
+    MainWindow *wid = new MainWindow();
     wid->setWindowTitle("Markdown Manual");
     wid->show();
     // wid->showMaximized();
@@ -21,7 +22,6 @@ int main(int argc, char *argv[]) {
     // drawingWidget.show();
     return a.exec();
 }
-
 
 // int main() {
 //     YAML::Node config = YAML::LoadFile("test1.yaml");
@@ -66,7 +66,6 @@ int main(int argc, char *argv[]) {
 //     // Access multi-line string
 //     std::string string_with_newline = config["string_with_newline"].as<std::string>();
 //     std::cout << "Multi-line string:" << std::endl << string_with_newline << std::endl;
-
 
 //     std::string string_value = config["string"].as<std::string>();
 //     int integer_value = config["integer"].as<int>();
