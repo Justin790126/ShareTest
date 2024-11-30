@@ -84,6 +84,8 @@ public:
     MdNode* GetNode() { return m_sNode; }
     void SetBtnIdx(int idx) { m_iBtnIdx = idx; }
     int GetBtnIdx() { return m_iBtnIdx; }
+    void SetKeyPos(size_t pos) { m_iKeyPos = pos; }
+    size_t GetKeyPos() { return m_iKeyPos; }
 
     friend ostream &operator<<(ostream &os, const SearchInfo &info)
     {
@@ -97,6 +99,7 @@ private:
     string m_sResultLine;
     int m_iLineNum;
     int m_iBtnIdx;
+    size_t m_iKeyPos = 0;
     MdNode* m_sNode=NULL;
 };
 

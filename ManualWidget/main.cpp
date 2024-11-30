@@ -6,13 +6,13 @@
 
 #include <QApplication>
 #include <QWidget>
-#include "MainWindow.h"
+#include "MdWindow.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    MainWindow *wid = new MainWindow();
+    MdWindow *wid = new MdWindow();
     wid->setWindowTitle("Markdown Manual");
     wid->show();
     // wid->showMaximized();

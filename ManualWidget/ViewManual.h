@@ -10,11 +10,25 @@
 
 using namespace std;
 
-
 class ViewSearchResListWidgetItem : public QListWidgetItem
 {
 public:
+    ViewSearchResListWidgetItem(const QString &text) : QListWidgetItem(text)
+    {
+    }
     QString GetText() { return text(); }
+    void SetKeyWordPos(size_t pos) { m_sKeyWordPos = pos; }
+    size_t GetKeyWordPos() { return m_sKeyWordPos; }
+    void SetSearchText(string text) { m_sSearchText = text; }
+    int GetBtnIdx() { return m_iBtnIdx; }
+
+    string GetSearchText() { return m_sSearchText; }
+    void SetBtnIdx(int idx) { m_iBtnIdx = idx; }
+
+private:
+    size_t m_sKeyWordPos = 0;
+    string m_sSearchText;
+    int m_iBtnIdx = 0;
 };
 
 class ViewManual : public QWidget
@@ -26,8 +40,8 @@ public:
 
     QTextEdit *teManual;
 
-    vector<QPushButton*>* GetButtons() { return &m_vBtns; }
-    vector<QTextEdit*>* GetTextEdits() { return &m_vTes; }
+    vector<QPushButton *> *GetButtons() { return &m_vBtns; }
+    vector<QTextEdit *> *GetTextEdits() { return &m_vTes; }
 
     QTreeWidget *GetTreeWidget() { return twTblOfContent; }
     QPushButton *GetSearchButton() { return btnSearch; }

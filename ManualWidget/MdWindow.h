@@ -3,14 +3,14 @@
 #include "ModelMdReader.h"
 #include "ViewManual.h"
 
-class MainWindow : public QWidget
+class MdWindow : public QWidget
 {
     Q_OBJECT
 public:
     ModelMdReader *model;
     ViewManual *view;
 
-    MainWindow(QWidget *parent = nullptr) : QWidget(parent)
+    MdWindow(QWidget *parent = nullptr) : QWidget(parent)
     {
         // Model operation
         model = new ModelMdReader;
@@ -57,7 +57,8 @@ public:
                                       tw->setItemWidget(nodes[level], 0, btn);
                                       btns.push_back(btn);
 
-                                      QTextEdit *te = new QTextEdit(QString::fromStdString(node->GetHtmlContent()));
+                                      QTextEdit *te = new QTextEdit();
+                                      te->setHtml(QString::fromStdString(node->GetHtmlContent()));
                                       te->setReadOnly(true);
                                       tes.push_back(te);
                                   } });
@@ -79,7 +80,7 @@ public:
         connect(view->GetSearchResultList(), SIGNAL(itemClicked(QListWidgetItem *)),
                 this, SLOT(handleSearchResultClicked(QListWidgetItem *)));
     }
-    ~MainWindow()
+    ~MdWindow()
     {
         // cleanup
     }
@@ -111,8 +112,10 @@ private slots:
         lw->clear();
         for (SearchInfo info : *infos)
         {
-            QListWidgetItem *item = new QListWidgetItem(QString::fromStdString(info.GetInfo().c_str()));
-            item->setData(Qt::UserRole, QVariant::fromValue(info.GetBtnIdx()));
+            ViewSearchResListWidgetItem *item = new ViewSearchResListWidgetItem(QString::fromStdString(info.GetInfo().c_str()));
+            item->SetKeyWordPos(info.GetKeyPos());
+            item->SetBtnIdx(info.GetBtnIdx());
+            item->SetSearchText(text);
             lw->addItem(item);
         }
         lw->setVisible(true);
@@ -121,9 +124,10 @@ private slots:
     void handleSearchResultClicked(QListWidgetItem *item)
     {
         string selText = item->text().toStdString();
+        ViewSearchResListWidgetItem *it = dynamic_cast<ViewSearchResListWidgetItem *>(item);
         SearchInfo info;
         // string resultText = info.GetSearchResultFromInfo(selText);
-        int btnIdx = item->data(Qt::UserRole).toInt();
+        int btnIdx = it->GetBtnIdx();
         vector<QPushButton *> *btns = view->GetButtons();
         if (btnIdx >= 0 && btnIdx < btns->size())
         {
@@ -134,25 +138,25 @@ private slots:
         // highlight text in text edit
         QTextEdit *te = view->GetTextEdits()->at(btnIdx);
         te->setFocus();
-        QString htmlContent = te->toHtml();
+        string searchText = it->GetSearchText();
+        size_t pos = te->toPlainText().indexOf(searchText.c_str());
+        if (pos)
+        {
+            QTextCursor cursor = te->textCursor();
+            int startPosition = pos;
+            cursor.setPosition(startPosition);
+            cursor.movePosition(QTextCursor::MoveOperation::Right, QTextCursor::MoveMode::KeepAnchor, searchText.size());
+            te->setTextCursor(cursor);
+            QScrollBar *scrollBar = te->verticalScrollBar();
+            QRect cursorRect = te->cursorRect(cursor);
+            int contentHeight = te->document()->size().height();
+            int viewportHeight = te->viewport()->height();
 
-        // FIXME: find search key, and find position in html content
-        // and set cursor to the position
-        // TODO: optimize this part by using QTextDocument::find() or QTextDocument::findText() method
-        // int pos = htmlContent.indexOf(QString::fromStdString(selText));
-        // if (pos >= 0)
-        // {
-        //     cout << "pos: " << pos << endl;
-        //     QTextCursor c = te->textCursor();
-            
-        //     c.setPosition(pos);
-            
-        //     c.setPosition(pos + selText.length(), QTextCursor::KeepAnchor);
-        //     // c.movePosition(QTextCursor::Start);
-        //     // c.movePosition(QTextCursor::WordRight, QTextCursor::KeepAnchor);
-        //     // Set the cursor back to the textEdit and ensure it's visible
-        //     te->setTextCursor(c);
-        //     te->ensureCursorVisible();
-        // }
+            int scrollValue = qMax(0, qMin(cursorRect.top() - (viewportHeight / 2),
+                                           contentHeight - viewportHeight));
+
+            scrollBar->setValue(scrollValue);
+            te->ensureCursorVisible();
+        }
     }
 };

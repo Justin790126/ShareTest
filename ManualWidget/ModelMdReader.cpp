@@ -19,7 +19,6 @@ void ModelMdReader::ParseMdRec(string filename, string folder, int level, MdNode
     std::regex src_regex("src=\"([^\"]*)\"");
     std::regex href_regex("href=\"([^\"]*)\"");
     std::regex mdimg_link_regex("!\\[(.*)\\]\\((.*)\\)");
-    
 
     int lvl = level;
     lvl += 1;
@@ -32,7 +31,6 @@ void ModelMdReader::ParseMdRec(string filename, string folder, int level, MdNode
         newLine = std::regex_replace(line, src_regex, "src=\"" + folder + "/$1\"");
         newLine = std::regex_replace(newLine, href_regex, "href=\"" + folder + "/$1\"");
         newLine = std::regex_replace(newLine, mdimg_link_regex, "![$1](" + folder + "/$2)");
-        
 
         // Parse table of contents
         std::smatch match;
@@ -56,7 +54,6 @@ void ModelMdReader::ParseMdRec(string filename, string folder, int level, MdNode
             }
             else
             {
-            
             }
             // Move to the next potential match in this line
             searchStart = match.suffix().first;
@@ -105,6 +102,7 @@ void ModelMdReader::Search(const std::string &key)
         // split line by''
         std::istringstream iss(htmlContent);
         std::string word;
+        size_t position = 0;
         while (iss >> word) {
             size_t found = word.find(key);
             if (found!= std::string::npos) {
@@ -113,14 +111,18 @@ void ModelMdReader::Search(const std::string &key)
                     node->GetUrl(),
                     word,
                     lineCount);
+                position+=found;
+                searchInfo.SetKeyPos(position);
                 searchInfo.SetBtnIdx(btnIdx);
                 searchInfo.SetNode(node);
                 m_vSearchInfos.push_back(searchInfo);
+                
+            } else {
+                position += word.length() + 1;
             }
             lineCount++;
         } 
-        btnIdx++;
-        });
+        btnIdx++; });
 
     // print m_vSearchInfos;
     for (const SearchInfo &info : m_vSearchInfos)

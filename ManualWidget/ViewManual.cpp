@@ -9,7 +9,6 @@ ViewManual::ViewManual(QWidget *parent)
     Layouts();
 }
 
-
 void ViewManual::Widgets()
 {
     stkwManualPages = new QStackedWidget;
@@ -26,7 +25,7 @@ void ViewManual::Widgets()
     btnSearch = new QPushButton("Search");
 }
 
-void ViewManual::AddManuals(const vector<QPushButton*>& buttons, const vector<QTextEdit*>& contents)
+void ViewManual::AddManuals(const vector<QPushButton *> &buttons, const vector<QTextEdit *> &contents)
 {
     m_vBtns = buttons;
     m_vTes = contents;
@@ -35,7 +34,6 @@ void ViewManual::AddManuals(const vector<QPushButton*>& buttons, const vector<QT
         stkwManualPages->addWidget(contents[i]);
         connect(buttons[i], SIGNAL(clicked()), this, SLOT(handleButtonClick()));
     }
-    
 }
 
 void ViewManual::handleButtonClick()
@@ -54,28 +52,32 @@ void ViewManual::handleButtonClick()
 
 void ViewManual::Layouts()
 {
-    QVBoxLayout* vlytMain = new QVBoxLayout;
-    vlytMain->setContentsMargins(0,0,0,0);
+    QVBoxLayout *vlytMain = new QVBoxLayout;
+    vlytMain->setContentsMargins(0, 0, 0, 0);
     {
         hlytToolbar = new QHBoxLayout;
         {
-            hlytToolbar->addWidget(cbbSearchBar,3);
-            hlytToolbar->addWidget(btnSearch,1);
+            hlytToolbar->addWidget(cbbSearchBar, 3);
+            hlytToolbar->addWidget(btnSearch, 1);
             hlytToolbar->addStretch(6);
         }
 
         hlytManualMain = new QHBoxLayout;
-        hlytManualMain->setContentsMargins(0,0,0,0);
-        {  
-            
+        hlytManualMain->setContentsMargins(0, 0, 0, 0);
+        {
+
             QSplitter *splitter = new QSplitter;
-            QWidget* widExplorer = new QWidget;
+            QWidget *widExplorer = new QWidget;
             {
-                
+
                 QVBoxLayout *vlytWidExplorer = new QVBoxLayout(widExplorer);
-                vlytWidExplorer->setContentsMargins(0,0,0,0);
-                vlytWidExplorer->addWidget(twTblOfContent);
-                vlytWidExplorer->addWidget(lwSearchResult);
+                vlytWidExplorer->setContentsMargins(0, 0, 0, 0);
+                QSplitter *splitterContent = new QSplitter(Qt::Vertical);
+                {
+                    splitterContent->addWidget(twTblOfContent);
+                    splitterContent->addWidget(lwSearchResult);
+                }
+                vlytWidExplorer->addWidget(splitterContent);
             }
             splitter->addWidget(widExplorer);
             splitter->addWidget(stkwManualPages);
