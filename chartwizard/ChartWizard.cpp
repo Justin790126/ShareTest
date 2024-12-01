@@ -1,9 +1,9 @@
 
 #include "ChartWizard.h"
 
-ChartWizard::ChartWizard(QWidget *parent) : QWidget(parent)
+ChartWizard::ChartWizard() 
 {
-    QVBoxLayout *layout = new QVBoxLayout;
+   
     view = new ViewChartWizard();
-    this->setLayout(layout);
+    view->show();
 }

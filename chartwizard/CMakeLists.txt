@@ -12,11 +12,13 @@ set(SOURCES
     main.cpp
     ChartWizard.cpp
     ViewChartWizard.cpp
+    Section.cpp
 )
 
 set(HEADERS
     ChartWizard.h
     ViewChartWizard.h
+    Section.h
 )
 
 qt5_wrap_cpp(SOURCES ${HEADERS})

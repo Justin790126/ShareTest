@@ -9,11 +9,10 @@
 #include "ViewChartWizard.h"
 // Controller classes
 
-class ChartWizard : public QWidget
+class ChartWizard 
 {
-    Q_OBJECT
     public:
-        ChartWizard(QWidget *parent=NULL);
+        ChartWizard();
         ~ChartWizard() = default;
     private:
         ViewChartWizard * view;
