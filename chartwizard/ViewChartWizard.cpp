@@ -1,7 +1,12 @@
 #include "ViewChartWizard.h"
 
-PropsSection::PropsSection(const QString &title, const int animationDuration, QWidget *parent)
-    : Section(title, animationDuration, parent)
+ChartTypeDialog::ChartTypeDialog(QWidget *parent) : QDialog(parent)
+{
+    
+}
+
+PropsSection::PropsSection(const QString &title, const int animationDuration, QWidget *parent, int idx)
+    : Section(title, animationDuration, parent), m_iSecIdx(idx)
 {
     Widgets();
     Layout();
@@ -22,12 +27,13 @@ void PropsSection::Layout()
         fmlChartData->setContentsMargins(0, 0, 0, 0);
         {
             fmlChartData->addRow(new QLabel("Trace Name"), new QLineEdit());
+            // fmlChartData->addRow(new QLabel("Trace Name"), new("Line Chart"));
         }
         QGroupBox* grpChartStyle = new QGroupBox("Chart Style", this);
         QVBoxLayout* vlytChartStyle = new QVBoxLayout(grpChartStyle);
         {
             // Add widgets to vlytChartStyle
-            vlytChartStyle->addWidget(new QLabel("Chart Style"));
+            vlytChartStyle->addWidget(new QLabel("chart style"));
         }
         anyLayout->addWidget(grpChartData);
         anyLayout->addWidget(grpChartStyle);
@@ -47,7 +53,12 @@ ViewChartWizard::ViewChartWizard(QWidget *parent) : QWidget(parent)
     Layout();
 
     this->resize(800, 600);
-    connect(btnNewChart, SIGNAL(clicked()), this, SLOT(handleNewChartCreated()));
+    // connect(btnNewChart, SIGNAL(clicked()), this, SLOT(handleNewChartCreated()));
+}
+
+void ViewChartWizard::AddNewChart(PropsSection* newChart)
+{
+    vlytProps->insertWidget(1, newChart);
 }
 
 void ViewChartWizard::handleNewChartCreated()
@@ -94,12 +105,26 @@ void ViewChartWizard::Widgets()
     CreatePropWidget();
     CreateTableWidget();
 
-    widChart = new QWidget(this);
-    {
-        widChart->setLayout(new QVBoxLayout());
-        // Add widgets to widChart
-        widChart->layout()->addWidget(new QLabel("Chart"));
-    }
+    // widChart = new QWidget(this);
+    // {
+    //     widChart->setLayout(new QVBoxLayout());
+    //     // Add widgets to widChart
+    //     widChart->layout()->addWidget(new QLabel("Chart"));
+    // }
+    qcp = new QCustomPlot();
+    // QCPGraph *graph = qcp->addGraph();
+    // QVector<double> x(101), y(101); // initialize with entries 0...100
+    // for (int i=0; i<101; ++i)
+    // {
+    //   x[i] = i/100.0; // x goes from 0 to 1
+    //   y[i] = qSin(x[i]*2*M_PI); // let's plot a sine curve
+    // }
+    // graph->setData(x, y);
+    // qcp->xAxis->setLabel("x");
+    // qcp->yAxis->setLabel("sin(x)");
+    // qcp->xAxis->setRange(0, 1);
+    // qcp->yAxis->setRange(-1.1, 1.1);
+    // qcp->replot();
 }
 
 void ViewChartWizard::Layout()
@@ -114,10 +139,7 @@ void ViewChartWizard::Layout()
             {
                 splMain->addWidget(sclProps);
                 {
-                    QSplitter *splTable = new QSplitter(Qt::Vertical, this);
-                    splTable->addWidget(widTable);
-                    splTable->addWidget(widChart);
-                    splMain->addWidget(splTable);
+                    splMain->addWidget(qcp);
                 }
                 // splMain->addWidget(widVisual);
             }

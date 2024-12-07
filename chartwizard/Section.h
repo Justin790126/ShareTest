@@ -47,6 +47,8 @@
     public slots:
         void toggle(bool collapsed);
         void handleCloseButton();
+    signals:
+        void sectionClosed();
 
     public:
         static const int DEFAULT_DURATION = 0;

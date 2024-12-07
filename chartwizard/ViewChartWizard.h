@@ -10,16 +10,32 @@ enum ToolBoxType
     TOOLBOX_CHART_2D_XY,
 };
 
+// Create a ChartTypeDialog inherit from QDialog
+
+
+class ChartTypeDialog : public QDialog
+{
+    Q_OBJECT
+    public:
+    ChartTypeDialog(QWidget *parent = 0);
+    ~ChartTypeDialog() = default;
+    
+};
+
+
 class PropsSection : public Section
 {
     Q_OBJECT
 public:
-    PropsSection(const QString &title = "", const int animationDuration = Section::DEFAULT_DURATION, QWidget *parent = 0);
+    PropsSection(const QString &title = "", const int animationDuration = Section::DEFAULT_DURATION, QWidget *parent = 0, int idx = 0);
     ~PropsSection() = default;
+
 
 private:
     void Widgets();
     void Layout();
+
+    int m_iSecIdx;
 };
 
 class ViewChartWizard : public QWidget
@@ -32,8 +48,10 @@ public:
     void Widgets();
     void Layout();
     void CreateTableWidget();
-    void CreatePropWidget();
 
+    void CreatePropWidget();
+    QPushButton* GetNewChartButton() const { return btnNewChart; }
+    void AddNewChart(PropsSection* newChart);
 private:
     QCustomPlot *qcp;
     QWidget *widProps;

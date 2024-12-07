@@ -7,15 +7,27 @@
 #include <QVBoxLayout>
 #include <QGroupBox>
 #include "ViewChartWizard.h"
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
 // Controller classes
 
-class ChartWizard 
+class ChartWizard : public QObject
 {
-    public:
-        ChartWizard();
-        ~ChartWizard() = default;
-    private:
-        ViewChartWizard * view;
+    Q_OBJECT
+public:
+    ChartWizard();
+    ~ChartWizard() = default;
+
+private:
+    ViewChartWizard *view;
+    vector<PropsSection*> m_vPropsSections;
+
+private slots:
+    void handleNewChartCreated();
+    void handleSectionClosed();
 };
 
 #endif // CHART_WIZARD_H

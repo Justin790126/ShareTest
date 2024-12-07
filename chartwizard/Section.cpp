@@ -73,7 +73,8 @@
 
     void Section::handleCloseButton()
     {
-        delete this;
+        // delete this;
+        emit sectionClosed();
     }
 
     void Section::toggle(bool expanded)
