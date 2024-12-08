@@ -23,7 +23,8 @@ public:
 
 private:
     ViewChartWizard *view;
-    vector<PropsSection*> m_vPropsSections;
+    vector<PropsSection *> m_vPropsSections;
+    ChartTypeDialog *m_chartTypeDialog;
 
 private slots:
     void handleNewChartCreated();

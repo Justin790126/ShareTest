@@ -4,24 +4,36 @@
 #include <QWidget>
 #include "qcustomplot.h"
 #include "Section.h"
-
-enum ToolBoxType
-{
-    TOOLBOX_CHART_2D_XY,
-};
+#include "utils.h"
 
 // Create a ChartTypeDialog inherit from QDialog
-
 
 class ChartTypeDialog : public QDialog
 {
     Q_OBJECT
-    public:
+public:
     ChartTypeDialog(QWidget *parent = 0);
     ~ChartTypeDialog() = default;
-    
-};
 
+    void Widgets();
+    void Layout();
+    void Connect();
+
+    int GetChartTypeIdx() const { return m_iChartTypeIdx; }
+
+    QButtonGroup *btngChartType;
+
+private:
+    QPushButton *btnOk;
+    QPushButton *btnCancel;
+
+    int m_iChartTypeIdx;
+
+private slots:
+    void handleBtnOkClicked();
+    void handleBtnCancelClicked();
+    void handleChartTypeChanged(int chartType);
+};
 
 class PropsSection : public Section
 {
@@ -29,7 +41,6 @@ class PropsSection : public Section
 public:
     PropsSection(const QString &title = "", const int animationDuration = Section::DEFAULT_DURATION, QWidget *parent = 0, int idx = 0);
     ~PropsSection() = default;
-
 
 private:
     void Widgets();
@@ -50,8 +61,9 @@ public:
     void CreateTableWidget();
 
     void CreatePropWidget();
-    QPushButton* GetNewChartButton() const { return btnNewChart; }
-    void AddNewChart(PropsSection* newChart);
+    QPushButton *GetNewChartButton() const { return btnNewChart; }
+    void AddNewChart(PropsSection *newChart);
+
 private:
     QCustomPlot *qcp;
     QWidget *widProps;
