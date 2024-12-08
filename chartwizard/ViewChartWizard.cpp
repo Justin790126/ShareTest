@@ -98,10 +98,93 @@ PropsSection::PropsSection(const QString &title, const int animationDuration, QW
 {
     Widgets();
     Layout();
+    Connect();
 }
 
 void PropsSection::Widgets()
 {
+}
+
+void PropsSection::SetXData(const QVector<double> &data)
+{
+    m_xData = data;
+    // get min/max of m_xData and set range for x-axis
+    double minX = m_xData.front();
+    double maxX = m_xData.back();
+    for (double x : m_xData)
+    {
+        if (x < minX)
+            minX = x;
+        if (x > maxX)
+            maxX = x;
+    }
+    GetQcp()->xAxis->setRange(minX, maxX);
+}
+
+void PropsSection::SetXLabel(const QString &lbl)
+{
+    GetQcp()->xAxis->setLabel(lbl);
+    GetQcp()->replot();
+}
+
+void PropsSection::SetYData(const QVector<double> &data)
+{
+    m_yData = data;
+    // get min/max of m_yData and set range for y-axis
+    double minY = m_yData.front();
+    double maxY = m_yData.back();
+    for (double y : m_yData)
+    {
+        if (y < minY)
+            minY = y;
+        if (y > maxY)
+            maxY = y;
+    }
+    GetQcp()->yAxis->setRange(minY, maxY);
+}
+
+void PropsSection::SetYLabel(const QString &lbl)
+{
+    GetQcp()->yAxis->setLabel(lbl);
+    GetQcp()->replot();
+}
+
+void PropsSection::Connect()
+{
+    connect(cbbX, SIGNAL(currentIndexChanged(int)), this, SLOT(handleXAxisChanged(int)));
+    connect(cbbY, SIGNAL(currentIndexChanged(int)), this, SLOT(handleYAxisChanged(int)));
+    // connect leXaxis with SIGNAL(textChanged(const QString &)), this, SLOT(handleXaxisTextChanged(const QString &)));
+    connect(leXaxis, SIGNAL(textChanged(const QString &)), this, SLOT(handleXaxisTextChanged(const QString &)));
+    connect(leYaxis, SIGNAL(textChanged(const QString &)), this, SLOT(handleYaxisTextChanged(const QString &)));
+}
+
+void PropsSection::handleXaxisTextChanged(const QString &)
+{
+    emit xAxisTextChanged(leXaxis->text());
+}
+
+void PropsSection::handleYaxisTextChanged(const QString &)
+{
+    emit yAxisTextChanged(leYaxis->text());
+}
+
+void PropsSection::handleXAxisChanged(int idx)
+{
+    emit xAxisChanged(idx);
+}
+
+void PropsSection::handleYAxisChanged(int idx)
+{
+    emit yAxisChanged(idx);
+}
+
+void PropsSection::Plot()
+{
+    if (m_iSecIdx == 0)
+    {
+        GetGraph()->setData(m_xData, m_yData);
+        GetQcp()->replot();
+    }
 }
 
 void PropsSection::Layout()
@@ -114,8 +197,24 @@ void PropsSection::Layout()
         QFormLayout *fmlChartData = new QFormLayout(grpChartData);
         fmlChartData->setContentsMargins(0, 0, 0, 0);
         {
-            fmlChartData->addRow(new QLabel("Trace Name"), new QLineEdit());
-            // fmlChartData->addRow(new QLabel("Trace Name"), new("Line Chart"));
+            cbbX = new QComboBox();
+            cbbX->addItem("Col1");
+            cbbX->addItem("Col2");
+            cbbX->addItem("Col3");
+
+            cbbY = new QComboBox();
+            cbbY->addItem("Col1");
+            cbbY->addItem("Col2");
+            cbbY->addItem("Col3");
+
+            leXaxis = new QLineEdit();
+            leYaxis = new QLineEdit();
+
+            fmlChartData->addRow(new QLabel("Title"), new QLineEdit());
+            fmlChartData->addRow(new QLabel("X Data"), cbbX);
+            fmlChartData->addRow(new QLabel("X Axis Label"), leXaxis);
+            fmlChartData->addRow(new QLabel("Y Data"), cbbY);
+            fmlChartData->addRow(new QLabel("Y Axis Label"), leYaxis);
         }
         QGroupBox *grpChartStyle = new QGroupBox("Chart Style", this);
         QVBoxLayout *vlytChartStyle = new QVBoxLayout(grpChartStyle);
@@ -199,6 +298,12 @@ void ViewChartWizard::Widgets()
     //     widChart->layout()->addWidget(new QLabel("Chart"));
     // }
     qcp = new QCustomPlot();
+    qcp->legend->setVisible(true);
+   
+    // create two new graphs and set their look:
+    // QCPGraph *graph1 = qcp->addGraph();
+    // clear QCPGraph
+
     // QCPGraph *graph = qcp->addGraph();
     // QVector<double> x(101), y(101); // initialize with entries 0...100
     // for (int i=0; i<101; ++i)
@@ -206,7 +311,7 @@ void ViewChartWizard::Widgets()
     //   x[i] = i/100.0; // x goes from 0 to 1
     //   y[i] = qSin(x[i]*2*M_PI); // let's plot a sine curve
     // }
-    // graph->setData(x, y);
+    // graph->setData(x, yy);
     // qcp->xAxis->setLabel("x");
     // qcp->yAxis->setLabel("sin(x)");
     // qcp->xAxis->setRange(0, 1);

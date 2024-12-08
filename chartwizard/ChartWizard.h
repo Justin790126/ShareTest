@@ -29,6 +29,11 @@ private:
 private slots:
     void handleNewChartCreated();
     void handleSectionClosed();
+
+    void handleXaxisChanged(int idx);
+    void handleYaxisChanged(int idx);
+    void handleXaxisTextChanged(const QString&);
+    void handleYaxisTextChanged(const QString&);
 };
 
 #endif // CHART_WIZARD_H
