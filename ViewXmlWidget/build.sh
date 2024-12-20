@@ -2,7 +2,7 @@
 
 rm -rf build
 mkdir build
-cp style.css ./build/
+cp test.xml ./build/
 cd build
 cmake ../
 make

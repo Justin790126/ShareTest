@@ -2,5 +2,24 @@
 
 ViewXmlTab::ViewXmlTab(QWidget *parent) : QWidget(parent)
 {
-    
+    UI();
+}
+
+void ViewXmlTab::Widgets()
+{
+   twXmlViewer = new QTreeWidget(this);
+   twXmlViewer->setColumnCount(3);
+}
+
+void ViewXmlTab::Layout()
+{
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    mainLayout->addWidget(twXmlViewer);
+    this->setLayout(mainLayout);
+}
+
+void ViewXmlTab::UI()
+{
+    Widgets();
+    Layout();
 }

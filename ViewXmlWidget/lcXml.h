@@ -4,6 +4,7 @@
 #include <QtGui>
 // write class inherit QWidget
 #include "ViewXmlTab.h"
+#include "ModelXmlParser.h"
 
 class LcXml : public QWidget
 {
@@ -14,6 +15,10 @@ class LcXml : public QWidget
 
     private:
         ViewXmlTab * m_vtXmlTab = NULL;
+        ModelXmlParser* m_mXmlParser = NULL;
+    
+    private slots:
+        void handleAllPageReaded();
 };
 
 

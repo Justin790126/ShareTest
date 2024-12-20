@@ -66,6 +66,14 @@
         "fstream": "cpp",
         "iomanip": "cpp",
         "regex": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "*.tcc": "cpp",
+        "list": "cpp",
+        "iterator": "cpp",
+        "map": "cpp",
+        "memory_resource": "cpp",
+        "utility": "cpp",
+        "thread": "cpp",
+        "cinttypes": "cpp"
     }
 }
