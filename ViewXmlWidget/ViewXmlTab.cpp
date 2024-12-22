@@ -8,7 +8,7 @@ ViewXmlTab::ViewXmlTab(QWidget *parent) : QWidget(parent)
 void ViewXmlTab::Widgets()
 {
    twXmlViewer = new QTreeWidget(this);
-   twXmlViewer->setColumnCount(3);
+   twXmlViewer->setColumnCount(4);
 }
 
 void ViewXmlTab::Layout()

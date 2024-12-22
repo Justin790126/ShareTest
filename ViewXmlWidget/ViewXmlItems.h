@@ -7,7 +7,8 @@
 class ViewXmlItems : public QTreeWidgetItem
 {
     public:
-        ViewXmlItems(QTreeWidget *parent=NULL, const QStringList &strings=QStringList());
+        ViewXmlItems(QTreeWidget *parent=NULL);
+        ViewXmlItems(QTreeWidgetItem *parent=NULL);
 };
 
 #endif /* VIEW_XML_ITEMS_H */

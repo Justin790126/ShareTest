@@ -12,6 +12,9 @@ class ViewXmlTab : public QWidget
         ViewXmlTab(QWidget *parent=NULL);
         ~ViewXmlTab() = default;
 
+        QTreeWidget* GetTwXmlViewer() const { return twXmlViewer; }
+
+
     private:
 
         void Widgets();
