@@ -19,6 +19,8 @@ LcXml::LcXml(QWidget *parent) : QWidget(parent)
     mainLayout->addWidget(m_vtXmlTab);
 
     this->setLayout(mainLayout);
+
+    // this->showMaximized();
 }
 
 void LcXml::handleAllPageReaded()
@@ -49,5 +51,8 @@ void LcXml::handleAllPageReaded()
     // root->addChild(child2);
     // tw->addTopLevelItem(root);
     tw->resizeColumnToContents(0);
+    tw->resizeColumnToContents(1);
+    tw->resizeColumnToContents(2);
+    tw->resizeColumnToContents(3);
     tw->expandAll();
 }

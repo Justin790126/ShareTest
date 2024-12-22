@@ -21,7 +21,7 @@ void ModelXmlParser::print_attributes(xmlAttr *attr)
 }
 
 // FIXME: use correct container to store parsed data (consider duplcated tags)
-void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, string> &map, ViewXmlItems* item)
+void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, ViewXmlItems *> &map, ViewXmlItems *item)
 {
     if (!node)
     {
@@ -37,35 +37,36 @@ void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std:
             if (m_iVerbose)
                 cout << "[TAG] " << tag << endl;
 
-            ViewXmlItems* tagIt = NULL;
-            if (item) {
+            ViewXmlItems *tagIt = NULL;
+            if (item)
+            {
                 tagIt = new ViewXmlItems(item);
-            } else {
+            }
+            else
+            {
                 tagIt = new ViewXmlItems(twContainer);
             }
-
+            tagIt->SetMapKey(tag);
             tagIt->setText(0, nodeName.c_str());
 
-            map[tag] = "";
-
-            // cout << "Parent node:" << path << endl;
-
-            // cout << "Child node column 0: " << cur_node->name << endl;
+            map[tag] = tagIt;
 
             xmlAttr *attr = cur_node->properties;
             string tagAttr = tag;
+            ViewXmlItems *attrIt = NULL;
             while (attr)
             {
-                tagAttr = tag + "/" + string((char *)attr->name);
+
                 string val((char *)attr->children->content);
+                tagAttr = tag + "/" + string((char *)attr->name) + "/" + val;
 
                 // cout << "Child node column 1: " << attr->name << endl;
                 string arrName = string((char *)attr->name);
-                tagIt->setText(1, arrName.c_str());
-
-                map[tagAttr] = val;
-                // cout << "Child node column 2: " << val << endl;
-                tagIt->setText(2, val.c_str());
+                attrIt = new ViewXmlItems(tagIt);
+                attrIt->setText(1, arrName.c_str());
+                attrIt->setText(2, val.c_str());
+                attrIt->SetMapKey(tagAttr);
+                attrIt->SetAttrValue(val);
 
                 if (m_iVerbose)
                     cout << "[TAG/ATTR] " << tagAttr << ", [VALUE] " << val << std::endl;
@@ -83,21 +84,12 @@ void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std:
             string value = qs.toStdString();
             string tagAttrContent = path + "/content";
 
-            cout << "child node column 3: " << value << endl;
-
-            if (qs.length() > 0)
+            if (m_iVerbose)
+                cout << "[TAG/ATTR/CONTENT] " << tagAttrContent << " [Content]: " << value << endl;
+            if (item)
             {
-
-                map[tagAttrContent] = value;
-                if (m_iVerbose)
-                    cout << "[TAG/ATTR/CONTENT] " << tagAttrContent << " [Content]: " << value << endl;
-            }
-            else
-            {
-                map[tagAttrContent] = "";
-            }
-
-            if (item) {
+                item->SetHasContent(qs.length() > 0);
+                item->SetContent(value);
                 item->setText(3, value.c_str());
             }
         }
@@ -207,7 +199,7 @@ void ModelXmlParser::run()
     // };
     string path = "";
     int level = 0;
-    std::map<string, string> map;
+    std::map<string, ViewXmlItems *> map;
     TraverseXmlTree(root, path, level, map);
 
     // print map

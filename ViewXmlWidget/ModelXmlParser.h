@@ -20,7 +20,7 @@ public:
     void SetFileName(const string &fname) { m_sFname = fname; }
     string GetFileName() const { return m_sFname; }
 
-    void TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, string> &map, ViewXmlItems* item=NULL);
+    void TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, ViewXmlItems*> &map, ViewXmlItems* item=NULL);
 
 
     // Write TraverseXmlTree that accept std::function<void(xmlNode*)> callback;
