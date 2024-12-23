@@ -8,7 +8,9 @@ LcXml::LcXml(QWidget *parent) : QWidget(parent)
 
     m_mXmlParser = new ModelXmlParser(this);
     m_mXmlParser->SetTreeWidget(m_vtXmlTab->GetTwXmlViewer());
+    m_mXmlParser->SetWorkerMode(1);
     m_mXmlParser->SetFileName("test.xml"); // Set the XML file name to be parsed
+    m_mXmlParser->SetFileName2("test2.xml"); // Set the second XML file name to be parsed
     connect(m_mXmlParser, SIGNAL(AllPageReaded()), this, SLOT(handleAllPageReaded()));
     m_mXmlParser->start(); // Start parsing XML file in a separate thread
 

@@ -174,21 +174,19 @@ void ModelXmlParser::TraverseXmlTree(xmlNode *node, std::function<void(xmlNode *
     }
 }
 
-void ModelXmlParser::run()
+void ModelXmlParser::CreateXmlItems()
 {
-    printf("libxml version: %s\n", LIBXML_DOTTED_VERSION);
-
-    m_xmlDoc = xmlReadFile(m_sFname.c_str(), NULL, 0);
+    m_xmlDoc = xmlReadFile(m_sFname1.c_str(), NULL, 0);
     if (!m_xmlDoc)
     {
-        cerr << "Failed to parse XML file: " << m_sFname.c_str() << endl;
+        cerr << "Failed to parse XML file: " << m_sFname1.c_str() << endl;
         return;
     }
 
     xmlNode *root = xmlDocGetRootElement(m_xmlDoc);
     if (!root)
     {
-        cerr << "No root element in XML file: " << m_sFname.c_str() << endl;
+        cerr << "No root element in XML file: " << m_sFname1.c_str() << endl;
         xmlFreeDoc(m_xmlDoc);
         return;
     }
@@ -199,8 +197,8 @@ void ModelXmlParser::run()
     // };
     string path = "";
     int level = 0;
-    std::map<string, ViewXmlItems *> map;
-    TraverseXmlTree(root, path, level, map);
+    m_mKeyItems.clear();
+    TraverseXmlTree(root, path, level, m_mKeyItems);
 
     // print map
     // for(auto& it : map) {
@@ -208,4 +206,145 @@ void ModelXmlParser::run()
     // }
 
     emit AllPageReaded();
+}
+
+string ModelXmlParser::getNodePath(xmlNodePtr node)
+{
+    string path;
+    while (node)
+    {
+        path = "/" + string((char *)node->name) + path;
+        node = node->parent;
+    }
+    return path;
+}
+void ModelXmlParser::CompareNodes(xmlNodePtr node1, xmlNodePtr node2, const string &path)
+{
+    if (node1 == NULL && node2 == NULL)
+    {
+        return; // Both nodes are NULL
+    }
+    if (node1 == NULL || node2 == NULL)
+    {
+        cout << "Node mismatch at path: " << path << endl;
+        return; // Only one node is NULL
+    }
+
+    // Compare node types
+    if (node1->type != node2->type)
+    {
+        cout << "Node type mismatch at path: " << path << endl;
+        return;
+    }
+
+    if (node1->type == XML_ELEMENT_NODE && node2->type == XML_ELEMENT_NODE)
+    {
+        // Compare node names
+        if (xmlStrcmp(node1->name, node2->name) != 0)
+        {
+            cout << "Node name mismatch at path: " << path << " - " << (const char *)node1->name << " vs " << (const char *)node2->name << endl;
+            return;
+        }
+        // Compare node attributes
+        xmlAttrPtr attr1 = node1->properties;
+        xmlAttrPtr attr2 = node2->properties;
+
+        while (attr1 != NULL && attr2 != NULL)
+        {
+            if (xmlStrcmp(attr1->name, attr2->name) != 0)
+            {
+                cout << "Attribute name mismatch for node '" << (const char *)node1->name << "' at path: " << path << endl;
+            }
+            if (xmlStrcmp(attr1->children->content, attr2->children->content) != 0)
+            {
+                cout << "Attribute value mismatch for node '" << (const char *)node1->name << "' and attribute '" << (const char *)attr1->name << "' at path: " << path << endl;
+            }
+            attr1 = attr1->next;
+            attr2 = attr2->next;
+        }
+
+        // If one node has attributes and the other doesn't
+        if ((attr1 != NULL && attr2 == NULL) || (attr1 == NULL && attr2 != NULL))
+        {
+            cout << "Attribute count mismatch for node '" << (const char *)node1->name << "' at path: " << path << endl;
+            return;
+        }
+
+        // Compare child nodes recursively
+        xmlNodePtr child1 = node1->children;
+        xmlNodePtr child2 = node2->children;
+        while (child1 != NULL && child2 != NULL)
+        {
+            CompareNodes(child1, child2, path + "/" + (const char *)child1->name);
+            child1 = child1->next;
+            child2 = child2->next;
+        }
+
+        // // If one node has children and the other doesn't
+        if ((child1 != NULL && child2 == NULL) || (child1 == NULL && child2 != NULL))
+        {
+            cout << "Child node count mismatch for node '" << (const char *)node1->name << "' at path: " << path << endl;
+            return;
+        }
+    }
+    else if (node1->type == XML_TEXT_NODE && node1->content &&
+             node2->type == XML_TEXT_NODE && node2->content)
+    {
+        if (xmlStrcmp(node1->content, node2->content) != 0)
+        {
+            cout << "Text content mismatch at path: " << path << endl;
+        }
+    }
+}
+void ModelXmlParser::CompareTwoFiles()
+{
+    cout << "Comparing two XML files: " << m_sFname1.c_str() << " and " << m_sFname2.c_str() << endl;
+    xmlDocPtr doc1 = xmlParseFile(m_sFname1.c_str());
+    xmlDocPtr doc2 = xmlParseFile(m_sFname2.c_str());
+    if (!doc1 || !doc2)
+    {
+        cerr << "Failed to parse XML files" << endl;
+        if (doc1)
+            xmlFreeDoc(doc1);
+        if (doc2)
+            xmlFreeDoc(doc2);
+        return;
+    }
+
+    xmlNodePtr root1 = xmlDocGetRootElement(doc1);
+    xmlNodePtr root2 = xmlDocGetRootElement(doc2);
+    if (!root1 || !root2 || xmlStrcmp(root1->name, root2->name) != 0)
+    {
+        cerr << "Root elements do not match" << endl;
+        xmlFreeDoc(doc1);
+        xmlFreeDoc(doc2);
+        return;
+    }
+    vector<XmlDiff> diffs;
+    CompareNodes(root1, root2, "");
+
+    // print diffs
+    for (const auto &diff : diffs)
+    {
+        cout << diff.path << ": " << diff.node1 << " -> " << diff.node2 << " - " << diff.message << endl;
+    }
+
+    xmlFreeDoc(doc1);
+    xmlFreeDoc(doc2);
+    xmlCleanupParser();
+    emit AllPageReaded();
+}
+
+void ModelXmlParser::run()
+{
+    printf("libxml version: %s\n", LIBXML_DOTTED_VERSION);
+
+    if (m_iWorkerMode == (int)XmlWokerMode::MODE_CREATE_ITEMS)
+    {
+        CreateXmlItems();
+    }
+    else if (m_iWorkerMode == (int)XmlWokerMode::MODE_COMPARE_TWO_FILES)
+    {
+        CompareTwoFiles();
+    }
 }

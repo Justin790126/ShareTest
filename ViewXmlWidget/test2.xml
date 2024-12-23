@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="library.xsd">
+  <book id="B009">
+    <title>The Lord of the QQ</title>
+    <author>J.R.R. Tolkien</author>
+    <genre>Fantasy</genre>
+    <price currency="USD">29.99</price>
+    <publish_date year="1954" month="7" day="29"/>
+    <publisher>Allen &amp; Unwin</publisher>
+    <description>
+      A high-fantasy QQ set in Middle-earth.
+    </description>
+    <reviews>
+      <review>
+        <reviewer>John Doe</reviewer>
+        <rating>5</rating>
+        <comment>A timeless classic!</comment>
+      </review>
+      <review>
+        <reviewer>Jane QQ</reviewer>
+        <rating>4</rating>
+        <comment>A bit long, but worth the read.</comment>
+      </review>
+    </reviews>
+  </book>
+
+  <book id="B003">
+    <title>Pride and Prejudice</title>
+    <author>Jane Austen</author>
+    <genre>Romance</genre>
+    <price currency="GBP">12.99</price>
+    <publish_date year="1813" month="1" day="28"/>
+    <publisher>T. QQ</publisher>
+    <description>
+      A witty and romantic novel about love and social class.
+    </description>
+  </book>
+
+  <magazine id="M009">
+    <title>National Geographic</title>
+    <publisher>National QQ Society</publisher>
+    <issue_date year="2023" month="11" day="17"/>
+    <articles>
+      <article>
+        <title>The Wonders of the Amazon</title>
+        <author>Alex QQ</author>
+        <pages>30</pages>
+        <images>
+          <image filename="amazon_rainforest.jpg" caption="A lush rainforest canopy."/>
+          <image filename="amazon_river.jpg" caption="The mighty Amazon River."/>
+        </images>
+      </article>
+    </articles>
+  </magazine>
+</library>
