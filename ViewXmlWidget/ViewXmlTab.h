@@ -12,7 +12,8 @@ class ViewXmlTab : public QWidget
         ViewXmlTab(QWidget *parent=NULL);
         ~ViewXmlTab() = default;
 
-        QTreeWidget* GetTwXmlViewer() const { return twXmlViewer; }
+        QTreeWidget* GettwXmlViewerLeft() const { return twXmlViewerLeft; }
+        QTreeWidget* GettwXmlViewerRight() const { return twXmlViewerRight; }
 
 
     private:
@@ -21,7 +22,8 @@ class ViewXmlTab : public QWidget
         void Layout();
         void UI();
 
-        QTreeWidget * twXmlViewer = NULL;
+        QTreeWidget * twXmlViewerLeft = NULL;
+        QTreeWidget * twXmlViewerRight = NULL;
 };
 
 

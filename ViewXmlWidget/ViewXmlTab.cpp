@@ -8,16 +8,61 @@ ViewXmlTab::ViewXmlTab(QWidget *parent) : QWidget(parent)
 
 void ViewXmlTab::Widgets()
 {
-   twXmlViewer = new QTreeWidget(this);
-   twXmlViewer->setColumnCount(4);
-   QStringList lst = {"Tag", "Attributes", "Value", "Text Content"};
-   twXmlViewer->setHeaderLabels(lst);
+    QStringList lst = {"Tag", "Text Content", "Attributes", "Value"};
+   twXmlViewerLeft = new QTreeWidget(this);
+   twXmlViewerLeft->setColumnCount(4);
+   twXmlViewerLeft->setHeaderLabels(lst);
+
+   twXmlViewerRight = new QTreeWidget(this);
+   twXmlViewerRight->setColumnCount(4);
+   twXmlViewerRight->setHeaderLabels(lst);
 }
 
 void ViewXmlTab::Layout()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->addWidget(twXmlViewer);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    {
+        // add vertical splitter
+        QSplitter *splitter = new QSplitter(this);
+        splitter->setOrientation(Qt::Vertical);
+        
+        QWidget* widGraph = new QWidget(splitter);
+        {
+            // add horizontal splitter
+            QSplitter *splitterH = new QSplitter(widGraph);
+            splitterH->setOrientation(Qt::Horizontal);
+            // add graph view
+           splitterH->addWidget(new QLabel("control"));
+           splitterH->addWidget(new QLabel("Wafer map"));
+        }
+        QWidget* widXmlView = new QWidget(splitter);
+        {
+            QHBoxLayout* hlytXmlTree = new QHBoxLayout(widXmlView);
+            hlytXmlTree->setContentsMargins(0, 0, 0, 0);
+            {
+                QVBoxLayout* vlytLeftTree = new QVBoxLayout();
+                vlytLeftTree->setContentsMargins(0, 0, 0, 0);
+                {
+                    // add QComboBox
+                    QComboBox* cbbXmlLeftSrc = new QComboBox;
+                    vlytLeftTree->addWidget(cbbXmlLeftSrc);
+                    vlytLeftTree->addWidget(twXmlViewerLeft);
+                }
+                QVBoxLayout* vlytRightTree = new QVBoxLayout();
+                vlytRightTree->setContentsMargins(0, 0, 0, 0);
+                {
+                    // add QComboBox
+                    QComboBox* cbbXmlRightSrc = new QComboBox;
+                    vlytRightTree->addWidget(cbbXmlRightSrc);
+                    vlytRightTree->addWidget(twXmlViewerRight);
+                }
+                hlytXmlTree->addLayout(vlytLeftTree);
+                hlytXmlTree->addLayout(vlytRightTree);
+            }
+        }
+        mainLayout->addWidget(splitter);
+    }
     this->setLayout(mainLayout);
 }
 

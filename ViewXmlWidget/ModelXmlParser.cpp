@@ -58,15 +58,16 @@ void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std:
             {
 
                 string val((char *)attr->children->content);
-                tagAttr = tag + "/" + string((char *)attr->name) + "/" + val;
-
-                // cout << "Child node column 1: " << attr->name << endl;
                 string arrName = string((char *)attr->name);
+                tagAttr = tag + "/" + arrName + "/" + val;
+                
+                
                 attrIt = new ViewXmlItems(tagIt);
-                attrIt->setText(1, arrName.c_str());
-                attrIt->setText(2, val.c_str());
+                attrIt->setText(2, arrName.c_str());
+                attrIt->setText(3, val.c_str());
                 attrIt->SetMapKey(tagAttr);
                 attrIt->SetAttrValue(val);
+                map[tagAttr] = attrIt;
 
                 if (m_iVerbose)
                     cout << "[TAG/ATTR] " << tagAttr << ", [VALUE] " << val << std::endl;
@@ -82,19 +83,87 @@ void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std:
             QString qs((char *)cur_node->content);
             qs = qs.simplified();
             string value = qs.toStdString();
-            string tagAttrContent = path + "/content";
-
+            string tagAttrContent = path + "/text/" + value;
             if (m_iVerbose)
                 cout << "[TAG/ATTR/CONTENT] " << tagAttrContent << " [Content]: " << value << endl;
             if (item)
             {
                 item->SetHasContent(qs.length() > 0);
                 item->SetContent(value);
-                item->setText(3, value.c_str());
+                item->setText(1, value.c_str());
             }
+            map[tagAttrContent] = item;
         }
     }
 }
+
+void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, int> &map)
+{
+    if (!node)
+    {
+        return;
+    }
+    xmlNode *cur_node = NULL;
+    for (cur_node = node; cur_node; cur_node = cur_node->next)
+    {
+        if (cur_node->type == XML_ELEMENT_NODE)
+        {
+            string nodeName((char *)cur_node->name);
+            string tag = path + "/" + nodeName;
+            if (m_iVerbose)
+                cout << "[TAG] " << tag << endl;
+
+            if (map.count(tag) == 0) {
+                map[tag] = 1;
+            } else {
+                map[tag]++;
+            }
+
+            xmlAttr *attr = cur_node->properties;
+            string tagAttr = tag;
+            
+            while (attr)
+            {
+
+                string val((char *)attr->children->content);
+                string arrName = string((char *)attr->name);
+                tagAttr = tag + "/" + arrName + "/" + val;
+
+                if (map.count(tagAttr) == 0) {
+                    map[tagAttr] = 1;
+                } else {
+                    map[tagAttr]++;
+                }
+
+
+                if (m_iVerbose)
+                    cout << "[TAG/ATTR/Value] " << tagAttr << std::endl;
+                attr = attr->next;
+            }
+
+            TraverseXmlTree(cur_node->children, tag, level + 1, map);
+        }
+        else if (cur_node->type == XML_TEXT_NODE && cur_node->content)
+        {
+            // check content empty or not;
+            string ct((char *)cur_node->content);
+            QString qs((char *)cur_node->content);
+            qs = qs.simplified();
+            string value = qs.toStdString();
+            string tagAttrContent = path + "/text/" + value;
+            if (map.count(tagAttrContent) == 0)
+            {
+                map[tagAttrContent] = 1;
+            } else {
+                map[tagAttrContent]++;
+            }
+
+            if (m_iVerbose)
+                cout << "[TAG/ATTR/text/value] " << tagAttrContent << endl;
+        }
+    }
+}
+
 
 void ModelXmlParser::PrintNodeInfo(xmlNode *node)
 {
@@ -298,40 +367,74 @@ void ModelXmlParser::CompareNodes(xmlNodePtr node1, xmlNodePtr node2, const stri
 }
 void ModelXmlParser::CompareTwoFiles()
 {
-    cout << "Comparing two XML files: " << m_sFname1.c_str() << " and " << m_sFname2.c_str() << endl;
-    xmlDocPtr doc1 = xmlParseFile(m_sFname1.c_str());
-    xmlDocPtr doc2 = xmlParseFile(m_sFname2.c_str());
-    if (!doc1 || !doc2)
+    xmlDoc* doc1 = xmlReadFile(m_sFname1.c_str(), NULL, 0);
+    if (!doc1)
     {
-        cerr << "Failed to parse XML files" << endl;
-        if (doc1)
-            xmlFreeDoc(doc1);
-        if (doc2)
-            xmlFreeDoc(doc2);
+        cerr << "Failed to parse XML file: " << m_sFname1.c_str() << endl;
         return;
     }
 
-    xmlNodePtr root1 = xmlDocGetRootElement(doc1);
-    xmlNodePtr root2 = xmlDocGetRootElement(doc2);
-    if (!root1 || !root2 || xmlStrcmp(root1->name, root2->name) != 0)
+    xmlNode *root1 = xmlDocGetRootElement(doc1);
+    if (!root1)
     {
-        cerr << "Root elements do not match" << endl;
+        cerr << "No root element in XML file: " << m_sFname1.c_str() << endl;
+        xmlFreeDoc(doc1);
+        return;
+    }
+
+    string path = "";
+    int level = 0;
+    std::map<string, int> keyStatistics1;
+    TraverseXmlTree(root1, path, level, keyStatistics1);
+    std::map<string, ViewXmlItems*> itemMap1;
+    TraverseXmlTree(root1, path, level, itemMap1);
+    // iterate keyStatistics1
+    for (auto &item : keyStatistics1)
+    {
+        cout << item.first << ": " << item.second << endl;
+    }
+
+    xmlDoc* doc2 = xmlReadFile(m_sFname2.c_str(), NULL, 0);
+    if (!doc2) {
+        cerr << "Failed to parse XML file: " << m_sFname2.c_str() << endl;
         xmlFreeDoc(doc1);
         xmlFreeDoc(doc2);
         return;
     }
-    vector<XmlDiff> diffs;
-    CompareNodes(root1, root2, "");
 
-    // print diffs
-    for (const auto &diff : diffs)
-    {
-        cout << diff.path << ": " << diff.node1 << " -> " << diff.node2 << " - " << diff.message << endl;
+    xmlNode *root2 = xmlDocGetRootElement(doc2);
+    if (!root2) {
+        cerr << "No root element in XML file: " << m_sFname2.c_str() << endl;
+        xmlFreeDoc(doc1);
+        xmlFreeDoc(doc2);
+        return;
     }
 
-    xmlFreeDoc(doc1);
-    xmlFreeDoc(doc2);
-    xmlCleanupParser();
+
+    string path2 = "";
+    int level2 = 0;
+    std::map<string, int> keyStatistics2;
+    TraverseXmlTree(root2, path2, level2, keyStatistics2);
+    std::map<string, ViewXmlItems*> itemMap2;
+    TraverseXmlTree(root1, path, level, itemMap2);
+    // iterate keyStatistics2
+    for (auto &item : keyStatistics2)
+    {
+        cout << item.first << ": " << item.second << endl;
+    }
+
+    // compare keyStatistics1 and keyStatistics2, then get the items from itemMap1 and itemMap2
+    for (auto &item1 : keyStatistics1) {
+        auto it2 = keyStatistics2.find(item1.first);
+        if (it2!= keyStatistics2.end()) {
+            if (it2->second!= item1.second) {
+                cout << "Key '" << item1.first << "' has different counts in both files: " << item1.second << " vs " << it2->second << endl;
+            }
+        } else {
+            cout << "Key '" << item1.first << "' is present in the first file but not in the second file" << endl;
+        }
+    }
+
     emit AllPageReaded();
 }
 

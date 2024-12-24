@@ -7,7 +7,7 @@ LcXml::LcXml(QWidget *parent) : QWidget(parent)
     resize(640, 480);
 
     m_mXmlParser = new ModelXmlParser(this);
-    m_mXmlParser->SetTreeWidget(m_vtXmlTab->GetTwXmlViewer());
+    m_mXmlParser->SetTreeWidget(m_vtXmlTab->GettwXmlViewerLeft());
     m_mXmlParser->SetWorkerMode(1);
     m_mXmlParser->SetFileName("test.xml"); // Set the XML file name to be parsed
     m_mXmlParser->SetFileName2("test2.xml"); // Set the second XML file name to be parsed
@@ -28,7 +28,7 @@ LcXml::LcXml(QWidget *parent) : QWidget(parent)
 void LcXml::handleAllPageReaded()
 {
     cout << "All pages have been read" << endl;
-    QTreeWidget *tw = m_vtXmlTab->GetTwXmlViewer();
+    QTreeWidget *tw = m_vtXmlTab->GettwXmlViewerLeft();
 
     // // add top level
     // QTreeWidgetItem *root = new QTreeWidgetItem(tw);

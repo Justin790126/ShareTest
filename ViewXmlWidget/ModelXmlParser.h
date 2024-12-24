@@ -38,6 +38,7 @@ public:
     string GetFileName2() const { return m_sFname2; }
 
     void TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, ViewXmlItems*> &map, ViewXmlItems* item=NULL);
+    void TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, int>& map);
 
 
     // Write TraverseXmlTree that accept std::function<void(xmlNode*)> callback;
@@ -67,9 +68,10 @@ private:
 
     xmlDoc *m_xmlDoc = NULL;
 
-    int m_iVerbose = 0;
+    int m_iVerbose = 1;
 
     std::map<string, ViewXmlItems *> m_mKeyItems;
+    std::map<string, int> m_mKeyStatistics;
     QTreeWidget* twContainer = NULL;
 
     int m_iWorkerMode = 0;
