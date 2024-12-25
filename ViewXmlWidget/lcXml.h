@@ -18,7 +18,7 @@ class LcXml : public QWidget
         ModelXmlParser* m_mXmlParser = NULL;
     
     private slots:
-        void handleAllPageReaded();
+        void handleAllPageReaded(QTreeWidget* tw);
 };
 
 

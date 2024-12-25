@@ -7,7 +7,7 @@ ModelXmlParser::ModelXmlParser(QObject *parent) : QThread(parent)
 ModelXmlParser::~ModelXmlParser()
 {
     // Clear all data
-    xmlFreeDoc(m_xmlDoc);
+    xmlFreeDoc(m_xmlDoc1);
     xmlCleanupParser();
 }
 
@@ -21,7 +21,7 @@ void ModelXmlParser::print_attributes(xmlAttr *attr)
 }
 
 // FIXME: use correct container to store parsed data (consider duplcated tags)
-void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, ViewXmlItems *> &map, ViewXmlItems *item)
+void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, ViewXmlItems *> &map, ViewXmlItems *item, QTreeWidget* twContainer)
 {
     if (!node)
     {
@@ -74,7 +74,7 @@ void ModelXmlParser::TraverseXmlTree(xmlNode *node, string path, int level, std:
                 attr = attr->next;
             }
 
-            TraverseXmlTree(cur_node->children, tag, level + 1, map, tagIt);
+            TraverseXmlTree(cur_node->children, tag, level + 1, map, tagIt, twContainer);
         }
         else if (cur_node->type == XML_TEXT_NODE && cur_node->content)
         {
@@ -228,53 +228,30 @@ void ModelXmlParser::PrintNodeInfo(xmlNode *node)
     print_attributes(node->properties);
 }
 
-void ModelXmlParser::TraverseXmlTree(xmlNode *node, std::function<void(xmlNode *)> callback)
-{
-    if (node == NULL)
-    {
-        return;
-    }
-
-    callback(node); // Call callback for the current node
-
-    for (xmlNode *cur_node = node->children; cur_node; cur_node = cur_node->next)
-    {
-        TraverseXmlTree(cur_node, callback);
-    }
-}
 
 void ModelXmlParser::CreateXmlItems()
 {
-    m_xmlDoc = xmlReadFile(m_sFname1.c_str(), NULL, 0);
-    if (!m_xmlDoc)
+    m_xmlDoc1 = xmlReadFile(m_sFname1.c_str(), NULL, 0);
+    if (!m_xmlDoc1)
     {
         cerr << "Failed to parse XML file: " << m_sFname1.c_str() << endl;
         return;
     }
 
-    xmlNode *root = xmlDocGetRootElement(m_xmlDoc);
+    xmlNode *root = xmlDocGetRootElement(m_xmlDoc1);
     if (!root)
     {
         cerr << "No root element in XML file: " << m_sFname1.c_str() << endl;
-        xmlFreeDoc(m_xmlDoc);
+        xmlFreeDoc(m_xmlDoc1);
         return;
     }
 
-    // const auto cb = [this](xmlNode *node)
-    // {
-    //     PrintNodeInfo(node);
-    // };
     string path = "";
     int level = 0;
-    m_mKeyItems.clear();
-    TraverseXmlTree(root, path, level, m_mKeyItems);
+    m_mKeyItems1.clear();
+    TraverseXmlTree(root, path, level, m_mKeyItems1, NULL, twContainer1);
 
-    // print map
-    // for(auto& it : map) {
-    //     std::cout << it.first << ": " << it.second << std::endl;
-    // }
-
-    emit AllPageReaded();
+    emit AllPageReaded(twContainer1);
 }
 
 string ModelXmlParser::getNodePath(xmlNodePtr node)
@@ -367,66 +344,69 @@ void ModelXmlParser::CompareNodes(xmlNodePtr node1, xmlNodePtr node2, const stri
 }
 void ModelXmlParser::CompareTwoFiles()
 {
-    xmlDoc* doc1 = xmlReadFile(m_sFname1.c_str(), NULL, 0);
-    if (!doc1)
+    m_xmlDoc1 = xmlReadFile(m_sFname1.c_str(), NULL, 0);
+    if (!m_xmlDoc1)
     {
         cerr << "Failed to parse XML file: " << m_sFname1.c_str() << endl;
         return;
     }
 
-    xmlNode *root1 = xmlDocGetRootElement(doc1);
+    xmlNode *root1 = xmlDocGetRootElement(m_xmlDoc1);
     if (!root1)
     {
         cerr << "No root element in XML file: " << m_sFname1.c_str() << endl;
-        xmlFreeDoc(doc1);
+        xmlFreeDoc(m_xmlDoc1);
         return;
     }
 
     string path = "";
     int level = 0;
-    std::map<string, int> keyStatistics1;
-    TraverseXmlTree(root1, path, level, keyStatistics1);
-    std::map<string, ViewXmlItems*> itemMap1;
-    TraverseXmlTree(root1, path, level, itemMap1);
-    // iterate keyStatistics1
-    for (auto &item : keyStatistics1)
+    m_mKeyStatistics1.clear();
+    TraverseXmlTree(root1, path, level, m_mKeyStatistics1);
+    m_mKeyItems1.clear();
+    TraverseXmlTree(root1, path, level, m_mKeyItems1, NULL, twContainer1);
+    emit AllPageReaded(twContainer1);
+    // iterate m_mKeyStatistics1
+    for (auto &item : m_mKeyStatistics1)
     {
         cout << item.first << ": " << item.second << endl;
     }
 
-    xmlDoc* doc2 = xmlReadFile(m_sFname2.c_str(), NULL, 0);
-    if (!doc2) {
+    m_xmlDoc2 = xmlReadFile(m_sFname2.c_str(), NULL, 0);
+    if (!m_xmlDoc2) {
         cerr << "Failed to parse XML file: " << m_sFname2.c_str() << endl;
-        xmlFreeDoc(doc1);
-        xmlFreeDoc(doc2);
+        xmlFreeDoc(m_xmlDoc1);
+        xmlFreeDoc(m_xmlDoc2);
         return;
     }
 
-    xmlNode *root2 = xmlDocGetRootElement(doc2);
+    xmlNode *root2 = xmlDocGetRootElement(m_xmlDoc2);
     if (!root2) {
         cerr << "No root element in XML file: " << m_sFname2.c_str() << endl;
-        xmlFreeDoc(doc1);
-        xmlFreeDoc(doc2);
+        xmlFreeDoc(m_xmlDoc1);
+        xmlFreeDoc(m_xmlDoc2);
         return;
     }
 
 
     string path2 = "";
     int level2 = 0;
-    std::map<string, int> keyStatistics2;
-    TraverseXmlTree(root2, path2, level2, keyStatistics2);
-    std::map<string, ViewXmlItems*> itemMap2;
-    TraverseXmlTree(root1, path, level, itemMap2);
-    // iterate keyStatistics2
-    for (auto &item : keyStatistics2)
+    m_mKeyStatistics2.clear();
+    TraverseXmlTree(root2, path2, level2, m_mKeyStatistics2);
+    m_mKeyItems2.clear();
+    TraverseXmlTree(root1, path, level, m_mKeyItems2, NULL, twContainer2);
+
+    emit AllPageReaded(twContainer2);
+    // iterate m_mKeyStatistics2
+    for (auto &item : m_mKeyStatistics2)
     {
         cout << item.first << ": " << item.second << endl;
     }
 
-    // compare keyStatistics1 and keyStatistics2, then get the items from itemMap1 and itemMap2
-    for (auto &item1 : keyStatistics1) {
-        auto it2 = keyStatistics2.find(item1.first);
-        if (it2!= keyStatistics2.end()) {
+    // compare m_mKeyStatistics1 and m_mKeyStatistics2, then get the items from m_mKeyItems1 and m_mKeyItems2
+    for (auto &item1 : m_mKeyStatistics1) {
+        auto it2 = m_mKeyStatistics2.find(item1.first);
+        if (it2!= m_mKeyStatistics2.end()) {
             if (it2->second!= item1.second) {
                 cout << "Key '" << item1.first << "' has different counts in both files: " << item1.second << " vs " << it2->second << endl;
             }
@@ -434,8 +414,7 @@ void ModelXmlParser::CompareTwoFiles()
             cout << "Key '" << item1.first << "' is present in the first file but not in the second file" << endl;
         }
     }
-
-    emit AllPageReaded();
+    // free all resrouces
 }
 
 void ModelXmlParser::run()

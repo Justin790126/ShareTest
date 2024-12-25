@@ -37,19 +37,17 @@ public:
     void SetFileName2(const string &fname) { m_sFname2 = fname; }
     string GetFileName2() const { return m_sFname2; }
 
-    void TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, ViewXmlItems*> &map, ViewXmlItems* item=NULL);
+    void TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, ViewXmlItems*> &map, ViewXmlItems* item=NULL, QTreeWidget* twContainer=NULL);
     void TraverseXmlTree(xmlNode *node, string path, int level, std::map<string, int>& map);
-
-
-    // Write TraverseXmlTree that accept std::function<void(xmlNode*)> callback;
-    void TraverseXmlTree(xmlNode *node, std::function<void(xmlNode *)> callback);
 
     void print_attributes(xmlAttr *attr);
 
     void PrintNodeInfo(xmlNode *node);
 
-    void SetTreeWidget(QTreeWidget* tw) { twContainer = tw; }
-    QTreeWidget* GetTreeWidget() const { return twContainer; }
+    void SetTreeWidget1(QTreeWidget* tw) { twContainer1 = tw; }
+    QTreeWidget* GetTreeWidget1() const { return twContainer1; }
+    void SetTreeWidget2(QTreeWidget* tw) { twContainer2 = tw; }
+    QTreeWidget* GetTreeWidget2() const { return twContainer2; }
 
     void SetWorkerMode(int mode) { m_iWorkerMode = mode; }
     int GetWorkerMode() const { return m_iWorkerMode; }
@@ -58,7 +56,7 @@ public:
     void CompareNodes(xmlNodePtr node1, xmlNodePtr node2, const string& path);
 
 signals:
-    void AllPageReaded();
+    void AllPageReaded(QTreeWidget* tw);
 
 private:
     virtual void run() override;
@@ -66,13 +64,17 @@ private:
     string m_sFname1;
     string m_sFname2;
 
-    xmlDoc *m_xmlDoc = NULL;
+    xmlDoc *m_xmlDoc1 = NULL;
+    xmlDoc *m_xmlDoc2 = NULL;
 
     int m_iVerbose = 1;
 
-    std::map<string, ViewXmlItems *> m_mKeyItems;
-    std::map<string, int> m_mKeyStatistics;
-    QTreeWidget* twContainer = NULL;
+    std::map<string, ViewXmlItems *> m_mKeyItems1;
+    std::map<string, ViewXmlItems *> m_mKeyItems2;
+    std::map<string, int> m_mKeyStatistics1;
+    std::map<string, int> m_mKeyStatistics2;
+    QTreeWidget* twContainer1 = NULL;
+    QTreeWidget* twContainer2 = NULL;
 
     int m_iWorkerMode = 0;
 

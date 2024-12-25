@@ -24,6 +24,7 @@ class ViewXmlTab : public QWidget
 
         QTreeWidget * twXmlViewerLeft = NULL;
         QTreeWidget * twXmlViewerRight = NULL;
+        QListWidget* lwDiffSummary = NULL;
 };
 
 

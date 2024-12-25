@@ -61,7 +61,15 @@ void ViewXmlTab::Layout()
                 hlytXmlTree->addLayout(vlytRightTree);
             }
         }
+        QWidget* widDiffSummary = new QWidget(splitter);
+        {
+            QVBoxLayout* vlytDiffSummary = new QVBoxLayout(widDiffSummary);
+            lwDiffSummary = new QListWidget(widDiffSummary);
+            vlytDiffSummary->addWidget(new QLabel("Difference Summary"));
+            vlytDiffSummary->addWidget(lwDiffSummary);
+        }
         mainLayout->addWidget(splitter);
+        splitter->setSizes({200, 600, 100});
     }
     this->setLayout(mainLayout);
 }
