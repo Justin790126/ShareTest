@@ -2,7 +2,7 @@
 <library xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="library.xsd">
   <book id="B001">
-    <title>The Lord of the Rings</title>
+    <title>TheS Lord of the RingsS</title>
     <author>J.R.R. Tolkien</author>
     <genre>Fantasy</genre>
     <price currency="USD">29.99</price>

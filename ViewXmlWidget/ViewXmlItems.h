@@ -21,11 +21,13 @@ class ViewXmlItems : public QTreeWidgetItem
         string GetContent() const { return m_sContent; }
         void SetHasContent(bool hasContent) { m_bHasContent = hasContent; }
         bool HasContent() const { return m_bHasContent; }
+        void SetHighlighted(bool highlighted);
     private:
         string m_sMapKey;
         string m_sAttrValue;
         string m_sContent;
         bool m_bHasContent = false;
+        bool m_bHighlighted = false;
         
 };
 

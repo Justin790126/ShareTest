@@ -53,7 +53,6 @@ public:
     int GetWorkerMode() const { return m_iWorkerMode; }
 
     string getNodePath(xmlNodePtr node);
-    void CompareNodes(xmlNodePtr node1, xmlNodePtr node2, const string& path);
 
 signals:
     void AllPageReaded(QTreeWidget* tw);
@@ -67,7 +66,7 @@ private:
     xmlDoc *m_xmlDoc1 = NULL;
     xmlDoc *m_xmlDoc2 = NULL;
 
-    int m_iVerbose = 1;
+    int m_iVerbose = 0;
 
     std::map<string, ViewXmlItems *> m_mKeyItems1;
     std::map<string, ViewXmlItems *> m_mKeyItems2;

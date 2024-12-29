@@ -264,84 +264,7 @@ string ModelXmlParser::getNodePath(xmlNodePtr node)
     }
     return path;
 }
-void ModelXmlParser::CompareNodes(xmlNodePtr node1, xmlNodePtr node2, const string &path)
-{
-    if (node1 == NULL && node2 == NULL)
-    {
-        return; // Both nodes are NULL
-    }
-    if (node1 == NULL || node2 == NULL)
-    {
-        cout << "Node mismatch at path: " << path << endl;
-        return; // Only one node is NULL
-    }
 
-    // Compare node types
-    if (node1->type != node2->type)
-    {
-        cout << "Node type mismatch at path: " << path << endl;
-        return;
-    }
-
-    if (node1->type == XML_ELEMENT_NODE && node2->type == XML_ELEMENT_NODE)
-    {
-        // Compare node names
-        if (xmlStrcmp(node1->name, node2->name) != 0)
-        {
-            cout << "Node name mismatch at path: " << path << " - " << (const char *)node1->name << " vs " << (const char *)node2->name << endl;
-            return;
-        }
-        // Compare node attributes
-        xmlAttrPtr attr1 = node1->properties;
-        xmlAttrPtr attr2 = node2->properties;
-
-        while (attr1 != NULL && attr2 != NULL)
-        {
-            if (xmlStrcmp(attr1->name, attr2->name) != 0)
-            {
-                cout << "Attribute name mismatch for node '" << (const char *)node1->name << "' at path: " << path << endl;
-            }
-            if (xmlStrcmp(attr1->children->content, attr2->children->content) != 0)
-            {
-                cout << "Attribute value mismatch for node '" << (const char *)node1->name << "' and attribute '" << (const char *)attr1->name << "' at path: " << path << endl;
-            }
-            attr1 = attr1->next;
-            attr2 = attr2->next;
-        }
-
-        // If one node has attributes and the other doesn't
-        if ((attr1 != NULL && attr2 == NULL) || (attr1 == NULL && attr2 != NULL))
-        {
-            cout << "Attribute count mismatch for node '" << (const char *)node1->name << "' at path: " << path << endl;
-            return;
-        }
-
-        // Compare child nodes recursively
-        xmlNodePtr child1 = node1->children;
-        xmlNodePtr child2 = node2->children;
-        while (child1 != NULL && child2 != NULL)
-        {
-            CompareNodes(child1, child2, path + "/" + (const char *)child1->name);
-            child1 = child1->next;
-            child2 = child2->next;
-        }
-
-        // // If one node has children and the other doesn't
-        if ((child1 != NULL && child2 == NULL) || (child1 == NULL && child2 != NULL))
-        {
-            cout << "Child node count mismatch for node '" << (const char *)node1->name << "' at path: " << path << endl;
-            return;
-        }
-    }
-    else if (node1->type == XML_TEXT_NODE && node1->content &&
-             node2->type == XML_TEXT_NODE && node2->content)
-    {
-        if (xmlStrcmp(node1->content, node2->content) != 0)
-        {
-            cout << "Text content mismatch at path: " << path << endl;
-        }
-    }
-}
 void ModelXmlParser::CompareTwoFiles()
 {
     m_xmlDoc1 = xmlReadFile(m_sFname1.c_str(), NULL, 0);
@@ -359,18 +282,26 @@ void ModelXmlParser::CompareTwoFiles()
         return;
     }
 
-    string path = "";
-    int level = 0;
+    string path1 = "";
+    int level1 = 0;
     m_mKeyStatistics1.clear();
-    TraverseXmlTree(root1, path, level, m_mKeyStatistics1);
+    TraverseXmlTree(root1, path1, level1, m_mKeyStatistics1);
     m_mKeyItems1.clear();
-    TraverseXmlTree(root1, path, level, m_mKeyItems1, NULL, twContainer1);
+    TraverseXmlTree(root1, path1, level1, m_mKeyItems1, NULL, twContainer1);
+    // print all keys in m_mKeyItems1
+    if (m_iVerbose)
+        for (auto &item : m_mKeyItems1)
+        {
+            cout << item.first << ": " << item.second << endl;
+        }
+
     emit AllPageReaded(twContainer1);
     // iterate m_mKeyStatistics1
-    for (auto &item : m_mKeyStatistics1)
-    {
-        cout << item.first << ": " << item.second << endl;
-    }
+    if (m_iVerbose)
+        for (auto &item : m_mKeyStatistics1)
+        {
+            cout << item.first << ": " << item.second << endl;
+        }
 
     m_xmlDoc2 = xmlReadFile(m_sFname2.c_str(), NULL, 0);
     if (!m_xmlDoc2) {
@@ -394,26 +325,48 @@ void ModelXmlParser::CompareTwoFiles()
     m_mKeyStatistics2.clear();
     TraverseXmlTree(root2, path2, level2, m_mKeyStatistics2);
     m_mKeyItems2.clear();
-    TraverseXmlTree(root1, path, level, m_mKeyItems2, NULL, twContainer2);
+    TraverseXmlTree(root2, path2, level2, m_mKeyItems2, NULL, twContainer2);
 
     emit AllPageReaded(twContainer2);
     // iterate m_mKeyStatistics2
-    for (auto &item : m_mKeyStatistics2)
-    {
-        cout << item.first << ": " << item.second << endl;
-    }
+    if (m_iVerbose)
+        for (auto &item : m_mKeyStatistics2)
+        {
+            cout << item.first << ": " << item.second << endl;
+        }
 
     // compare m_mKeyStatistics1 and m_mKeyStatistics2, then get the items from m_mKeyItems1 and m_mKeyItems2
     for (auto &item1 : m_mKeyStatistics1) {
         auto it2 = m_mKeyStatistics2.find(item1.first);
         if (it2!= m_mKeyStatistics2.end()) {
             if (it2->second!= item1.second) {
-                cout << "Key '" << item1.first << "' has different counts in both files: " << item1.second << " vs " << it2->second << endl;
+                // cout << "Key '" << item1.first << "' has different counts in both files: " << item1.second << " vs " << it2->second << endl;
             }
         } else {
-            cout << "Key '" << item1.first << "' is present in the first file but not in the second file" << endl;
+            string key1 = item1.first;
+            if (m_mKeyItems1.count(key1) > 0) {
+                ViewXmlItems *item1 = m_mKeyItems1[key1];
+                item1->SetHighlighted(true);
+            }
+            // cout << "Key '" << item1.first << "' is present in the first file but not in the second file" << endl;
         }
     }
+    for (auto &item2 : m_mKeyStatistics2) {
+        auto it1 = m_mKeyStatistics1.find(item2.first);
+        if (it1 != m_mKeyStatistics1.end()) {
+            if (it1->second!= item2.second) {
+                // cout << "Key '" << item2.first << "' has different counts in both files: " << item2.second << " vs " << it1->second << endl;
+            }
+        } else {
+            string key2 = item2.first;
+            if (m_mKeyItems2.count(key2) > 0) {
+                ViewXmlItems *item2 = m_mKeyItems2[key2];
+                item2->SetHighlighted(true);
+            }
+            // cout << "Key '" << item2.first << "' is present in the second file but not in the first file" << endl;
+        }
+    }
+    
     // free all resrouces
 }
 
