@@ -7,10 +7,20 @@ ModelOvlConf::ModelOvlConf()
 
 ModelOvlConf::~ModelOvlConf()
 {
-    m_mNameAndInfo.clear();
+    m_vNameAndInfo.clear();
 }
 
-void ModelOvlConf::run()
+void ModelOvlConf::Wait()
+{
+    while (this->isRunning())
+    {
+        usleep(1000);
+        QApplication::processEvents();
+    }
+    
+}
+
+void ModelOvlConf::ReadOvlConfig()
 {
     cout << "parsing rcsv table..." << endl;
 
@@ -22,7 +32,7 @@ void ModelOvlConf::run()
     }
 
     string line;
-    m_mNameAndInfo.clear();
+    m_vNameAndInfo.clear();
     while (getline(fp, line))
     {
         // separate line by space
@@ -45,23 +55,63 @@ void ModelOvlConf::run()
 
             OvlProductInfo info;
             info.SetProductName(pdName);
-            info.SetWfLen(wfLen);
-            info.SetWfSize(wfSize);
-            info.SetWfOffset(wfOffsetX, wfOffsetY);
-            m_mNameAndInfo[pdName] = std::move(info);
+            info.SetDieWidth(wfLen);
+            info.SetDieHeight(wfSize);
+            info.SetDieOffset(wfOffsetX, wfOffsetY);
+            m_vNameAndInfo.emplace_back(std::move(info));
         }
     }
 
-    // iterate m_mNameAndInfo
+    // iterate m_vNameAndInfo
     if (m_iVerbose)
     {
-        for (const auto &pair : m_mNameAndInfo)
+        for (const auto &pair : m_vNameAndInfo)
         {
-            cout << pair.first << " " << pair.second << endl;
+            cout << pair << endl;
         }
     }
 
     fp.close();
 
     emit allPageReaded();
+}
+
+void ModelOvlConf::WriteOvlConfig()
+{
+    cout << "writing rcsv table..." << endl;
+
+    // use ofstream to open file
+    ofstream fp(m_sFname);
+    if (!fp.is_open())
+    {
+        return;
+    }
+
+    // iterate m_vNameAndInfo by index
+    for (size_t i = 0; i < m_vNameAndInfo.size(); i++) {
+        OvlProductInfo *pInfo = &(m_vNameAndInfo[i]);
+        fp << pInfo->GetProductName() << " "
+           << pInfo->GetDieWidth() << " "
+           << pInfo->GetDieHeight() << " "
+           << pInfo->GetDieOffsetX() << " "
+           << pInfo->GetDieOffsetY() << endl;
+    }
+
+    fp.close();
+
+    emit allPageWritten();
+}
+
+void ModelOvlConf::run()
+{
+    if (m_iOvlCfgMode == (int)OVL_READ_CFG)
+    {
+
+        ReadOvlConfig();
+    }
+    else if (m_iOvlCfgMode == (int)OVL_WRITE_CFG)
+    {
+
+        WriteOvlConfig();
+    }
 }

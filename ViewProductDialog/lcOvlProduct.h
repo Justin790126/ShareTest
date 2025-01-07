@@ -22,6 +22,9 @@ class lcOvlProduct : public QObject
     
     private slots:
         void handelRcsvReaded();
+        void handleAddNewProduct();
+        void handleLoadOvlConfig();
+        void handleSaveOvlConfig();
 };
 
 #endif /* LC_OVL_PRODUCT_H */

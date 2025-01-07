@@ -24,10 +24,10 @@ ViewAddProductDialog::ViewAddProductDialog(QWidget *parent) : QDialog(parent)
 void ViewAddProductDialog::Widgets()
 {
     leProductName = new QLineEdit();
-    leWfrLen = new QLineEdit();
-    leWfrSize = new QLineEdit();
-    leWfrOffsetX = new QLineEdit();
-    leWfrOffsetY = new QLineEdit();
+    leDieW = new QLineEdit();
+    leDieH = new QLineEdit();
+    leDieOffsetX = new QLineEdit();
+    leDieOffsetY = new QLineEdit();
     btnAdd = new QPushButton("Add");
     btnCancel = new QPushButton("Cancel");
 }
@@ -39,10 +39,10 @@ void ViewAddProductDialog::Layout()
         QFormLayout* fmltMain = new QFormLayout();
         {
             fmltMain->addRow("Product Name:", leProductName);
-            fmltMain->addRow("Wafer Length:", leWfrLen);
-            fmltMain->addRow("Wafer Size:", leWfrSize);
-            fmltMain->addRow("Wafer Offset X:", leWfrOffsetX);
-            fmltMain->addRow("Wafer Offset Y:", leWfrOffsetY);
+            fmltMain->addRow("Field Width(um):", leDieW);
+            fmltMain->addRow("Field Height(um):", leDieH);
+            fmltMain->addRow("Offset X(um):", leDieOffsetX);
+            fmltMain->addRow("Offset Y(um):", leDieOffsetY);
         }
         QHBoxLayout *hlytBtns = new QHBoxLayout;
         {
@@ -60,7 +60,7 @@ void ViewAddProductDialog::Connect()
 {
     // connect with SIGNAL , SLOT
     connect(btnAdd, SIGNAL(clicked()), this, SLOT(accept()));
-    connect(btnCancel, SIGNAL(clicked()), this, SLOT(close()));
+    connect(btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
 }
 
 /*
@@ -71,6 +71,15 @@ void ViewAddProductDialog::Connect()
 ViewProductDialog::ViewProductDialog(QWidget *parent) : QDialog(parent)
 {
     UI();
+    Connect();
+}
+
+void ViewProductDialog::Connect()
+{
+    connect(btnOk, SIGNAL(clicked()), this, SLOT(accept()));
+    connect(btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(btnLoad, SIGNAL(clicked()), this, SIGNAL(loadConfig()));
+    connect(btnSave, SIGNAL(clicked()), this, SIGNAL(saveConfig()));
 }
 
 void ViewProductDialog::UI()
@@ -86,14 +95,14 @@ void ViewProductDialog::Widgets()
     btnCancel = new QPushButton("Cancel");
     btnAdd = new QPushButton("Add");
     btnDel = new QPushButton("Delete");
-    btnOrderUp = new QPushButton("Up");
-    btnOrderDown = new QPushButton("Down");
+    btnLoad = new QPushButton("Load");
+    btnSave = new QPushButton("Save");
     leSearchBar = new QLineEdit();
     leSearchBar->setPlaceholderText("Filter by Product Name");
 
     twProductList = new QTreeWidget();
     twProductList->setColumnCount(5);
-    twProductList->setHeaderLabels(QStringList() << "Product Name" << "Wafer Length" << "Wafer Size" << "Wafer Offset X" << "Wafer Offset Y");
+    twProductList->setHeaderLabels(QStringList() << "Product Name" << "Field Width(um)" << "Field Length(um)" << "Offset X(um)" << "Offset Y(um)");
 }
 
 void ViewProductDialog::Layout()
@@ -124,11 +133,12 @@ void ViewProductDialog::Layout()
         }
         QHBoxLayout *hlytToolBtn = new QHBoxLayout();
         {
-            hlytToolBtn->addWidget(btnOrderDown);
-            hlytToolBtn->addWidget(btnOrderUp);
-            hlytToolBtn->addWidget(btnDel);
             hlytToolBtn->addWidget(btnAdd);
-            hlytToolBtn->addStretch();
+            hlytToolBtn->addWidget(btnDel);
+            hlytToolBtn->addWidget(CreateVerticalSeparator());
+            hlytToolBtn->addWidget(btnLoad);
+            hlytToolBtn->addWidget(btnSave);
+            hlytToolBtn->addStretch(5);
         }
         vlytMain->addLayout(hlytLeftRight, 8);
         vlytMain->addLayout(hlytToolBtn, 1);
@@ -142,6 +152,14 @@ QFrame *ViewProductDialog::CreateSeparator()
 {
     QFrame *separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
+    separator->setFrameShadow(QFrame::Sunken);
+    return separator;
+}
+
+QFrame *ViewProductDialog::CreateVerticalSeparator()
+{
+    QFrame *separator = new QFrame(this);
+    separator->setFrameShape(QFrame::VLine);
     separator->setFrameShadow(QFrame::Sunken);
     return separator;
 }

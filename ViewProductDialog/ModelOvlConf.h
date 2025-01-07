@@ -9,6 +9,7 @@
 using namespace std;
 
 #include <QThread>
+#include <QApplication>
 
 class OvlProductInfo
 {
@@ -18,32 +19,38 @@ public:
 
     void SetProductName(string &name) { m_sProductName = name; }
     string GetProductName() const { return m_sProductName; }
-    void SetWfLen(double wfLen) { m_dWfLen = wfLen; }
-    double GetWfLen() const { return m_dWfLen; }
-    void SetWfSize(double wfSize) { m_dWfSize = wfSize; }
-    double GetWfSize() const { return m_dWfSize; }
-    void SetWfOffset(double x, double y)
+    void SetDieWidth(double wfLen) { m_dDieW = wfLen; }
+    double GetDieWidth() const { return m_dDieW; }
+    void SetDieHeight(double wfSize) { m_dDieH = wfSize; }
+    double GetDieHeight() const { return m_dDieH; }
+    void SetDieOffset(double x, double y)
     {
-        m_dWfOffsetX = x;
-        m_dWfOffsetY = y;
+        m_dDieOffsetX = x;
+        m_dDieOffsetY = y;
     }
-    double GetWfOffsetX() { return m_dWfOffsetX; }
-    double GetWfOffsetY() { return m_dWfOffsetY; }
+    double GetDieOffsetX() { return m_dDieOffsetX; }
+    double GetDieOffsetY() { return m_dDieOffsetY; }
 
     // overload cout
     friend ostream &operator<<(ostream &os, const OvlProductInfo &info)
     {
-        os << "ProductName: " << info.m_sProductName << ", WfLen: " << info.m_dWfLen
-           << ", WfSize: " << info.m_dWfSize << ", WfOffsetX: " << info.m_dWfOffsetX
-           << ", WfOffsetY: " << info.m_dWfOffsetY << endl;
+        os << "ProductName: " << info.m_sProductName << ", DieW: " << info.m_dDieW
+           << ", DieH: " << info.m_dDieH << ", Die offsetX: " << info.m_dDieOffsetX
+           << ", Die offsetY: " << info.m_dDieOffsetY << endl;
         return os;
     }
 
 private:
     string m_sProductName;
-    double m_dWfLen;
-    double m_dWfSize;
-    double m_dWfOffsetX, m_dWfOffsetY;
+    double m_dDieW;
+    double m_dDieH;
+    double m_dDieOffsetX, m_dDieOffsetY;
+};
+
+enum OvlConfMode
+{
+    OVL_READ_CFG,
+    OVL_WRITE_CFG
 };
 
 class ModelOvlConf : public QThread
@@ -55,19 +62,27 @@ public:
 
     void SetFname(const string fname) { m_sFname = fname; }
     string GetFname() const { return m_sFname; }
-    std::map<string, OvlProductInfo> *GetProductInfo() { return &m_mNameAndInfo; }
-
+    vector<OvlProductInfo> *GetProductInfo() { return &m_vNameAndInfo; }
+    void SetProductInfo(vector<OvlProductInfo>& vInfo) { m_vNameAndInfo = std::move(vInfo); }
+    void SetWorkerMode(int mode) { m_iOvlCfgMode = mode; }
+    void Wait();
 signals:
     void allPageReaded();
+    void allPageWritten();
 
 protected:
     virtual void run() override;
 
 private:
+    void ReadOvlConfig();
+    void WriteOvlConfig();
+
+private:
     int m_iVerbose;
+    int m_iOvlCfgMode = 0;
     string m_sFname;
 
-    map<string, OvlProductInfo> m_mNameAndInfo;
+    vector<OvlProductInfo> m_vNameAndInfo;
 };
 
 #endif /* MODEL_OVL_CONF_H */

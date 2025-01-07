@@ -3,14 +3,15 @@
 
 #include <QtGui>
 #include <iostream>
+#include "ModelOvlConf.h"
 
 using namespace std;
 
 
-class ProdcutTreeItem : public QTreeWidgetItem
+class ProductTreeItem : public QTreeWidgetItem
 {
 public:
-    ProdcutTreeItem(const QStringList &strings, QTreeWidget *parent = nullptr)
+    ProductTreeItem(QStringList &strings, QTreeWidget *parent = nullptr)
         : QTreeWidgetItem(parent, strings) {}
 
     bool operator<(const QTreeWidgetItem &other) const override
@@ -23,6 +24,10 @@ public:
         // Here's a simple example: compare alphabetically, case-insensitive
         return QString::compare(thisData, otherData, Qt::CaseInsensitive) < 0;
     }
+    void SetProductInfo(OvlProductInfo* pdInfo) { m_pdInfo = pdInfo; }
+    OvlProductInfo* GetProductInfo() { return m_pdInfo; }
+private:
+    OvlProductInfo* m_pdInfo = NULL;
 };
 
 class ViewAddProductDialog : public QDialog
@@ -39,10 +44,10 @@ private:
     void Connect();
 private:
     QLineEdit *leProductName = NULL;
-    QLineEdit *leWfrLen = NULL;
-    QLineEdit *leWfrSize = NULL;
-    QLineEdit *leWfrOffsetX = NULL;
-    QLineEdit *leWfrOffsetY = NULL;
+    QLineEdit *leDieW = NULL;
+    QLineEdit *leDieH = NULL;
+    QLineEdit *leDieOffsetX = NULL;
+    QLineEdit *leDieOffsetY = NULL;
     QPushButton *btnAdd = NULL;
     QPushButton *btnCancel = NULL;
 };
@@ -55,16 +60,22 @@ public:
     ~ViewProductDialog() = default;
 
     QFrame *CreateSeparator();
+    QFrame* CreateVerticalSeparator();
 
     QPushButton *GetAddButton() { return btnAdd; }
+    QTreeWidget *GetProductTreeWidget() { return twProductList; }
+
+signals:
+    void loadConfig();
+    void saveConfig();
 
 private:
     QPushButton *btnOk = NULL;
     QPushButton *btnCancel = NULL;
     QPushButton *btnAdd = NULL;
     QPushButton *btnDel = NULL;
-    QPushButton *btnOrderUp = NULL;
-    QPushButton *btnOrderDown = NULL;
+    QPushButton *btnLoad = NULL;
+    QPushButton *btnSave = NULL;
     QTreeWidget *twProductList = NULL;
 
     QLineEdit *leSearchBar = NULL;
@@ -72,6 +83,7 @@ private:
     void Widgets();
     void Layout();
     void UI();
+    void Connect();
 
 private slots:
     void handleBtnOkPressed();
