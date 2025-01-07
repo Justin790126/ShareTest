@@ -20,6 +20,17 @@ void ModelOvlConf::Wait()
     
 }
 
+OvlProductInfo* ModelOvlConf::AddNewProductInfo(string& pdName, double& dieW, double& dieH, double& dieOffsetX, double& dieOffsetY)
+{
+    OvlProductInfo* info = new OvlProductInfo;
+    info->SetProductName(pdName);
+    info->SetDieWidth(dieW);
+    info->SetDieHeight(dieH);
+    info->SetDieOffset(dieOffsetX, dieOffsetY);
+    m_vNameAndInfo.push_back(*info);
+    return info;
+}
+
 void ModelOvlConf::ReadOvlConfig()
 {
     cout << "parsing rcsv table..." << endl;

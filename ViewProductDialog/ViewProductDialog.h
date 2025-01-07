@@ -37,6 +37,11 @@ public:
     ViewAddProductDialog(QWidget *parent = NULL);
     ~ViewAddProductDialog() = default;
 
+    QLineEdit *GetProductNameLineEdit() { return leProductName; }
+    QLineEdit *GetDieWLineEdit() { return leDieW; }
+    QLineEdit *GetDieHLineEdit() { return leDieH; }
+    QLineEdit *GetDieOffsetXLineEdit() { return leDieOffsetX; }
+    QLineEdit *GetDieOffsetYLineEdit() { return leDieOffsetY; }
 
 private:
     void Widgets();
@@ -68,6 +73,8 @@ public:
 signals:
     void loadConfig();
     void saveConfig();
+    void addNewProduct();
+    void delSelProduct();
 
 private:
     QPushButton *btnOk = NULL;

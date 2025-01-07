@@ -63,6 +63,7 @@ public:
     void SetFname(const string fname) { m_sFname = fname; }
     string GetFname() const { return m_sFname; }
     vector<OvlProductInfo> *GetProductInfo() { return &m_vNameAndInfo; }
+    OvlProductInfo* AddNewProductInfo(string& pdName, double& dieW, double& dieH, double& dieOffsetX, double& dieOffsetY);
     void SetProductInfo(vector<OvlProductInfo>& vInfo) { m_vNameAndInfo = std::move(vInfo); }
     void SetWorkerMode(int mode) { m_iOvlCfgMode = mode; }
     void Wait();

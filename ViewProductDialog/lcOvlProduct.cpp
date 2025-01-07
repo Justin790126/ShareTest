@@ -11,8 +11,7 @@ lcOvlProduct::lcOvlProduct()
     // cout << "handleRcsv: " << cf->GetFname()  << endl;
 
     view = new ViewProductDialog();
-    QPushButton *btnAdd = view->GetAddButton();
-    connect(btnAdd, SIGNAL(clicked()), this, SLOT(handleAddNewProduct()));
+    connect(view, SIGNAL(addNewProduct()), this, SLOT(handleAddNewProduct()));
     connect(view, SIGNAL(loadConfig()), this, SLOT(handleLoadOvlConfig()));
     connect(view, SIGNAL(saveConfig()), this, SLOT(handleSaveOvlConfig()));
     if (view->exec())
@@ -41,8 +40,7 @@ void lcOvlProduct::handleSaveOvlConfig()
     for (int i = 0; i < topCount; i++)
     {
         ProductTreeItem *item = (ProductTreeItem *)wid->topLevelItem(i);
-        OvlProductInfo *product = item->GetProductInfo();
-        // cout << *product << endl;
+        OvlProductInfo* product = item->GetProductInfo();
         infos.push_back(*product);
     }
 
@@ -96,11 +94,32 @@ void lcOvlProduct::handleLoadOvlConfig()
 
 void lcOvlProduct::handleAddNewProduct()
 {
+    ViewProductDialog *dialog = (ViewProductDialog *)QObject::sender();
+    if (!dialog)
+        return;
+    QTreeWidget *wid = dialog->GetProductTreeWidget();
 
     ViewAddProductDialog addProductDialog(view);
     if (addProductDialog.exec())
     {
         cout << "accept" << endl;
+        QLineEdit* pdname = addProductDialog.GetProductNameLineEdit();
+        QLineEdit* pdw = addProductDialog.GetDieWLineEdit();
+        QLineEdit* pdh = addProductDialog.GetDieHLineEdit();
+        QLineEdit* pdx = addProductDialog.GetDieOffsetXLineEdit();
+        QLineEdit* pdy = addProductDialog.GetDieOffsetYLineEdit();
+
+        string productName = pdname->text().toStdString();
+        double dieW = pdw->text().toDouble();
+        double dieH = pdh->text().toDouble();
+        double dieOffsetX = pdx->text().toDouble();
+        double dieOffsetY = pdy->text().toDouble();
+
+        OvlProductInfo* product = model->AddNewProductInfo(productName, dieW, dieH, dieOffsetX, dieOffsetY);
+        QStringList pdInfo;
+        pdInfo << pdname->text() << pdw->text() << pdh->text() << pdx->text() << pdy->text();
+        ProductTreeItem *it = new ProductTreeItem(pdInfo, wid);
+        it->SetProductInfo(product);
     }
 }
 

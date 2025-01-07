@@ -80,6 +80,8 @@ void ViewProductDialog::Connect()
     connect(btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
     connect(btnLoad, SIGNAL(clicked()), this, SIGNAL(loadConfig()));
     connect(btnSave, SIGNAL(clicked()), this, SIGNAL(saveConfig()));
+    connect(btnAdd, SIGNAL(clicked()), this, SIGNAL(addNewProduct()));
+    connect(btnDelete, SIGNAL(clicked()), this, SIGNAL(delSelProduct()));
 }
 
 void ViewProductDialog::UI()
