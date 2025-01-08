@@ -15,9 +15,19 @@ lcOvlProduct::lcOvlProduct()
     connect(view, SIGNAL(loadConfig()), this, SLOT(handleLoadOvlConfig()));
     connect(view, SIGNAL(saveConfig()), this, SLOT(handleSaveOvlConfig()));
     connect(view, SIGNAL(delSelProduct()), this, SLOT(handleDelSelProduct()));
+    connect(view, SIGNAL(searchKeyChanged(const QString &)), this, SLOT(handleSearchKeyChanged(const QString &)));
     if (view->exec())
     {
-        cout << "accept" << endl;
+        cout << "Selection accept" << endl;
+        QTreeWidget *wid = view->GetProductTreeWidget();
+        // get selected item
+        QTreeWidgetItem *item = wid->currentItem();
+        if (item)
+        {
+            ProductTreeItem *product = (ProductTreeItem *)item;
+            OvlProductInfo *info = product->GetProductInfo();
+            cout << *info << endl;
+        }
     }
 }
 
@@ -25,6 +35,14 @@ lcOvlProduct::~lcOvlProduct()
 {
 }
 
+void lcOvlProduct::handleSearchKeyChanged(const QString &key)
+{
+    string searchKey = key.toStdString();
+    model->SetSearchKey(searchKey);
+    model->SetWorkerMode(OVL_SEARCH_CFG);
+    model->start();
+    model->Wait();
+}
 
 void lcOvlProduct::handleSaveOvlConfig()
 {
@@ -41,7 +59,7 @@ void lcOvlProduct::handleSaveOvlConfig()
     for (int i = 0; i < topCount; i++)
     {
         ProductTreeItem *item = (ProductTreeItem *)wid->topLevelItem(i);
-        OvlProductInfo* product = item->GetProductInfo();
+        OvlProductInfo *product = item->GetProductInfo();
         infos.push_back(*product);
     }
 
@@ -103,6 +121,7 @@ void lcOvlProduct::handleLoadOvlConfig()
                    << QString::number(product->GetDieOffsetY());
             ProductTreeItem *it = new ProductTreeItem(pdInfo, wid);
             it->SetProductInfo(product);
+            product->SetTreeItem(it);
         }
     }
 }
@@ -118,11 +137,11 @@ void lcOvlProduct::handleAddNewProduct()
     if (addProductDialog.exec())
     {
         cout << "accept" << endl;
-        QLineEdit* pdname = addProductDialog.GetProductNameLineEdit();
-        QLineEdit* pdw = addProductDialog.GetDieWLineEdit();
-        QLineEdit* pdh = addProductDialog.GetDieHLineEdit();
-        QLineEdit* pdx = addProductDialog.GetDieOffsetXLineEdit();
-        QLineEdit* pdy = addProductDialog.GetDieOffsetYLineEdit();
+        QLineEdit *pdname = addProductDialog.GetProductNameLineEdit();
+        QLineEdit *pdw = addProductDialog.GetDieWLineEdit();
+        QLineEdit *pdh = addProductDialog.GetDieHLineEdit();
+        QLineEdit *pdx = addProductDialog.GetDieOffsetXLineEdit();
+        QLineEdit *pdy = addProductDialog.GetDieOffsetYLineEdit();
 
         string productName = pdname->text().toStdString();
         double dieW = pdw->text().toDouble();
@@ -130,7 +149,7 @@ void lcOvlProduct::handleAddNewProduct()
         double dieOffsetX = pdx->text().toDouble();
         double dieOffsetY = pdy->text().toDouble();
 
-        OvlProductInfo* product = model->AddNewProductInfo(productName, dieW, dieH, dieOffsetX, dieOffsetY);
+        OvlProductInfo *product = model->AddNewProductInfo(productName, dieW, dieH, dieOffsetX, dieOffsetY);
         QStringList pdInfo;
         pdInfo << pdname->text() << pdw->text() << pdh->text() << pdx->text() << pdy->text();
         ProductTreeItem *it = new ProductTreeItem(pdInfo, wid);

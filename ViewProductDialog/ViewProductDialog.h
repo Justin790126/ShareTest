@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 class ProductTreeItem : public QTreeWidgetItem
 {
 public:
@@ -24,10 +23,11 @@ public:
         // Here's a simple example: compare alphabetically, case-insensitive
         return QString::compare(thisData, otherData, Qt::CaseInsensitive) < 0;
     }
-    void SetProductInfo(OvlProductInfo* pdInfo) { m_pdInfo = pdInfo; }
-    OvlProductInfo* GetProductInfo() { return m_pdInfo; }
+    void SetProductInfo(OvlProductInfo *pdInfo) { m_pdInfo = pdInfo; }
+    OvlProductInfo *GetProductInfo() { return m_pdInfo; }
+
 private:
-    OvlProductInfo* m_pdInfo = NULL;
+    OvlProductInfo *m_pdInfo = NULL;
 };
 
 class ViewAddProductDialog : public QDialog
@@ -47,6 +47,7 @@ private:
     void Widgets();
     void Layout();
     void Connect();
+
 private:
     QLineEdit *leProductName = NULL;
     QLineEdit *leDieW = NULL;
@@ -65,7 +66,7 @@ public:
     ~ViewProductDialog() = default;
 
     QFrame *CreateSeparator();
-    QFrame* CreateVerticalSeparator();
+    QFrame *CreateVerticalSeparator();
 
     QPushButton *GetAddButton() { return btnAdd; }
     QTreeWidget *GetProductTreeWidget() { return twProductList; }
@@ -75,6 +76,7 @@ signals:
     void saveConfig();
     void addNewProduct();
     void delSelProduct();
+    void searchKeyChanged(const QString &key);
 
 private:
     QPushButton *btnOk = NULL;
@@ -85,7 +87,7 @@ private:
     QPushButton *btnSave = NULL;
     QTreeWidget *twProductList = NULL;
 
-    QShortcut* shtDel = NULL;
+    QShortcut *shtDel = NULL;
 
     QLineEdit *leSearchBar = NULL;
 
@@ -93,10 +95,6 @@ private:
     void Layout();
     void UI();
     void Connect();
-
-private slots:
-    void handleBtnOkPressed();
-    void handleBtnCancelPressed();
 };
 
 #endif /* VIEW_PRODUCT_DIALOG_H */

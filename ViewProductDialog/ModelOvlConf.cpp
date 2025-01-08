@@ -17,12 +17,11 @@ void ModelOvlConf::Wait()
         usleep(1000);
         QApplication::processEvents();
     }
-    
 }
 
-OvlProductInfo* ModelOvlConf::AddNewProductInfo(string& pdName, double& dieW, double& dieH, double& dieOffsetX, double& dieOffsetY)
+OvlProductInfo *ModelOvlConf::AddNewProductInfo(string &pdName, double &dieW, double &dieH, double &dieOffsetX, double &dieOffsetY)
 {
-    OvlProductInfo* info = new OvlProductInfo;
+    OvlProductInfo *info = new OvlProductInfo;
     info->SetProductName(pdName);
     info->SetDieWidth(dieW);
     info->SetDieHeight(dieH);
@@ -99,7 +98,8 @@ void ModelOvlConf::WriteOvlConfig()
     }
 
     // iterate m_vNameAndInfo by index
-    for (size_t i = 0; i < m_vNameAndInfo.size(); i++) {
+    for (size_t i = 0; i < m_vNameAndInfo.size(); i++)
+    {
         OvlProductInfo *pInfo = &(m_vNameAndInfo[i]);
         fp << pInfo->GetProductName() << " "
            << pInfo->GetDieWidth() << " "
@@ -113,6 +113,38 @@ void ModelOvlConf::WriteOvlConfig()
     emit allPageWritten();
 }
 
+void ModelOvlConf::SearchOvlConfig()
+{
+    if (m_sSearchKey.empty())
+    {
+        bool visibility = true;
+        for (auto &info : m_vNameAndInfo)
+        {
+
+            info.SetVisible(visibility);
+            QTreeWidgetItem *it = info.GetTreeItem();
+            if (it)
+            {
+                it->setHidden(!visibility);
+            }
+        }
+    }
+    else
+    {
+        for (auto &info : m_vNameAndInfo)
+        {
+            bool visibility = true;
+            string pdName = info.GetProductName();
+            visibility = pdName.find(m_sSearchKey) != string::npos;
+            QTreeWidgetItem *it = info.GetTreeItem();
+            if (it)
+            {
+                it->setHidden(!visibility);
+            }
+        }
+    }
+}
+
 void ModelOvlConf::run()
 {
     if (m_iOvlCfgMode == (int)OVL_READ_CFG)
@@ -124,5 +156,9 @@ void ModelOvlConf::run()
     {
 
         WriteOvlConfig();
+    }
+    else if (m_iOvlCfgMode == (int)OVL_SEARCH_CFG)
+    {
+        SearchOvlConfig();
     }
 }

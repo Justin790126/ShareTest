@@ -34,9 +34,9 @@ void ViewAddProductDialog::Widgets()
 
 void ViewAddProductDialog::Layout()
 {
-    QVBoxLayout* vlytMain = new QVBoxLayout();
+    QVBoxLayout *vlytMain = new QVBoxLayout();
     {
-        QFormLayout* fmltMain = new QFormLayout();
+        QFormLayout *fmltMain = new QFormLayout();
         {
             fmltMain->addRow("Product Name:", leProductName);
             fmltMain->addRow("Field Width(um):", leDieW);
@@ -83,6 +83,7 @@ void ViewProductDialog::Connect()
     connect(btnAdd, SIGNAL(clicked()), this, SIGNAL(addNewProduct()));
     connect(btnDel, SIGNAL(clicked()), this, SIGNAL(delSelProduct()));
     connect(shtDel, SIGNAL(activated()), this, SIGNAL(delSelProduct()));
+    connect(leSearchBar, SIGNAL(textChanged(const QString &)), this, SIGNAL(searchKeyChanged(const QString &)));
 }
 
 void ViewProductDialog::UI()
@@ -90,7 +91,6 @@ void ViewProductDialog::UI()
     Widgets();
     Layout();
 }
-
 
 void ViewProductDialog::Widgets()
 {
@@ -166,14 +166,4 @@ QFrame *ViewProductDialog::CreateVerticalSeparator()
     separator->setFrameShape(QFrame::VLine);
     separator->setFrameShadow(QFrame::Sunken);
     return separator;
-}
-
-void ViewProductDialog::handleBtnCancelPressed()
-{
-    reject();
-}
-
-void ViewProductDialog::handleBtnOkPressed()
-{
-    accept();
 }

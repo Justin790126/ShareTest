@@ -11,21 +11,21 @@ using namespace std;
 class lcOvlProduct : public QObject
 {
     Q_OBJECT
-    public:
-        lcOvlProduct();
-        ~lcOvlProduct();
+public:
+    lcOvlProduct();
+    ~lcOvlProduct();
 
-    private:
-        ViewProductDialog * view = NULL;
-        ModelOvlConf * model = NULL;
+private:
+    ViewProductDialog *view = NULL;
+    ModelOvlConf *model = NULL;
 
-    
-    private slots:
-        void handelRcsvReaded();
-        void handleAddNewProduct();
-        void handleLoadOvlConfig();
-        void handleSaveOvlConfig();
-        void handleDelSelProduct();
+private slots:
+    void handelRcsvReaded();
+    void handleAddNewProduct();
+    void handleLoadOvlConfig();
+    void handleSaveOvlConfig();
+    void handleDelSelProduct();
+    void handleSearchKeyChanged(const QString &key);
 };
 
 #endif /* LC_OVL_PRODUCT_H */

@@ -10,6 +10,7 @@ using namespace std;
 
 #include <QThread>
 #include <QApplication>
+#include <QtGui>
 
 class OvlProductInfo
 {
@@ -40,17 +41,26 @@ public:
         return os;
     }
 
+    void SetVisible(bool visible) { m_bVisible = visible; }
+    bool IsVisible() const { return m_bVisible; }
+    void SetTreeItem(QTreeWidgetItem *it) { m_it = it; }
+    QTreeWidgetItem *GetTreeItem() const { return m_it; }
+
 private:
     string m_sProductName;
     double m_dDieW;
     double m_dDieH;
     double m_dDieOffsetX, m_dDieOffsetY;
+    bool m_bVisible = true;
+
+    QTreeWidgetItem *m_it = NULL;
 };
 
 enum OvlConfMode
 {
     OVL_READ_CFG,
-    OVL_WRITE_CFG
+    OVL_WRITE_CFG,
+    OVL_SEARCH_CFG
 };
 
 class ModelOvlConf : public QThread
@@ -63,9 +73,10 @@ public:
     void SetFname(const string fname) { m_sFname = fname; }
     string GetFname() const { return m_sFname; }
     vector<OvlProductInfo> *GetProductInfo() { return &m_vNameAndInfo; }
-    OvlProductInfo* AddNewProductInfo(string& pdName, double& dieW, double& dieH, double& dieOffsetX, double& dieOffsetY);
-    void SetProductInfo(vector<OvlProductInfo>& vInfo) { m_vNameAndInfo = std::move(vInfo); }
+    OvlProductInfo *AddNewProductInfo(string &pdName, double &dieW, double &dieH, double &dieOffsetX, double &dieOffsetY);
+    void SetProductInfo(vector<OvlProductInfo> &vInfo) { m_vNameAndInfo = std::move(vInfo); }
     void SetWorkerMode(int mode) { m_iOvlCfgMode = mode; }
+    void SetSearchKey(const string &key) { m_sSearchKey = key; }
     void Wait();
 signals:
     void allPageReaded();
@@ -77,11 +88,13 @@ protected:
 private:
     void ReadOvlConfig();
     void WriteOvlConfig();
+    void SearchOvlConfig();
 
 private:
     int m_iVerbose;
     int m_iOvlCfgMode = 0;
     string m_sFname;
+    string m_sSearchKey;
 
     vector<OvlProductInfo> m_vNameAndInfo;
 };
