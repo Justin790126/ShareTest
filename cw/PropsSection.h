@@ -1,25 +1,25 @@
 /*
-    Elypson/qt-collapsible-section
+    Elypson/qt-collapsible-PropsSection
     (c) 2016 Michael A. Voelkel - michael.alexander.voelkel@gmail.com
 
-    This file is part of Elypson/qt-collapsible section.
+    This file is part of Elypson/qt-collapsible PropsSection.
 
-    Elypson/qt-collapsible-section is free software: you can redistribute it and/or modify
+    Elypson/qt-collapsible-PropsSection is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
 
-    Elypson/qt-collapsible-section is distributed in the hope that it will be useful,
+    Elypson/qt-collapsible-PropsSection is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Elypson/qt-collapsible-section. If not, see <http://www.gnu.org/licenses/>.
+    along with Elypson/qt-collapsible-PropsSection. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SECTION_H
-#define SECTION_H
+#ifndef PropsSection_H
+#define PropsSection_H
 
 #include <QFrame>
 #include <QGridLayout>
@@ -29,7 +29,7 @@
 #include <QWidget>
 #include <QPushButton>
 
-    class Section : public QWidget
+    class PropsSection : public QWidget
     {
         Q_OBJECT
         
@@ -48,13 +48,13 @@
         void handleToggle(bool collapsed);
         void handleCloseButton();
     signals:
-        void sectionClosed();
+        void PropsSectionClosed();
 
     public:
         static const int DEFAULT_DURATION = 0;
     
-        // initialize section
-        explicit Section(const QString& title = "", const int animationDuration = DEFAULT_DURATION, QWidget* parent = 0);
+        // initialize PropsSection
+        explicit PropsSection(const QString& title = "", const int animationDuration = DEFAULT_DURATION, QWidget* parent = 0);
 
         // set layout of content
         void setContentLayout(QLayout& contentLayout);
@@ -67,4 +67,4 @@
     };
 
 
-#endif // SECTION_H
+#endif // PropsSection_H

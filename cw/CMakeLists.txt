@@ -11,11 +11,11 @@ include(${QT_USE_FILE})
 set(SOURCES
     main.cpp
     qcustomplot.cpp
-    Section.cpp
+    PropsSection.cpp
 )
 
 set(HEADERS
-    Section.h
+    PropsSection.h
     qcustomplot.h
 )
 

@@ -996,7 +996,7 @@ void QCPPaintBufferGlFbo::reallocateBuffer()
   A QCPLayer contains an ordered list of QCPLayerable instances. QCPLayerable is an abstract base
   class from which almost all visible objects derive, like axes, grids, graphs, items, etc.
 
-  \section qcplayer-defaultlayers Default layers
+  \PropsSection qcplayer-defaultlayers Default layers
 
   Initially, QCustomPlot has six layers: "background", "grid", "main", "axes", "legend" and
   "overlay" (in that order). On top is the "overlay" layer, which only contains the QCustomPlot's
@@ -1010,7 +1010,7 @@ void QCPPaintBufferGlFbo::reallocateBuffer()
   course, the layer affiliation of the individual objects can be changed as required (\ref
   QCPLayerable::setLayer).
 
-  \section qcplayer-ordering Controlling the rendering order via layers
+  \PropsSection qcplayer-ordering Controlling the rendering order via layers
 
   Controlling the ordering of layerables in the plot is easy: Create a new layer in the position
   you want the layerable to be in, e.g. above "main", with \ref QCustomPlot::addLayer. Then set the
@@ -1029,7 +1029,7 @@ void QCPPaintBufferGlFbo::reallocateBuffer()
   When a layer is deleted, the objects on it are not deleted with it, but fall on the layer below
   the deleted layer, see QCustomPlot::removeLayer.
 
-  \section qcplayer-buffering Replotting only a specific layer
+  \PropsSection qcplayer-buffering Replotting only a specific layer
 
   If the layer mode (\ref setMode) is set to \ref lmBuffered, you can replot only this specific
   layer by calling \ref replot. In certain situations this can provide better replot performance,
@@ -2177,7 +2177,7 @@ bool QCPRange::validRange(const QCPRange &range)
   QCPDataSelection is thus used.
   
   Both \ref QCPDataRange and \ref QCPDataSelection offer convenience methods to work with them,
-  e.g. \ref bounded, \ref expanded, \ref intersects, \ref intersection, \ref adjusted, \ref
+  e.g. \ref bounded, \ref expanded, \ref intersects, \ref interPropsSection, \ref adjusted, \ref
   contains. Further, addition and subtraction operators (defined in \ref QCPDataSelection) can be
   used to join/subtract data ranges and data selections (or mixtures), to retrieve a corresponding
   \ref QCPDataSelection.
@@ -2275,15 +2275,15 @@ QCPDataRange::QCPDataRange(int begin, int end) :
   Returns a data range that matches this data range, except that parts exceeding \a other are
   excluded.
   
-  This method is very similar to \ref intersection, with one distinction: If this range and the \a
-  other range share no intersection, the returned data range will be empty with begin and end set
-  to the respective boundary side of \a other, at which this range is residing. (\ref intersection
+  This method is very similar to \ref interPropsSection, with one distinction: If this range and the \a
+  other range share no interPropsSection, the returned data range will be empty with begin and end set
+  to the respective boundary side of \a other, at which this range is residing. (\ref interPropsSection
   would just return a range with begin and end set to 0.)
 */
 QCPDataRange QCPDataRange::bounded(const QCPDataRange &other) const
 {
-  QCPDataRange result(intersection(other));
-  if (result.isEmpty()) // no intersection, preserve respective bounding side of otherRange as both begin and end of return value
+  QCPDataRange result(interPropsSection(other));
+  if (result.isEmpty()) // no interPropsSection, preserve respective bounding side of otherRange as both begin and end of return value
   {
     if (mEnd <= other.mBegin)
       result = QCPDataRange(other.mBegin, other.mBegin);
@@ -2305,13 +2305,13 @@ QCPDataRange QCPDataRange::expanded(const QCPDataRange &other) const
   Returns the data range which is contained in both this data range and \a other.
   
   This method is very similar to \ref bounded, with one distinction: If this range and the \a other
-  range share no intersection, the returned data range will be empty with begin and end set to 0.
+  range share no interPropsSection, the returned data range will be empty with begin and end set to 0.
   (\ref bounded would return a range with begin and end set to one of the boundaries of \a other,
   depending on which side this range is on.)
   
-  \see QCPDataSelection::intersection
+  \see QCPDataSelection::interPropsSection
 */
-QCPDataRange QCPDataRange::intersection(const QCPDataRange &other) const
+QCPDataRange QCPDataRange::interPropsSection(const QCPDataRange &other) const
 {
   QCPDataRange result(qMax(mBegin, other.mBegin), qMin(mEnd, other.mEnd));
   if (result.isValid())
@@ -2323,7 +2323,7 @@ QCPDataRange QCPDataRange::intersection(const QCPDataRange &other) const
 /*!
   Returns whether this data range and \a other share common data points.
   
-  \see intersection, contains
+  \see interPropsSection, contains
 */
 bool QCPDataRange::intersects(const QCPDataRange &other) const
 {
@@ -2371,7 +2371,7 @@ bool QCPDataRange::contains(const QCPDataRange &other) const
   %QCustomPlot's \ref dataselection "data selection mechanism" is based on QCPDataSelection and
   QCPDataRange.
   
-  \section qcpdataselection-iterating Iterating over a data selection
+  \PropsSection qcpdataselection-iterating Iterating over a data selection
   
   As an example, the following code snippet calculates the average value of a graph's data
   \ref QCPAbstractPlottable::selection "selection":
@@ -2705,11 +2705,11 @@ bool QCPDataSelection::contains(const QCPDataSelection &other) const
   using \ref QCPDataContainer::dataRange as \a other. One can then safely iterate over the returned
   data selection without exceeding the data container's bounds.
 */
-QCPDataSelection QCPDataSelection::intersection(const QCPDataRange &other) const
+QCPDataSelection QCPDataSelection::interPropsSection(const QCPDataRange &other) const
 {
   QCPDataSelection result;
   foreach (QCPDataRange dataRange, mDataRanges)
-    result.addDataRange(dataRange.intersection(other), false);
+    result.addDataRange(dataRange.interPropsSection(other), false);
   result.simplify();
   return result;
 }
@@ -2718,11 +2718,11 @@ QCPDataSelection QCPDataSelection::intersection(const QCPDataRange &other) const
   Returns a data selection containing the points which are both in this data selection and in the
   data selection \a other.
 */
-QCPDataSelection QCPDataSelection::intersection(const QCPDataSelection &other) const
+QCPDataSelection QCPDataSelection::interPropsSection(const QCPDataSelection &other) const
 {
   QCPDataSelection result;
   for (int i=0; i<other.dataRangeCount(); ++i)
-    result += intersection(other.dataRange(i));
+    result += interPropsSection(other.dataRange(i));
   result.simplify();
   return result;
 }
@@ -3015,7 +3015,7 @@ void QCPSelectionRect::draw(QCPPainter *painter)
   QCPLayoutElement::setMarginGroup method. To completely break apart the margin group, either call
   \ref clear, or just delete the margin group.
   
-  \section QCPMarginGroup-example Example
+  \PropsSection QCPMarginGroup-example Example
   
   First create a margin group:
   \snippet documentation/doc-code-snippets/mainwindow.cpp qcpmargingroup-creation-1
@@ -3807,7 +3807,7 @@ void QCPLayout::sizeConstraintsChanged() const
   The geometry used as a reference is the inner \ref rect of this layout. Child elements should stay
   within that rect.
   
-  \ref getSectionSizes may help with the reimplementation of this function.
+  \ref getPropsSectionSizes may help with the reimplementation of this function.
   
   \see update
 */
@@ -3868,32 +3868,32 @@ void QCPLayout::releaseElement(QCPLayoutElement *el)
   
   This is a helper function for the implementation of \ref updateLayout in subclasses.
   
-  It calculates the sizes of one-dimensional sections with provided constraints on maximum section
-  sizes, minimum section sizes, relative stretch factors and the final total size of all sections.
+  It calculates the sizes of one-dimensional PropsSections with provided constraints on maximum PropsSection
+  sizes, minimum PropsSection sizes, relative stretch factors and the final total size of all PropsSections.
   
-  The QVector entries refer to the sections. Thus all QVectors must have the same size.
+  The QVector entries refer to the PropsSections. Thus all QVectors must have the same size.
   
-  \a maxSizes gives the maximum allowed size of each section. If there shall be no maximum size
+  \a maxSizes gives the maximum allowed size of each PropsSection. If there shall be no maximum size
   imposed, set all vector values to Qt's QWIDGETSIZE_MAX.
   
-  \a minSizes gives the minimum allowed size of each section. If there shall be no minimum size
+  \a minSizes gives the minimum allowed size of each PropsSection. If there shall be no minimum size
   imposed, set all vector values to zero. If the \a minSizes entries add up to a value greater than
-  \a totalSize, sections will be scaled smaller than the proposed minimum sizes. (In other words,
+  \a totalSize, PropsSections will be scaled smaller than the proposed minimum sizes. (In other words,
   not exceeding the allowed total size is taken to be more important than not going below minimum
-  section sizes.)
+  PropsSection sizes.)
   
-  \a stretchFactors give the relative proportions of the sections to each other. If all sections
-  shall be scaled equally, set all values equal. If the first section shall be double the size of
-  each individual other section, set the first number of \a stretchFactors to double the value of
+  \a stretchFactors give the relative proportions of the PropsSections to each other. If all PropsSections
+  shall be scaled equally, set all values equal. If the first PropsSection shall be double the size of
+  each individual other PropsSection, set the first number of \a stretchFactors to double the value of
   the other individual values (e.g. {2, 1, 1, 1}).
   
-  \a totalSize is the value that the final section sizes will add up to. Due to rounding, the
-  actual sum may differ slightly. If you want the section sizes to sum up to exactly that value,
-  you could distribute the remaining difference on the sections.
+  \a totalSize is the value that the final PropsSection sizes will add up to. Due to rounding, the
+  actual sum may differ slightly. If you want the PropsSection sizes to sum up to exactly that value,
+  you could distribute the remaining difference on the PropsSections.
   
-  The return value is a QVector containing the section sizes.
+  The return value is a QVector containing the PropsSection sizes.
 */
-QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const
+QVector<int> QCPLayout::getPropsSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const
 {
   if (maxSizes.size() != minSizes.size() || minSizes.size() != stretchFactors.size())
   {
@@ -3902,106 +3902,106 @@ QVector<int> QCPLayout::getSectionSizes(QVector<int> maxSizes, QVector<int> minS
   }
   if (stretchFactors.isEmpty())
     return QVector<int>();
-  int sectionCount = stretchFactors.size();
-  QVector<double> sectionSizes(sectionCount);
-  // if provided total size is forced smaller than total minimum size, ignore minimum sizes (squeeze sections):
+  int PropsSectionCount = stretchFactors.size();
+  QVector<double> PropsSectionSizes(PropsSectionCount);
+  // if provided total size is forced smaller than total minimum size, ignore minimum sizes (squeeze PropsSections):
   int minSizeSum = 0;
-  for (int i=0; i<sectionCount; ++i)
+  for (int i=0; i<PropsSectionCount; ++i)
     minSizeSum += minSizes.at(i);
   if (totalSize < minSizeSum)
   {
     // new stretch factors are minimum sizes and minimum sizes are set to zero:
-    for (int i=0; i<sectionCount; ++i)
+    for (int i=0; i<PropsSectionCount; ++i)
     {
       stretchFactors[i] = minSizes.at(i);
       minSizes[i] = 0;
     }
   }
   
-  QList<int> minimumLockedSections;
-  QList<int> unfinishedSections;
-  for (int i=0; i<sectionCount; ++i)
-    unfinishedSections.append(i);
+  QList<int> minimumLockedPropsSections;
+  QList<int> unfinishedPropsSections;
+  for (int i=0; i<PropsSectionCount; ++i)
+    unfinishedPropsSections.append(i);
   double freeSize = totalSize;
   
   int outerIterations = 0;
-  while (!unfinishedSections.isEmpty() && outerIterations < sectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
+  while (!unfinishedPropsSections.isEmpty() && outerIterations < PropsSectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
   {
     ++outerIterations;
     int innerIterations = 0;
-    while (!unfinishedSections.isEmpty() && innerIterations < sectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
+    while (!unfinishedPropsSections.isEmpty() && innerIterations < PropsSectionCount*2) // the iteration check ist just a failsafe in case something really strange happens
     {
       ++innerIterations;
-      // find section that hits its maximum next:
+      // find PropsSection that hits its maximum next:
       int nextId = -1;
       double nextMax = 1e12;
-      foreach (int secId, unfinishedSections)
+      foreach (int secId, unfinishedPropsSections)
       {
-        double hitsMaxAt = (maxSizes.at(secId)-sectionSizes.at(secId))/stretchFactors.at(secId);
+        double hitsMaxAt = (maxSizes.at(secId)-PropsSectionSizes.at(secId))/stretchFactors.at(secId);
         if (hitsMaxAt < nextMax)
         {
           nextMax = hitsMaxAt;
           nextId = secId;
         }
       }
-      // check if that maximum is actually within the bounds of the total size (i.e. can we stretch all remaining sections so far that the found section
-      // actually hits its maximum, without exceeding the total size when we add up all sections)
+      // check if that maximum is actually within the bounds of the total size (i.e. can we stretch all remaining PropsSections so far that the found PropsSection
+      // actually hits its maximum, without exceeding the total size when we add up all PropsSections)
       double stretchFactorSum = 0;
-      foreach (int secId, unfinishedSections)
+      foreach (int secId, unfinishedPropsSections)
         stretchFactorSum += stretchFactors.at(secId);
       double nextMaxLimit = freeSize/stretchFactorSum;
-      if (nextMax < nextMaxLimit) // next maximum is actually hit, move forward to that point and fix the size of that section
+      if (nextMax < nextMaxLimit) // next maximum is actually hit, move forward to that point and fix the size of that PropsSection
       {
-        foreach (int secId, unfinishedSections)
+        foreach (int secId, unfinishedPropsSections)
         {
-          sectionSizes[secId] += nextMax*stretchFactors.at(secId); // increment all sections
+          PropsSectionSizes[secId] += nextMax*stretchFactors.at(secId); // increment all PropsSections
           freeSize -= nextMax*stretchFactors.at(secId);
         }
-        unfinishedSections.removeOne(nextId); // exclude the section that is now at maximum from further changes
-      } else // next maximum isn't hit, just distribute rest of free space on remaining sections
+        unfinishedPropsSections.removeOne(nextId); // exclude the PropsSection that is now at maximum from further changes
+      } else // next maximum isn't hit, just distribute rest of free space on remaining PropsSections
       {
-        foreach (int secId, unfinishedSections)
-          sectionSizes[secId] += nextMaxLimit*stretchFactors.at(secId); // increment all sections
-        unfinishedSections.clear();
+        foreach (int secId, unfinishedPropsSections)
+          PropsSectionSizes[secId] += nextMaxLimit*stretchFactors.at(secId); // increment all PropsSections
+        unfinishedPropsSections.clear();
       }
     }
-    if (innerIterations == sectionCount*2)
+    if (innerIterations == PropsSectionCount*2)
       qDebug() << Q_FUNC_INFO << "Exceeded maximum expected inner iteration count, layouting aborted. Input was:" << maxSizes << minSizes << stretchFactors << totalSize;
     
-    // now check whether the resulting section sizes violate minimum restrictions:
+    // now check whether the resulting PropsSection sizes violate minimum restrictions:
     bool foundMinimumViolation = false;
-    for (int i=0; i<sectionSizes.size(); ++i)
+    for (int i=0; i<PropsSectionSizes.size(); ++i)
     {
-      if (minimumLockedSections.contains(i))
+      if (minimumLockedPropsSections.contains(i))
         continue;
-      if (sectionSizes.at(i) < minSizes.at(i)) // section violates minimum
+      if (PropsSectionSizes.at(i) < minSizes.at(i)) // PropsSection violates minimum
       {
-        sectionSizes[i] = minSizes.at(i); // set it to minimum
+        PropsSectionSizes[i] = minSizes.at(i); // set it to minimum
         foundMinimumViolation = true; // make sure we repeat the whole optimization process
-        minimumLockedSections.append(i);
+        minimumLockedPropsSections.append(i);
       }
     }
     if (foundMinimumViolation)
     {
       freeSize = totalSize;
-      for (int i=0; i<sectionCount; ++i)
+      for (int i=0; i<PropsSectionCount; ++i)
       {
-        if (!minimumLockedSections.contains(i)) // only put sections that haven't hit their minimum back into the pool
-          unfinishedSections.append(i);
+        if (!minimumLockedPropsSections.contains(i)) // only put PropsSections that haven't hit their minimum back into the pool
+          unfinishedPropsSections.append(i);
         else
-          freeSize -= sectionSizes.at(i); // remove size of minimum locked sections from available space in next round
+          freeSize -= PropsSectionSizes.at(i); // remove size of minimum locked PropsSections from available space in next round
       }
-      // reset all section sizes to zero that are in unfinished sections (all others have been set to their minimum):
-      foreach (int secId, unfinishedSections)
-        sectionSizes[secId] = 0;
+      // reset all PropsSection sizes to zero that are in unfinished PropsSections (all others have been set to their minimum):
+      foreach (int secId, unfinishedPropsSections)
+        PropsSectionSizes[secId] = 0;
     }
   }
-  if (outerIterations == sectionCount*2)
+  if (outerIterations == PropsSectionCount*2)
     qDebug() << Q_FUNC_INFO << "Exceeded maximum expected outer iteration count, layouting aborted. Input was:" << maxSizes << minSizes << stretchFactors << totalSize;
   
-  QVector<int> result(sectionCount);
-  for (int i=0; i<sectionCount; ++i)
-    result[i] = qRound(sectionSizes.at(i));
+  QVector<int> result(PropsSectionCount);
+  for (int i=0; i<PropsSectionCount; ++i)
+    result[i] = qRound(PropsSectionSizes.at(i));
   return result;
 }
 
@@ -4594,8 +4594,8 @@ void QCPLayoutGrid::updateLayout()
   
   int totalRowSpacing = (rowCount()-1) * mRowSpacing;
   int totalColSpacing = (columnCount()-1) * mColumnSpacing;
-  QVector<int> colWidths = getSectionSizes(maxColWidths, minColWidths, mColumnStretchFactors.toVector(), mRect.width()-totalColSpacing);
-  QVector<int> rowHeights = getSectionSizes(maxRowHeights, minRowHeights, mRowStretchFactors.toVector(), mRect.height()-totalRowSpacing);
+  QVector<int> colWidths = getPropsSectionSizes(maxColWidths, minColWidths, mColumnStretchFactors.toVector(), mRect.width()-totalColSpacing);
+  QVector<int> rowHeights = getPropsSectionSizes(maxRowHeights, minRowHeights, mRowStretchFactors.toVector(), mRect.height()-totalRowSpacing);
   
   // go through cells and set rects accordingly:
   int yOffset = mRect.top();
@@ -6094,7 +6094,7 @@ void QCPLabelPainterPrivate::analyzeFontMetrics()
   </table>
   </center>
   
-  \section axisticker-subclassing Creating own axis tickers
+  \PropsSection axisticker-subclassing Creating own axis tickers
   
   Creating own axis tickers can be achieved very easily by sublassing QCPAxisTicker and
   reimplementing some or all of the available virtual methods.
@@ -6229,7 +6229,7 @@ double QCPAxisTicker::getTickStep(const QCPRange &range)
   Takes the \a tickStep, i.e. the distance between two consecutive ticks, and returns
   an appropriate number of sub ticks for that specific tick step.
   
-  Note that a returned sub tick count of e.g. 4 will split each tick interval into 5 sections.
+  Note that a returned sub tick count of e.g. 4 will split each tick interval into 5 PropsSections.
 */
 int QCPAxisTicker::getSubTickCount(double tickStep)
 {
@@ -8679,7 +8679,7 @@ void QCPAxis::setTickLabelSide(LabelSide side)
 /*!
   Sets the number format for the numbers in tick labels. This \a formatCode is an extended version
   of the format code used e.g. by QString::number() and QLocale::toString(). For reference about
-  that, see the "Argument Formats" section in the detailed description of the QString class.
+  that, see the "Argument Formats" PropsSection in the detailed description of the QString class.
   
   \a formatCode is a string of one, two or three characters.
 
@@ -10566,7 +10566,7 @@ void QCPAxisPainterPrivate::getMaxTickLabelSize(const QFont &font, const QString
   fill (\ref setBrush), if the shape provides a fillable area. Further, the size of the shape can
   be controlled with \ref setSize.
 
-  \section QCPScatterStyle-defining Specifying a scatter style
+  \PropsSection QCPScatterStyle-defining Specifying a scatter style
   
   You can set all these configurations either by calling the respective functions on an instance:
   \snippet documentation/doc-code-snippets/mainwindow.cpp qcpscatterstyle-creation-1
@@ -10575,7 +10575,7 @@ void QCPAxisPainterPrivate::getMaxTickLabelSize(const QFont &font, const QString
   it easy to specify a scatter style in a single call, like so:
   \snippet documentation/doc-code-snippets/mainwindow.cpp qcpscatterstyle-creation-2
   
-  \section QCPScatterStyle-undefinedpen Leaving the color/pen up to the plottable
+  \PropsSection QCPScatterStyle-undefinedpen Leaving the color/pen up to the plottable
   
   There are two constructors which leave the pen undefined: \ref QCPScatterStyle() and \ref
   QCPScatterStyle(ScatterShape shape, double size). If those constructors are used, a call to \ref
@@ -10592,7 +10592,7 @@ void QCPAxisPainterPrivate::getMaxTickLabelSize(const QFont &font, const QString
   constructor with a default for \a size). In those cases, C++ allows directly supplying a \ref
   ScatterShape, where actually a QCPScatterStyle is expected.
   
-  \section QCPScatterStyle-custompath-and-pixmap Custom shapes and pixmaps
+  \PropsSection QCPScatterStyle-custompath-and-pixmap Custom shapes and pixmaps
   
   QCPScatterStyle supports drawing custom shapes and arbitrary pixmaps as scatter points.
 
@@ -11223,7 +11223,7 @@ bool QCPSelectionDecorator::registerWithPlottable(QCPAbstractPlottable *plottabl
   \li A color encoded two-dimensional map: \ref QCPColorMap
   \li An OHLC/Candlestick chart: \ref QCPFinancial
   
-  \section plottables-subclassing Creating own plottables
+  \PropsSection plottables-subclassing Creating own plottables
   
   Subclassing directly from QCPAbstractPlottable is only recommended if you wish to display
   two-dimensional data like \ref QCPColorMap, i.e. two logical key dimensions and one (or more)
@@ -12016,7 +12016,7 @@ void QCPAbstractPlottable::deselectEvent(bool *selectionStateChanged)
   Note that QCPItemPosition derives from QCPItemAnchor, so every position can also serve as an
   anchor to other positions.
   
-  To learn how to provide anchors in your own item subclasses, see the subclassing section of the
+  To learn how to provide anchors in your own item subclasses, see the subclassing PropsSection of the
   QCPAbstractItem documentation.
 */
 
@@ -12037,7 +12037,7 @@ void QCPAbstractPlottable::deselectEvent(bool *selectionStateChanged)
 /*!
   Creates a new QCPItemAnchor. You shouldn't create QCPItemAnchor instances directly, even if
   you want to make a new item subclass. Use \ref QCPAbstractItem::createAnchor instead, as
-  explained in the subclassing section of the QCPAbstractItem documentation.
+  explained in the subclassing PropsSection of the QCPAbstractItem documentation.
 */
 QCPItemAnchor::QCPItemAnchor(QCustomPlot *parentPlot, QCPAbstractItem *parentItem, const QString &name, int anchorId) :
   mName(name),
@@ -12211,7 +12211,7 @@ void QCPItemAnchor::removeChildY(QCPItemPosition *pos)
 /*!
   Creates a new QCPItemPosition. You shouldn't create QCPItemPosition instances directly, even if
   you want to make a new item subclass. Use \ref QCPAbstractItem::createPosition instead, as
-  explained in the subclassing section of the QCPAbstractItem documentation.
+  explained in the subclassing PropsSection of the QCPAbstractItem documentation.
 */
 QCPItemPosition::QCPItemPosition(QCustomPlot *parentPlot, QCPAbstractItem *parentItem, const QString &name) :
   QCPItemAnchor(parentPlot, parentItem, name),
@@ -12787,7 +12787,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
   <tr><td>QCPItemTracer</td><td>An item that can be attached to a QCPGraph and sticks to its data points, given a key coordinate.</td></tr>
   </table>
   
-  \section items-clipping Clipping
+  \PropsSection items-clipping Clipping
 
   Items are by default clipped to the main axis rect (they are only visible inside the axis rect).
   To make an item visible outside that axis rect, disable clipping via \ref setClipToAxisRect
@@ -12799,7 +12799,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
   members (\ref QCPItemPosition::setAxes). However, it is common that the axis rect for clipping
   also contains the axes used for the item positions.
   
-  \section items-using Using items
+  \PropsSection items-using Using items
   
   First you instantiate the item you want to use and add it to the plot:
   \snippet documentation/doc-code-snippets/mainwindow.cpp qcpitemline-creation-1
@@ -12818,7 +12818,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
   coordinate of an item position, using for example \ref QCPItemPosition::setTypeX or \ref
   QCPItemPosition::setParentAnchorX. For details, see the documentation of \ref QCPItemPosition.
   
-  \section items-subclassing Creating own items
+  \PropsSection items-subclassing Creating own items
   
   To create an own item, you implement a subclass of QCPAbstractItem. These are the pure
   virtual functions, you must implement:
@@ -12827,7 +12827,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
   
   See the documentation of those functions for what they need to do.
   
-  \subsection items-positioning Allowing the item to be positioned
+  \subPropsSection items-positioning Allowing the item to be positioned
   
   As mentioned, item positions are represented by QCPItemPosition members. Let's assume the new item shall
   have only one point as its position (as opposed to two like a rect or multiple like a polygon). You then add
@@ -12851,7 +12851,7 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
   }
   \endcode
   
-  \subsection items-drawing The draw function
+  \subPropsSection items-drawing The draw function
   
   To give your item a visual representation, reimplement the \ref draw function and use the passed
   QCPPainter to draw the item. You can retrieve the item position in pixel coordinates from the
@@ -12861,14 +12861,14 @@ void QCPItemPosition::setPixelPosition(const QPointF &pixelPosition)
   width into account), check whether it intersects the \ref clipRect, and only draw the item at all
   if this is the case.
   
-  \subsection items-selection The selectTest function
+  \subPropsSection items-selection The selectTest function
   
   Your implementation of the \ref selectTest function may use the helpers \ref
   QCPVector2D::distanceSquaredToLine and \ref rectDistance. With these, the implementation of the
   selection test becomes significantly simpler for most items. See the documentation of \ref
   selectTest for what the function parameters mean and what the function should return.
   
-  \subsection anchors Providing anchors
+  \subPropsSection anchors Providing anchors
   
   Providing anchors (QCPItemAnchor) starts off like adding a position. First you create a public
   member, e.g.
@@ -20835,12 +20835,12 @@ QCPGraphData::QCPGraphData(double key, double value) :
   (<tt>qQNaN()</tt> or <tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
   separated.
   
-  \section qcpgraph-appearance Changing the appearance
+  \PropsSection qcpgraph-appearance Changing the appearance
   
   The appearance of the graph is mainly determined by the line style, scatter style, brush and pen
   of the graph (\ref setLineStyle, \ref setScatterStyle, \ref setBrush, \ref setPen).
   
-  \subsection filling Filling under or between graphs
+  \subPropsSection filling Filling under or between graphs
   
   QCPGraph knows two types of fills: Normal graph fills towards the zero-value-line parallel to
   the key axis of the graph, and fills between two graphs, called channel fills. To enable a fill,
@@ -22611,11 +22611,11 @@ QCPCurveData::QCPCurveData(double t, double key, double value) :
   (<tt>qQNaN()</tt> or <tt>std::numeric_limits<double>::quiet_NaN()</tt>) in between the two data points that shall be
   separated.
   
-  \section qcpcurve-appearance Changing the appearance
+  \PropsSection qcpcurve-appearance Changing the appearance
   
   The appearance of the curve is determined by the pen and the brush (\ref setPen, \ref setBrush).
   
-  \section qcpcurve-usage Usage
+  \PropsSection qcpcurve-usage Usage
   
   Like all data representing objects in QCustomPlot, the QCPCurve is a plottable
   (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
@@ -23303,7 +23303,7 @@ int QCPCurve::getRegion(double key, double value, double keyMin, double valueMax
   see \ref getRegion) to any of the outer regions (\a otherRegion). The current segment is given by
   the line connecting (\a key, \a value) with (\a otherKey, \a otherValue).
   
-  It returns the intersection point of the segment with the border of region 5.
+  It returns the interPropsSection point of the segment with the border of region 5.
   
   For this function it doesn't matter whether (\a key, \a value) is the point inside region 5 or
   whether it's (\a otherKey, \a otherValue), i.e. whether the segment is coming from region 5 or
@@ -23312,7 +23312,7 @@ int QCPCurve::getRegion(double key, double value, double keyMin, double valueMax
 */
 QPointF QCPCurve::getOptimizedPoint(int otherRegion, double otherKey, double otherValue, double key, double value, double keyMin, double valueMax, double keyMax, double valueMin) const
 {
-  // The intersection point interpolation here is done in pixel coordinates, so we don't need to
+  // The interPropsSection point interpolation here is done in pixel coordinates, so we don't need to
   // differentiate between different axis scale types. Note that the nomenclature
   // top/left/bottom/right/min/max is with respect to the rect in plot coordinates, wich may be
   // different in pixel coordinates (horz/vert key axes, reversed ranges)
@@ -23695,12 +23695,12 @@ bool QCPCurve::mayTraverse(int prevRegion, int currentRegion) const
 */
 bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double value, double keyMin, double valueMax, double keyMax, double valueMin, QPointF &crossA, QPointF &crossB) const
 {
-  // The intersection point interpolation here is done in pixel coordinates, so we don't need to
+  // The interPropsSection point interpolation here is done in pixel coordinates, so we don't need to
   // differentiate between different axis scale types. Note that the nomenclature
   // top/left/bottom/right/min/max is with respect to the rect in plot coordinates, wich may be
   // different in pixel coordinates (horz/vert key axes, reversed ranges)
   
-  QList<QPointF> intersections;
+  QList<QPointF> interPropsSections;
   const double valueMinPx = mValueAxis->coordToPixel(valueMin);
   const double valueMaxPx = mValueAxis->coordToPixel(valueMax);
   const double keyMinPx = mKeyAxis->coordToPixel(keyMin);
@@ -23712,13 +23712,13 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
   if (qFuzzyIsNull(keyPx-prevKeyPx)) // line is parallel to value axis
   {
     // due to region filter in mayTraverse(), if line is parallel to value or key axis, region 5 is traversed here
-    intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyPx, valueMinPx) : QPointF(valueMinPx, keyPx)); // direction will be taken care of at end of method
-    intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyPx, valueMaxPx) : QPointF(valueMaxPx, keyPx));
+    interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyPx, valueMinPx) : QPointF(valueMinPx, keyPx)); // direction will be taken care of at end of method
+    interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyPx, valueMaxPx) : QPointF(valueMaxPx, keyPx));
   } else if (qFuzzyIsNull(valuePx-prevValuePx)) // line is parallel to key axis
   {
     // due to region filter in mayTraverse(), if line is parallel to value or key axis, region 5 is traversed here
-    intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMinPx, valuePx) : QPointF(valuePx, keyMinPx)); // direction will be taken care of at end of method
-    intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMaxPx, valuePx) : QPointF(valuePx, keyMaxPx));
+    interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMinPx, valuePx) : QPointF(valuePx, keyMinPx)); // direction will be taken care of at end of method
+    interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMaxPx, valuePx) : QPointF(valuePx, keyMaxPx));
   } else // line is skewed
   {
     double gamma;
@@ -23726,44 +23726,44 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
     // check top of rect:
     gamma = prevKeyPx + (valueMaxPx-prevValuePx)*keyPerValuePx;
     if (gamma >= qMin(keyMinPx, keyMaxPx) && gamma <= qMax(keyMinPx, keyMaxPx)) // qMin/qMax necessary since axes may be reversed
-      intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(gamma, valueMaxPx) : QPointF(valueMaxPx, gamma));
+      interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(gamma, valueMaxPx) : QPointF(valueMaxPx, gamma));
     // check bottom of rect:
     gamma = prevKeyPx + (valueMinPx-prevValuePx)*keyPerValuePx;
     if (gamma >= qMin(keyMinPx, keyMaxPx) && gamma <= qMax(keyMinPx, keyMaxPx)) // qMin/qMax necessary since axes may be reversed
-      intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(gamma, valueMinPx) : QPointF(valueMinPx, gamma));
+      interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(gamma, valueMinPx) : QPointF(valueMinPx, gamma));
     const double valuePerKeyPx = 1.0/keyPerValuePx;
     // check left of rect:
     gamma = prevValuePx + (keyMinPx-prevKeyPx)*valuePerKeyPx;
     if (gamma >= qMin(valueMinPx, valueMaxPx) && gamma <= qMax(valueMinPx, valueMaxPx)) // qMin/qMax necessary since axes may be reversed
-      intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMinPx, gamma) : QPointF(gamma, keyMinPx));
+      interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMinPx, gamma) : QPointF(gamma, keyMinPx));
     // check right of rect:
     gamma = prevValuePx + (keyMaxPx-prevKeyPx)*valuePerKeyPx;
     if (gamma >= qMin(valueMinPx, valueMaxPx) && gamma <= qMax(valueMinPx, valueMaxPx)) // qMin/qMax necessary since axes may be reversed
-      intersections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMaxPx, gamma) : QPointF(gamma, keyMaxPx));
+      interPropsSections.append(mKeyAxis->orientation() == Qt::Horizontal ? QPointF(keyMaxPx, gamma) : QPointF(gamma, keyMaxPx));
   }
   
   // handle cases where found points isn't exactly 2:
-  if (intersections.size() > 2)
+  if (interPropsSections.size() > 2)
   {
     // line probably goes through corner of rect, and we got duplicate points there. single out the point pair with greatest distance in between:
     double distSqrMax = 0;
     QPointF pv1, pv2;
-    for (int i=0; i<intersections.size()-1; ++i)
+    for (int i=0; i<interPropsSections.size()-1; ++i)
     {
-      for (int k=i+1; k<intersections.size(); ++k)
+      for (int k=i+1; k<interPropsSections.size(); ++k)
       {
-        QPointF distPoint = intersections.at(i)-intersections.at(k);
+        QPointF distPoint = interPropsSections.at(i)-interPropsSections.at(k);
         double distSqr = distPoint.x()*distPoint.x()+distPoint.y()+distPoint.y();
         if (distSqr > distSqrMax)
         {
-          pv1 = intersections.at(i);
-          pv2 = intersections.at(k);
+          pv1 = interPropsSections.at(i);
+          pv2 = interPropsSections.at(k);
           distSqrMax = distSqr;
         }
       }
     }
-    intersections = QList<QPointF>() << pv1 << pv2;
-  } else if (intersections.size() != 2)
+    interPropsSections = QList<QPointF>() << pv1 << pv2;
+  } else if (interPropsSections.size() != 2)
   {
     // one or even zero points found (shouldn't happen unless line perfectly tangent to corner), no need to draw segment
     return false;
@@ -23774,10 +23774,10 @@ bool QCPCurve::getTraverse(double prevKey, double prevValue, double key, double 
   double yDelta = valuePx-prevValuePx;
   if (mKeyAxis->orientation() != Qt::Horizontal)
     qSwap(xDelta, yDelta);
-  if (xDelta*(intersections.at(1).x()-intersections.at(0).x()) + yDelta*(intersections.at(1).y()-intersections.at(0).y()) < 0) // scalar product of both segments < 0 -> opposite direction
-    intersections.move(0, 1);
-  crossA = intersections.at(0);
-  crossB = intersections.at(1);
+  if (xDelta*(interPropsSections.at(1).x()-interPropsSections.at(0).x()) + yDelta*(interPropsSections.at(1).y()-interPropsSections.at(0).y()) < 0) // scalar product of both segments < 0 -> opposite direction
+    interPropsSections.move(0, 1);
+  crossA = interPropsSections.at(0);
+  crossB = interPropsSections.at(1);
   return true;
 }
 
@@ -23968,7 +23968,7 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint, QCPCurveDataContainer:
   plottables to a QCPBarsGroup achieves. (An alternative approach is to stack them on top of each
   other, see \ref QCPBars::moveAbove.)
   
-  \section qcpbarsgroup-usage Usage
+  \PropsSection qcpbarsgroup-usage Usage
   
   To add a QCPBars plottable to the group, create a new group and then add the respective bars
   intances:
@@ -23986,7 +23986,7 @@ double QCPCurve::pointDistance(const QPointF &pixelPoint, QCPCurveDataContainer:
   
   To clear the entire group, call \ref clear, or simply delete the group.
   
-  \section qcpbarsgroup-example Example
+  \PropsSection qcpbarsgroup-example Example
   
   The image above is generated with the following code:
   \snippet documentation/doc-image-generator/mainwindow.cpp qcpbarsgroup-example
@@ -24377,7 +24377,7 @@ QCPBarsData::QCPBarsData(double key, double value) :
   
   To plot data, assign it with the \ref setData or \ref addData functions.
   
-  \section qcpbars-appearance Changing the appearance
+  \PropsSection qcpbars-appearance Changing the appearance
   
   The appearance of the bars is determined by the pen and the brush (\ref setPen, \ref setBrush).
   The width of the individual bars can be controlled with \ref setWidthType and \ref setWidth.
@@ -24391,7 +24391,7 @@ QCPBarsData::QCPBarsData(double key, double value) :
   
   \image html QCPBarsGroup.png
   
-  \section qcpbars-usage Usage
+  \PropsSection qcpbars-usage Usage
   
   Like all data representing objects in QCustomPlot, the QCPBars is a plottable
   (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
@@ -25270,7 +25270,7 @@ QCPStatisticalBoxData::QCPStatisticalBoxData(double key, double minimum, double 
   "addData" method or accessing the individual data points through \ref data, and setting the
   <tt>QVector<double> outliers</tt> of the data points directly.
   
-  \section qcpstatisticalbox-appearance Changing the appearance
+  \PropsSection qcpstatisticalbox-appearance Changing the appearance
   
   The appearance of each data point box, ranging from the lower to the upper quartile, is
   controlled via \ref setPen and \ref setBrush. You may change the width of the boxes with \ref
@@ -25289,7 +25289,7 @@ QCPStatisticalBoxData::QCPStatisticalBoxData(double key, double minimum, double 
   The outlier data points are drawn as normal scatter points. Their look can be controlled with
   \ref setOutlierStyle
   
-  \section qcpstatisticalbox-usage Usage
+  \PropsSection qcpstatisticalbox-usage Usage
   
   Like all data representing objects in QCustomPlot, the QCPStatisticalBox is a plottable
   (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
@@ -26348,7 +26348,7 @@ bool QCPColorMapData::createAlpha(bool initializeOpaque)
   typically placed to the right of the axis rect. See the documentation there for details on how to
   add and use a color scale.
   
-  \section qcpcolormap-appearance Changing the appearance
+  \PropsSection qcpcolormap-appearance Changing the appearance
   
   Most important to the appearance is the color gradient, which can be specified via \ref
   setGradient. See the documentation of \ref QCPColorGradient for details on configuring a color
@@ -26359,7 +26359,7 @@ bool QCPColorMapData::createAlpha(bool initializeOpaque)
   rescaleDataRange. If your data may contain NaN values, use \ref QCPColorGradient::setNanHandling
   to define how they are displayed.
   
-  \section qcpcolormap-transparency Transparency
+  \PropsSection qcpcolormap-transparency Transparency
   
   Transparency in color maps can be achieved by two mechanisms. On one hand, you can specify alpha
   values for color stops of the \ref QCPColorGradient, via the regular QColor interface. This will
@@ -26374,7 +26374,7 @@ bool QCPColorMapData::createAlpha(bool initializeOpaque)
   other. They are mixed in a multiplicative matter, so an alpha of e.g. 50% (128/255) in both modes
   simultaneously, will result in a total transparency of 25% (64/255).
   
-  \section qcpcolormap-usage Usage
+  \PropsSection qcpcolormap-usage Usage
   
   Like all data representing objects in QCustomPlot, the QCPColorMap is a plottable
   (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
@@ -27044,7 +27044,7 @@ QCPFinancialData::QCPFinancialData(double key, double open, double high, double 
   setWidthType. A typical choice is to set the width type to \ref wtPlotCoords (the default) and
   the width to (or slightly less than) one time bin interval width.
 
-  \section qcpfinancial-appearance Changing the appearance
+  \PropsSection qcpfinancial-appearance Changing the appearance
 
   Charts can be either single- or two-colored (\ref setTwoColored). If set to be single-colored,
   lines are drawn with the plottable's pen (\ref setPen) and fills with the brush (\ref setBrush).
@@ -27056,7 +27056,7 @@ QCPFinancialData::QCPFinancialData(double key, double open, double high, double 
   however, the normal selected pen/brush (provided by the \ref selectionDecorator) is used,
   irrespective of whether the chart is single- or two-colored.
 
-  \section qcpfinancial-usage Usage
+  \PropsSection qcpfinancial-usage Usage
 
   Like all data representing objects in QCustomPlot, the QCPFinancial is a plottable
   (QCPAbstractPlottable). So the plottable-interface of QCustomPlot applies
@@ -27957,7 +27957,7 @@ QCPErrorBarsData::QCPErrorBarsData(double errorMinus, double errorPlus) :
   <tt>std::numeric_limits<double>::quiet_NaN()</tt>) to not show the respective error bar on the data point at
   that index.
 
-  \section qcperrorbars-appearance Changing the appearance
+  \PropsSection qcperrorbars-appearance Changing the appearance
 
   The appearance of the error bars is defined by the pen (\ref setPen), and the width of the
   whiskers (\ref setWhiskerWidth). Further, the error bar backbones may leave a gap around the data
@@ -28934,7 +28934,7 @@ void QCPItemStraightLine::draw(QCPPainter *painter)
 
 /*! \internal
 
-  Returns the section of the straight line defined by \a base and direction vector \a
+  Returns the PropsSection of the straight line defined by \a base and direction vector \a
   vec, that is visible in the specified \a rect.
   
   This is a helper function for \ref draw.
@@ -29151,7 +29151,7 @@ void QCPItemLine::draw(QCPPainter *painter)
 
 /*! \internal
 
-  Returns the section of the line defined by \a start and \a end, that is visible in the specified
+  Returns the PropsSection of the line defined by \a start and \a end, that is visible in the specified
   \a rect.
   
   This is a helper function for \ref draw.
@@ -31555,7 +31555,7 @@ void QCPPolarAxisRadial::setTickLabelMode(LabelMode mode)
 /*!
   Sets the number format for the numbers in tick labels. This \a formatCode is an extended version
   of the format code used e.g. by QString::number() and QLocale::toString(). For reference about
-  that, see the "Argument Formats" section in the detailed description of the QString class.
+  that, see the "Argument Formats" PropsSection in the detailed description of the QString class.
   
   \a formatCode is a string of one, two or three characters. The first character is identical to
   the normal format code used by Qt. In short, this means: 'e'/'E' scientific format, 'f' fixed
@@ -33469,7 +33469,7 @@ void QCPPolarAxisAngular::setTickLabelMode(LabelMode mode)
 /*!
   Sets the number format for the numbers in tick labels. This \a formatCode is an extended version
   of the format code used e.g. by QString::number() and QLocale::toString(). For reference about
-  that, see the "Argument Formats" section in the detailed description of the QString class.
+  that, see the "Argument Formats" PropsSection in the detailed description of the QString class.
   
   \a formatCode is a string of one, two or three characters. The first character is identical to
   the normal format code used by Qt. In short, this means: 'e'/'E' scientific format, 'f' fixed
@@ -35426,7 +35426,7 @@ void QCPPolarGraph::getOptimizedLineData(QVector<QCPGraphData> *lineData, const 
         lineData->append(QCPGraphData(it->key, lowerClipValue));
         belowRange = true;
       }
-      if (it->key-skipBegin > maxKeySkip) // add dummy point if we're exceeding the maximum skippable angle (to prevent unintentional intersections with visible circle)
+      if (it->key-skipBegin > maxKeySkip) // add dummy point if we're exceeding the maximum skippable angle (to prevent unintentional interPropsSections with visible circle)
       {
         skipBegin += maxKeySkip;
         lineData->append(QCPGraphData(skipBegin, lowerClipValue));
@@ -35445,7 +35445,7 @@ void QCPPolarGraph::getOptimizedLineData(QVector<QCPGraphData> *lineData, const 
         lineData->append(QCPGraphData(it->key, upperClipValue));
         aboveRange = true;
       }
-      if (it->key-skipBegin > maxKeySkip) // add dummy point if we're exceeding the maximum skippable angle (to prevent unintentional intersections with visible circle)
+      if (it->key-skipBegin > maxKeySkip) // add dummy point if we're exceeding the maximum skippable angle (to prevent unintentional interPropsSections with visible circle)
       {
         skipBegin += maxKeySkip;
         lineData->append(QCPGraphData(skipBegin, upperClipValue));

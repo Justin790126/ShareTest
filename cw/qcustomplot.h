@@ -970,7 +970,7 @@ public:
   bool isEmpty() const { return length() == 0; }
   QCPDataRange bounded(const QCPDataRange &other) const;
   QCPDataRange expanded(const QCPDataRange &other) const;
-  QCPDataRange intersection(const QCPDataRange &other) const;
+  QCPDataRange interPropsSection(const QCPDataRange &other) const;
   QCPDataRange adjusted(int changeBegin, int changeEnd) const { return QCPDataRange(mBegin+changeBegin, mEnd+changeEnd); }
   bool intersects(const QCPDataRange &other) const;
   bool contains(const QCPDataRange &other) const;
@@ -1018,8 +1018,8 @@ public:
   void simplify();
   void enforceType(QCP::SelectionType type);
   bool contains(const QCPDataSelection &other) const;
-  QCPDataSelection intersection(const QCPDataRange &other) const;
-  QCPDataSelection intersection(const QCPDataSelection &other) const;
+  QCPDataSelection interPropsSection(const QCPDataRange &other) const;
+  QCPDataSelection interPropsSection(const QCPDataSelection &other) const;
   QCPDataSelection inverse(const QCPDataRange &outerRange) const;
   
 private:
@@ -1368,7 +1368,7 @@ protected:
   void sizeConstraintsChanged() const;
   void adoptElement(QCPLayoutElement *el);
   void releaseElement(QCPLayoutElement *el);
-  QVector<int> getSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
+  QVector<int> getPropsSectionSizes(QVector<int> maxSizes, QVector<int> minSizes, QVector<double> stretchFactors, int totalSize) const;
   static QSize getFinalMinimumOuterSize(const QCPLayoutElement *el);
   static QSize getFinalMaximumOuterSize(const QCPLayoutElement *el);
   
@@ -2678,7 +2678,7 @@ protected:
 
   This class template provides a fast container for data storage of one-dimensional data. The data
   type is specified as template parameter (called \a DataType in the following) and must provide
-  some methods as described in the \ref qcpdatacontainer-datatype "next section".
+  some methods as described in the \ref qcpdatacontainer-datatype "next PropsSection".
 
   The data is stored in a sorted fashion, which allows very quick lookups by the sorted key as well
   as retrieval of ranges (see \ref findBegin, \ref findEnd, \ref keyRange) using binary search. The
@@ -2706,7 +2706,7 @@ protected:
   done by subclassing from \ref QCPAbstractPlottable1D "QCPAbstractPlottable1D<T>", which
   introduces an according \a mDataContainer member and some convenience methods.
 
-  \section qcpdatacontainer-datatype Requirements for the DataType template parameter
+  \PropsSection qcpdatacontainer-datatype Requirements for the DataType template parameter
 
   The template parameter <tt>DataType</tt> is the type of the stored data points. It must be
   trivially copyable and have the following public methods, preferably inline:
