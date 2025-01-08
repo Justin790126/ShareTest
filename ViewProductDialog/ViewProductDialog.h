@@ -85,6 +85,8 @@ private:
     QPushButton *btnSave = NULL;
     QTreeWidget *twProductList = NULL;
 
+    QShortcut* shtDel = NULL;
+
     QLineEdit *leSearchBar = NULL;
 
     void Widgets();

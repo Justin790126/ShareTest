@@ -14,6 +14,7 @@ lcOvlProduct::lcOvlProduct()
     connect(view, SIGNAL(addNewProduct()), this, SLOT(handleAddNewProduct()));
     connect(view, SIGNAL(loadConfig()), this, SLOT(handleLoadOvlConfig()));
     connect(view, SIGNAL(saveConfig()), this, SLOT(handleSaveOvlConfig()));
+    connect(view, SIGNAL(delSelProduct()), this, SLOT(handleDelSelProduct()));
     if (view->exec())
     {
         cout << "accept" << endl;
@@ -54,6 +55,20 @@ void lcOvlProduct::handleSaveOvlConfig()
 
     // show message box
     QMessageBox::information(dialog, "Save Config", "Config saved successfully!");
+}
+
+void lcOvlProduct::handleDelSelProduct()
+{
+    ViewProductDialog *dialog = (ViewProductDialog *)QObject::sender();
+    if (!dialog)
+        return;
+    QTreeWidget *wid = dialog->GetProductTreeWidget();
+    int curSel = wid->currentIndex().row();
+    if (curSel >= 0)
+    {
+        ProductTreeItem *item = (ProductTreeItem *)wid->takeTopLevelItem(curSel);
+        delete item;
+    }
 }
 
 void lcOvlProduct::handleLoadOvlConfig()

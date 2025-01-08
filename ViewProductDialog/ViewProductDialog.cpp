@@ -81,7 +81,8 @@ void ViewProductDialog::Connect()
     connect(btnLoad, SIGNAL(clicked()), this, SIGNAL(loadConfig()));
     connect(btnSave, SIGNAL(clicked()), this, SIGNAL(saveConfig()));
     connect(btnAdd, SIGNAL(clicked()), this, SIGNAL(addNewProduct()));
-    connect(btnDelete, SIGNAL(clicked()), this, SIGNAL(delSelProduct()));
+    connect(btnDel, SIGNAL(clicked()), this, SIGNAL(delSelProduct()));
+    connect(shtDel, SIGNAL(activated()), this, SIGNAL(delSelProduct()));
 }
 
 void ViewProductDialog::UI()
@@ -97,6 +98,7 @@ void ViewProductDialog::Widgets()
     btnCancel = new QPushButton("Cancel");
     btnAdd = new QPushButton("Add");
     btnDel = new QPushButton("Delete");
+    shtDel = new QShortcut(QKeySequence::Delete, this);
     btnLoad = new QPushButton("Load");
     btnSave = new QPushButton("Save");
     leSearchBar = new QLineEdit();

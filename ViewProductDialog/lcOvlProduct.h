@@ -25,6 +25,7 @@ class lcOvlProduct : public QObject
         void handleAddNewProduct();
         void handleLoadOvlConfig();
         void handleSaveOvlConfig();
+        void handleDelSelProduct();
 };
 
 #endif /* LC_OVL_PRODUCT_H */
