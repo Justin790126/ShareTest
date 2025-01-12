@@ -44,10 +44,12 @@ void ModelMdReader::ParseMdRec(string filename, string folder, int level, MdNode
             {
                 // content document link
                 std::string nxtFolder = fullURL.substr(0, fullURL.find_last_of('/'));
-                cout << m_sRootPath+fullURL << endl;
+                // cout << m_sRootPath+fullURL << endl;
+                string absMdPath = m_sRootPath+fullURL;
+                // cout << absMdPath << endl;
                 
-                string newMdName = url.substr(0, url.find_last_of('.')) + ".html";
-                newLine = std::regex_replace(newLine, link_regex, "[$1](" + folder + "/" + newMdName + ")");
+                string newMdName = absMdPath.substr(0, absMdPath.find_last_of('.')) + ".html";
+                newLine = std::regex_replace(newLine, link_regex, "[$1]("  + newMdName + ")");
 
                 MdNode *child = new MdNode(link_text, fullURL, lvl);
                 node->SetParent(node);
