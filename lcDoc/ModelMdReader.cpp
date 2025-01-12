@@ -42,16 +42,18 @@ void ModelMdReader::ParseMdRec(string filename, string folder, int level, MdNode
             string fullURL = folder + "/" + url;
             if (!isImageFile(url))
             {
+                // content document link
                 std::string nxtFolder = fullURL.substr(0, fullURL.find_last_of('/'));
-                // printf("Folder: %s\n", nxtFolder.c_str());
-                // newLine = std::regex_replace(newLine, link_regex, "[$1](" + folder + "/$2)");
-                printf("newLine: %s, Link Text: %s, simple URL: %s, full URL: %s\n", newLine.c_str(), link_text.c_str(), url.c_str(), fullURL.c_str());
+                cout << m_sRootPath+fullURL << endl;
+                
+                string newMdName = url.substr(0, url.find_last_of('.')) + ".html";
+                newLine = std::regex_replace(newLine, link_regex, "[$1](" + folder + "/" + newMdName + ")");
+
                 MdNode *child = new MdNode(link_text, fullURL, lvl);
                 node->SetParent(node);
                 node->AddChild(child);
 
                 ParseMdRec(fullURL, nxtFolder, lvl, child);
-                // ParseMdRec()
             }
             else
             {
@@ -63,6 +65,14 @@ void ModelMdReader::ParseMdRec(string filename, string folder, int level, MdNode
         rawContent += newLine + "\n";
     }
     char *html = process_string(rawContent.c_str());
+
+    // Current document here
+    std::string htmlPath = filename.substr(0, filename.find_last_of('.')) + ".html";
+    node->SetHtmlPath(htmlPath);
+    std::ofstream outfile(htmlPath);
+    outfile << html;
+    outfile.close();
+
     node->SetHtmlContent(html);
 }
 
@@ -72,6 +82,8 @@ bool ModelMdReader::isImageFile(const std::string &url)
     std::transform(lowercaseUrl.begin(), lowercaseUrl.end(), lowercaseUrl.begin(), ::tolower);
 
     return (lowercaseUrl.find(".png") != std::string::npos ||
+            lowercaseUrl.find(".jpg") != std::string::npos ||
+            lowercaseUrl.find(".jpeg") != std::string::npos ||
             lowercaseUrl.find(".bmp") != std::string::npos);
 }
 

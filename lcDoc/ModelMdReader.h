@@ -29,6 +29,8 @@ public:
     string GetHtmlContent() { return m_sHtmlContent; }
     void SetRootPath(const std::string &rootPath) { m_sRootPath = rootPath; }
     string GetRootPath() { return m_sRootPath; }
+    void SetHtmlPath(const std::string &htmlPath) { m_sHtmlPath = htmlPath; }
+    string GetHtmlPath() { return m_sHtmlPath; }
 
     friend ostream &operator<<(ostream &os, const MdNode &node)
     {
@@ -41,6 +43,7 @@ private:
     string m_sUrl;
     string m_sRootPath;
     string m_sHtmlContent;
+    string m_sHtmlPath;
     int m_iLevel;
     MdNode *m_sParent = NULL;
     vector<MdNode *> m_vsChildren;
@@ -100,6 +103,7 @@ private:
     string m_sKey;
     string m_sUrl;
     string m_sResultLine;
+
     int m_iLineNum;
     int m_iBtnIdx;
     size_t m_iKeyPos = 0;

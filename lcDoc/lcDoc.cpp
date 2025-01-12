@@ -6,7 +6,7 @@ lcDoc::lcDoc(QWidget *parent) : QWidget(parent)
     model = new ModelMdReader;
     string ipt = "./doc/README.md";
     model->SetFname(ipt);
-    model->SetRootPath("/home/justin126/workspace/ShareTest/lcDoc/doc");
+    model->SetRootPath("/home/justin126/workspace/ShareTest/lcDoc/");
     model->testRun();
 
     MdNode *m_sRoot = model->GetRoot();
@@ -23,7 +23,7 @@ lcDoc::lcDoc(QWidget *parent) : QWidget(parent)
     tes.reserve(maxLevel + 1);
     model->TraverseMdNode(m_sRoot, [&tw, &nodes, &btns, &tes](MdNode *node)
                           {
-                                  cout << *node << endl;
+                                //   cout << *node << endl;
 
                                   int level = node->GetLevel();
                                   if (level == 0)
@@ -48,6 +48,13 @@ lcDoc::lcDoc(QWidget *parent) : QWidget(parent)
                                       tw->setItemWidget(nodes[level], 0, btn);
                                       btns.push_back(btn);
 
+                                    //   string htmlPath = node->GetHtmlPath();
+                                    //   string htmlContent = node->GetHtmlContent();
+                                    //   // write html content
+                                    //   std::ofstream outfile(htmlPath);
+                                    //   outfile << htmlContent;
+                                    //   outfile.close();
+
                                       QTextBrowser *te = new QTextBrowser();
                                       te->setHtml(QString::fromStdString(node->GetHtmlContent()));
                                       te->setReadOnly(true);
@@ -62,7 +69,7 @@ lcDoc::lcDoc(QWidget *parent) : QWidget(parent)
     QVBoxLayout *vl = new QVBoxLayout;
     vl->addWidget(view);
     this->setLayout(vl);
-    this->showMaximized();
+    // this->showMaximized();
 
     // controller operation
     connect(view->GetSearchButton(), SIGNAL(clicked()), this, SLOT(handleButtonClick()));
