@@ -1,0 +1,3 @@
+/home/justin126/workspace/ShareTest/ViewProductDialog/build/CMakeFiles/rebuild_cache.dir
+/home/justin126/workspace/ShareTest/ViewProductDialog/build/CMakeFiles/pd.dir
+/home/justin126/workspace/ShareTest/ViewProductDialog/build/CMakeFiles/edit_cache.dir

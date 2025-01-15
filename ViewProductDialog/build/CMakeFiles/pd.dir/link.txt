@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/pd.dir/main.cpp.o CMakeFiles/pd.dir/lcOvlProduct.cpp.o CMakeFiles/pd.dir/ModelOvlConf.cpp.o CMakeFiles/pd.dir/ViewProductDialog.cpp.o CMakeFiles/pd.dir/moc_lcOvlProduct.cxx.o CMakeFiles/pd.dir/moc_ViewProductDialog.cxx.o CMakeFiles/pd.dir/moc_ModelOvlConf.cxx.o -o pd  /usr/lib/x86_64-linux-gnu/libQtGui.so /usr/lib/x86_64-linux-gnu/libQtCore.so 
