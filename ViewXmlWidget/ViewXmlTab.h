@@ -21,10 +21,14 @@ class ViewXmlTab : public QWidget
         void Widgets();
         void Layout();
         void UI();
+        void Connect();
 
         QTreeWidget * twXmlViewerLeft = NULL;
         QTreeWidget * twXmlViewerRight = NULL;
         QListWidget* lwDiffSummary = NULL;
+    
+    private slots:
+        void handleClipItemToClipBoard();
 };
 
 

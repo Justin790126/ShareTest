@@ -28,7 +28,6 @@ class ViewXmlItems : public QTreeWidgetItem
         string m_sContent;
         bool m_bHasContent = false;
         bool m_bHighlighted = false;
-        
 };
 
 #endif /* VIEW_XML_ITEMS_H */

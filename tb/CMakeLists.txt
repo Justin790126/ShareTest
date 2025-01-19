@@ -10,7 +10,7 @@ include_directories(/usr/local/include)
 include_directories(/usr/local/include/cryptopp)
 
 set(SOURCES
-    main.cpp
+    ende.cpp
     ModelCrypto.cpp
 )
 
