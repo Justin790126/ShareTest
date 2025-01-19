@@ -59,8 +59,8 @@ int main(int argc, char **argv)
     model->start(); // start cryptographic processing in a separate thread
     model->Wait(); // wait for the cryptographic processing to complete
 
-
-    return a.exec();
+cout << output_file << " Done !" << endl;
+return 0;
 }
 
 

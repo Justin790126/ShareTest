@@ -60,7 +60,9 @@ int main(int argc, char **argv)
     model->Wait(); // wait for the cryptographic processing to complete
 
 
-    return a.exec();
+    // return a.exec();
+    cout << output_file << " Done !" << endl;
+    return 0;
 }
 
 
