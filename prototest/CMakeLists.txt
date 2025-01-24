@@ -40,4 +40,5 @@ set(SOURCES_READER_TFE
 add_executable(${PROJECT_NAME}_rtfe
     ${SOURCES_READER_TFE})
 target_link_libraries(${PROJECT_NAME}_rtfe
-    /home/justin126/workspace/venv/lib64/python3.7/site-packages/tensorflow/libtensorflow_framework.so.2)
+    /home/justin126/workspace/venv/lib64/python3.7/site-packages/tensorflow/libtensorflow_framework.so.2
+    ${PROTOBUF_LIBRARY})
