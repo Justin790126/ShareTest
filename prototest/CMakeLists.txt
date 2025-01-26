@@ -40,5 +40,14 @@ set(SOURCES_READER_TFE
 add_executable(${PROJECT_NAME}_rtfe
     ${SOURCES_READER_TFE})
 target_link_libraries(${PROJECT_NAME}_rtfe
-    /home/justin126/workspace/venv/lib64/python3.7/site-packages/tensorflow/libtensorflow_framework.so.2
+    /home/justin126/tensorflow/bazel-bin/tensorflow/libtensorflow_framework.so
+    /home/justin126/tensorflow/bazel-bin/tensorflow/libtensorflow_cc.so
+    ${PROTOBUF_LIBRARY})
+
+
+add_executable(${PROJECT_NAME}_rtfe1
+readtfe1.cpp)
+target_link_libraries(${PROJECT_NAME}_rtfe1
+    /home/justin126/tensorflow/bazel-bin/tensorflow/libtensorflow_framework.so
+    /home/justin126/tensorflow/bazel-bin/tensorflow/libtensorflow_cc.so
     ${PROTOBUF_LIBRARY})

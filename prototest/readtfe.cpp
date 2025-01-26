@@ -121,13 +121,15 @@
 #include <tensorflow/core/util/event.pb.h>
 #include <tensorflow/core/lib/io/record_reader.h>
 #include <tensorflow/core/platform/env.h>
+#include <tensorflow/core/framework/tensor.h>
+#include "tensorflow/core/framework/types.h"
 
 using namespace std;
 using namespace tensorflow;
 
 int main()
 {
-  string path = "/home/justin126/workspace/ShareTest/prototest/logs/train/events.out.tfevents.1737293120.justin126-VirtualBox.24119.0.v2";
+  string path="/home/justin126/workspace/ShareTest/prototest/logs/train/events.out.tfevents.1737293120.justin126-VirtualBox.24119.0.v2";
   tensorflow::Env *env = tensorflow::Env::Default();
   std::unique_ptr<tensorflow::RandomAccessFile> file;
   tensorflow::Status status = env->NewRandomAccessFile(path, &file);
@@ -147,6 +149,31 @@ int main()
       const tensorflow::Summary summary = event.summary();
       for (const auto& value : summary.value()) {
         cout << "Tag: " << value.tag() << ", Value: " << value.simple_value() << endl;
+        // print tensor
+
+        if (value.has_tensor()) {
+          cout << "tensror exists: " << endl;
+          const auto& tensor = value.tensor();
+          cout << "Tensor DType: " << tensor.dtype() << endl;
+          Tensor t;
+          if (t.FromProto(tensor)) {
+            cout << "shape: " << t.shape().DebugString() << endl;
+
+            if (t.dtype() == DT_FLOAT) {
+              auto float_tensor = t.flat<float>();
+              for (int i = 0; i < float_tensor.size(); ++i) {
+                cout << "float value: " << float_tensor(i) << endl;
+              }
+            } else if (t.dtype() == DT_STRING) {
+              auto string_tensor = t.flat<tstring>();
+              cout << "Tensor contains strings:" << endl;
+              for (int i = 0; i < string_tensor.size(); ++i) {
+                cout << "  String[" << i << "]: " << string_tensor(i) << endl;
+              }
+            }
+          }
+        }
+        
       }
     }
     
