@@ -21,22 +21,30 @@ set(HEADERS
 qt4_wrap_cpp(SOURCES ${HEADERS})
 
 
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME}_ende
     ${SOURCES})
+
+target_link_libraries(${PROJECT_NAME}_ende ${QT_LIBRARIES} /usr/local/lib/libcryptopp.a)
+
+
+
+set(SOURCES1
+    main.cpp
+    lcTensorBoard.cpp
+    ViewTensorBoard.cpp
+)
+
+set(HEADERS1
+    lcTensorBoard.h
+    ViewTensorBoard.h
+)
+
+qt4_wrap_cpp(SOURCES1 ${HEADERS1})
+
+
+add_executable(${PROJECT_NAME}
+    ${SOURCES1})
 
 target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} /usr/local/lib/libcryptopp.a)
 
 
-
-
-
-# cmake_minimum_required(VERSION 3.10)
-# project(yaml_parser)
-# set(CMAKE_CXX_STANDARD 11)
-
-# # Find the libyaml library
-# 
-
-# add_executable(${PROJECT_NAME} main.cpp)
-# target_link_directories(${PROJECT_NAME} PUBLIC /opt/homebrew/lib/)
-# target_link_libraries(${PROJECT_NAME} yaml-cpp)
