@@ -19,6 +19,8 @@ private:
     void widgets();
     void layouts();
     void UI();
+
+    QTabWidget* tbwMain;
 };
 
 #endif /* VIEW_TENSORBOARD */
