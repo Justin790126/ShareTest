@@ -14,9 +14,11 @@ void ViewTensorBoard::widgets()
     lblTitle->setFont(QFont("Arial", 18, QFont::Bold));
     tbwMain->setCornerWidget(lblTitle, Qt::TopLeftCorner);
 
-    tbwMain->addTab(new QWidget(), tr("Dashboard"));
-    tbwMain->addTab(new QWidget(), tr("Runs"));
-    tbwMain->addTab(new QWidget(), tr("Events"));
+    viewTimeSeries = new ViewTimeSeries(this);
+
+    tbwMain->addTab(viewTimeSeries, "TIME SERIES");
+    // tbwMain->addTab(new QWidget(), tr("Runs"));
+    // tbwMain->addTab(new QWidget(), tr("Events"));
 
 
 }

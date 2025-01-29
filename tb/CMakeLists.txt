@@ -32,11 +32,17 @@ set(SOURCES1
     main.cpp
     lcTensorBoard.cpp
     ViewTensorBoard.cpp
+    ViewTimeSeries.cpp
+    qcustomplot.cpp
+    PropsSection.cpp
 )
 
 set(HEADERS1
     lcTensorBoard.h
     ViewTensorBoard.h
+    ViewTimeSeries.h
+    qcustomplot.h
+    PropsSection.h
 )
 
 qt4_wrap_cpp(SOURCES1 ${HEADERS1})

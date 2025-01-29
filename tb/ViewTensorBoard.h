@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <QtGui>
+#include "ViewTimeSeries.h"
 
 using namespace std;
 
@@ -21,6 +22,8 @@ private:
     void UI();
 
     QTabWidget* tbwMain;
+
+    ViewTimeSeries* viewTimeSeries;
 };
 
 #endif /* VIEW_TENSORBOARD */
