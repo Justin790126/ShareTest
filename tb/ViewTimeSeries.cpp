@@ -1,31 +1,56 @@
 #include "ViewTimeSeries.h"
 
-
-ViewTimeSeries::ViewTimeSeries(QWidget *parent) : QWidget(parent) {
+ViewTimeSeries::ViewTimeSeries(QWidget *parent) : QWidget(parent)
+{
     // Initialize UI components, set up layouts, etc.
     UI();
+    Connect();
 }
 
-void ViewTimeSeries::widgets() {
+void ViewTimeSeries::widgets()
+{
     // Create UI components for time series plot, controls, etc.
-    
 }
 
-QFrame* ViewTimeSeries::CreateVerticalSeparator()
+void ViewTimeSeries::Connect()
+{
+    connect(btnShowAllTags, SIGNAL(clicked()), this, SLOT(handleAddChartOnLyt()));
+}
+#include <iostream>
+using namespace std;
+void ViewTimeSeries::handleAddChartOnLyt()
+{
+    PropsSection *section = new PropsSection;
+    {
+        QVBoxLayout *vlyt = new QVBoxLayout;
+        QWidget* wid = new QWidget;
+        wid->setStyleSheet("Background: #FFFFFF;");
+        wid->setFixedHeight(250);
+        vlyt->addWidget(wid);
+
+        QCustomPlot *plot = new QCustomPlot(wid);
+        plot->resize(wid->size());
+
+        section->setContentLayout(*vlyt);
+    }
+    vlytCharts->addWidget(section);
+}
+
+QFrame *ViewTimeSeries::CreateVerticalSeparator()
 {
     // use QFrame to create vertical separator
-    QFrame* sep = new QFrame(this);
+    QFrame *sep = new QFrame(this);
     sep->setFrameShape(QFrame::VLine);
     sep->setFrameShadow(QFrame::Sunken);
     return sep;
 }
 
-QWidget* ViewTimeSeries::CreatePlotWidget()
+QWidget *ViewTimeSeries::CreatePlotWidget()
 {
     btnFilterTags = new QPushButton("Filter");
     leFilterTags = new QLineEdit;
     leFilterTags->setPlaceholderText(tr("Filter tags(regex)"));
-    
+
     btnShowAllTags = new QPushButton(tr("All"));
     btnShowAllTags->setCheckable(true);
     btnShowScalars = new QPushButton(tr("Scalars"));
@@ -36,7 +61,7 @@ QWidget* ViewTimeSeries::CreatePlotWidget()
     btnShowHistograms->setCheckable(true);
     bgShowCharts = new QButtonGroup;
     bgShowCharts->setExclusive(true);
-    bgShowCharts->addButton(btnShowAllTags, 0);
+    // bgShowCharts->addButton(btnShowAllTags, 0);
     bgShowCharts->addButton(btnShowScalars, 1);
     bgShowCharts->addButton(btnShowImages, 2);
     bgShowCharts->addButton(btnShowHistograms, 3);
@@ -44,16 +69,13 @@ QWidget* ViewTimeSeries::CreatePlotWidget()
     btnSettings = new QPushButton(tr("Settings"));
     btnSettings->setCheckable(true);
 
+    QWidget *widSetting = CreateChartSettingsWidget();
 
-        
-    QWidget* widSetting = CreateChartSettingsWidget();
-
-
-    QWidget* wid = new QWidget;
+    QWidget *wid = new QWidget;
     {
-        QVBoxLayout* vlytPlot = new QVBoxLayout;
+        QVBoxLayout *vlytPlot = new QVBoxLayout;
         {
-            QHBoxLayout* hlytToolBar = new QHBoxLayout;
+            QHBoxLayout *hlytToolBar = new QHBoxLayout;
             {
                 hlytToolBar->addWidget(btnFilterTags);
                 hlytToolBar->addWidget(leFilterTags);
@@ -64,27 +86,25 @@ QWidget* ViewTimeSeries::CreatePlotWidget()
                 hlytToolBar->addWidget(CreateVerticalSeparator());
                 hlytToolBar->addWidget(btnSettings);
             }
-            
-            QWidget* widChartContent = new QWidget;
+
+            QWidget *widChartContent = new QWidget;
             {
-                QHBoxLayout* hlytChartContent = new QHBoxLayout;
+                QHBoxLayout *hlytChartContent = new QHBoxLayout;
                 {
-                    vlytCharts = new QVBoxLayout;
+                    widCharts = new QWidget;
+                    vlytCharts = new QVBoxLayout(widCharts);
                     {
-                        PropsSection* propsSection = new PropsSection("Accuarcy");
-                        QVBoxLayout* vlytTest = new QVBoxLayout;
-                        {
-                            vlytTest->addWidget(new QLabel("test"));
-                        }
-                        propsSection->setContentLayout(*vlytTest);
-                        vlytCharts->addWidget(propsSection);
                     }
-                    hlytChartContent->addLayout(vlytCharts, 7);
+
+                    QScrollArea* scaCharts = new QScrollArea;
+                    scaCharts->setWidget(widCharts);
+                    scaCharts->setWidgetResizable(true);
+
+                    hlytChartContent->addWidget(scaCharts, 7);
                     hlytChartContent->addWidget(widSetting, 3);
                 }
                 widChartContent->setLayout(hlytChartContent);
             }
-
 
             vlytPlot->addLayout(hlytToolBar);
             vlytPlot->addWidget(widChartContent);
@@ -94,7 +114,7 @@ QWidget* ViewTimeSeries::CreatePlotWidget()
     return wid;
 }
 
-QWidget* ViewTimeSeries::CreateJobVisualWidget()
+QWidget *ViewTimeSeries::CreateJobVisualWidget()
 {
     twJobFiles = new QTreeWidget;
     twJobFiles->setColumnCount(2);
@@ -102,11 +122,11 @@ QWidget* ViewTimeSeries::CreateJobVisualWidget()
     leFilterJobFiles = new QLineEdit;
     leFilterJobFiles->setPlaceholderText(tr("Filter runs(regex)"));
 
-    QWidget* widChartVis = new QWidget;
+    QWidget *widChartVis = new QWidget;
     {
-        QVBoxLayout* vlytJobs = new QVBoxLayout;
+        QVBoxLayout *vlytJobs = new QVBoxLayout;
         {
-            QHBoxLayout* hlytFilter =  new QHBoxLayout;
+            QHBoxLayout *hlytFilter = new QHBoxLayout;
             {
                 hlytFilter->addWidget(btnFilterJobFiles);
                 hlytFilter->addWidget(leFilterJobFiles);
@@ -119,14 +139,14 @@ QWidget* ViewTimeSeries::CreateJobVisualWidget()
     return widChartVis;
 }
 
-QWidget* ViewTimeSeries::CreateChartSettingsWidget()
+QWidget *ViewTimeSeries::CreateChartSettingsWidget()
 {
-    QWidget* wid = new QWidget;
+    QWidget *wid = new QWidget;
     {
-        QVBoxLayout* vlytChartSetting = new QVBoxLayout;
+        QVBoxLayout *vlytChartSetting = new QVBoxLayout;
         {
             // add group box with bold name "GENERAL"
-            QGroupBox* grpGeneral = new QGroupBox(tr("GENERAL"));
+            QGroupBox *grpGeneral = new QGroupBox(tr("GENERAL"));
             {
                 // add settings for general chart settings
                 //...
@@ -134,7 +154,7 @@ QWidget* ViewTimeSeries::CreateChartSettingsWidget()
             vlytChartSetting->addWidget(grpGeneral);
 
             // add group box with bold name "SCALARS"
-            QGroupBox* grpScalars = new QGroupBox(tr("SCALARS"));
+            QGroupBox *grpScalars = new QGroupBox(tr("SCALARS"));
             {
                 // add settings for scalar chart settings
                 //...
@@ -142,7 +162,7 @@ QWidget* ViewTimeSeries::CreateChartSettingsWidget()
             vlytChartSetting->addWidget(grpScalars);
 
             // add group box with bold name "IMAGES"
-            QGroupBox* grpImages = new QGroupBox(tr("IMAGES"));
+            QGroupBox *grpImages = new QGroupBox(tr("IMAGES"));
             {
                 // add settings for image chart settings
                 //...
@@ -150,7 +170,7 @@ QWidget* ViewTimeSeries::CreateChartSettingsWidget()
             vlytChartSetting->addWidget(grpImages);
 
             // add group box with bold name "HISTOGRAMS"
-            QGroupBox* grpHistograms = new QGroupBox(tr("HISTOGRAMS"));
+            QGroupBox *grpHistograms = new QGroupBox(tr("HISTOGRAMS"));
             {
                 // add settings for histogram chart settings
                 //...
@@ -162,15 +182,16 @@ QWidget* ViewTimeSeries::CreateChartSettingsWidget()
     return wid;
 }
 
-void ViewTimeSeries::layouts() {
+void ViewTimeSeries::layouts()
+{
     // Set up layouts to arrange UI components
-    QHBoxLayout* hlytMain = new QHBoxLayout;
-    hlytMain->setContentsMargins(0,0,0,0);
+    QHBoxLayout *hlytMain = new QHBoxLayout;
+    hlytMain->setContentsMargins(0, 0, 0, 0);
     {
-        QSplitter* spltRunAndPlot = new QSplitter;
+        QSplitter *spltRunAndPlot = new QSplitter;
         {
-            QWidget* widChartVis = CreateJobVisualWidget();
-            QWidget* widPlot = CreatePlotWidget();
+            QWidget *widChartVis = CreateJobVisualWidget();
+            QWidget *widPlot = CreatePlotWidget();
             spltRunAndPlot->addWidget(widChartVis);
             spltRunAndPlot->addWidget(widPlot);
         }
@@ -182,7 +203,8 @@ void ViewTimeSeries::layouts() {
     this->setLayout(hlytMain);
 }
 
-void ViewTimeSeries::UI() {
+void ViewTimeSeries::UI()
+{
     widgets();
     layouts();
 

@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include "PropsSection.h"
+#include "qcustomplot.h"
 
 
 class ViewTimeSeries : public QWidget
@@ -15,6 +16,7 @@ class ViewTimeSeries : public QWidget
         void widgets();
         void layouts();
         void UI();
+        void Connect();
     
     private:
         QTreeWidget* twJobFiles;
@@ -29,10 +31,14 @@ class ViewTimeSeries : public QWidget
         QPushButton* btnShowImages;
         QPushButton* btnShowHistograms;
         QPushButton* btnSettings;
+        QWidget* widCharts;
         QVBoxLayout* vlytCharts;
         QWidget* CreatePlotWidget();
         QFrame* CreateVerticalSeparator();
         QWidget* CreateChartSettingsWidget();
+    
+    private slots:
+        void handleAddChartOnLyt();
 };
 
 
