@@ -1,12 +1,13 @@
 #include <QtGui>
 #include <iostream>
+#include <chrono>
 #include "ra.h"
 #include "ModelTreeGen.h"
-
+#include <omp.h>
 using namespace std;
 
 QImage blendExample() {
-    QImage QImage1(640, 480, QImage::Format_ARGB32);
+    QImage QImage1(1024, 768, QImage::Format_ARGB32);
     QImage1.fill(qRgb(255, 255, 255));
 
     // Draw a rectangle on QImage1
@@ -43,10 +44,59 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     Ra ra;
-    ModelTreeGen modelTreeGen;
-    modelTreeGen.CreateExampleNode();
+    ModelTreeGen model;
+    model.CreateExampleNode();
+    Node* root = model.GetRootNode();
 
-    QImage img = blendExample();
+    int alg = 3;
+    QImage img;
+    auto start = std::chrono::high_resolution_clock::now();
+
+    if (alg == 0) {
+        img = blendExample();
+        
+    } else if (alg == 1) {
+        // calibration
+        img = QImage(1024, 768, QImage::Format_ARGB32);
+        model.SetTargetLyr(0);
+        model.SetImage(&img);
+        model.draw();
+
+    } else if (alg == 2) {
+        // total draw
+        img = QImage(1024, 768, QImage::Format_ARGB32);
+        model.SetTargetLyr(-1);
+        model.SetImage(&img);
+        model.draw();
+
+    } else if (alg == 3) {
+        // multi-draw and merge
+        QImage QImage1(1024, 768, QImage::Format_ARGB32);
+        QImage1.fill(qRgb(255, 255, 255));
+
+        vector<QImage> vImgs(1024);
+        for (int i = 0; i < 1024; i++) {
+            vImgs[i] = std::move(QImage(1024, 768, QImage::Format_ARGB32));
+            vImgs[i].fill(Qt::transparent);
+            model.SetTargetLyr(i+1);
+            model.SetImage(&vImgs[i]);
+            model.draw();
+        }
+
+        for (int i = 0; i < 1024; i++) {
+            QPainter painter(&QImage1);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+            painter.drawImage(0,0, vImgs[i]);
+        }
+        img = std::move(QImage1);
+    }
+     auto end = std::chrono::high_resolution_clock::now();
+
+    // Compute duration in seconds
+    std::chrono::duration<double> elapsed = end - start;
+    
+    // Print elapsed time in seconds
+    std::cout << "Elapsed time: " << elapsed.count() << " seconds" << std::endl;
 
     ra.SetImage(&img);
     ra.update();

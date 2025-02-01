@@ -18,9 +18,9 @@ struct Node
 {
     int m_iLyr;
     int m_iShapeType;
-    vector<QRectF*> m_rect;
-    vector<QPolygonF*> m_polygon;
-    vector<Node*> m_children;
+    vector<QRectF> m_rect;
+    vector<QPolygonF> m_polygon;
+    vector<Node> m_children;
 };
 
 class ModelTreeGen : public QThread
@@ -31,16 +31,19 @@ class ModelTreeGen : public QThread
     ~ModelTreeGen() = default;
 
     void CreateExampleNode();
+    void Wait();
 
     Node* GetRootNode() const { return m_RootNode; }
     void SetRootNode(Node* pRoot) { m_RootNode = pRoot; }
     void SetImage(QImage* pImg) { m_pImg = pImg; }
     void SetTargetLyr(int lyr) { m_iTgtLyr = lyr; }
 
+    void draw();
+
     void run() override;
 
     private:
-        Node* m_RootNode;
+        Node* m_RootNode = NULL;
 
         QImage* m_pImg;
 

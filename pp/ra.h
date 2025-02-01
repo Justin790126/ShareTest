@@ -15,6 +15,7 @@ class Ra : public QWidget
         void SetImage(QImage* pImg) { m_pImg = pImg; }
     protected:
         void paintEvent(QPaintEvent* event) override;
+        void keyPressEvent(QKeyEvent* event) override;
     
     private:
         QImage* m_pImg = NULL;
