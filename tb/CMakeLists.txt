@@ -27,6 +27,17 @@ add_executable(${PROJECT_NAME}_ende
 target_link_libraries(${PROJECT_NAME}_ende ${QT_LIBRARIES} /usr/local/lib/libcryptopp.a)
 
 
+set(PROTOBUF_LIBRARY
+    /usr/lib/libprotobuf.a)
+set(TF_INCLUDE_DIR
+    "/home/justin126/workspace/venv/lib64/python3.7/site-packages/tensorflow/include")
+set(TF_LIBRARY
+    /home/justin126/tensorflow/bazel-bin/tensorflow/libtensorflow_framework.so
+    /home/justin126/tensorflow/bazel-bin/tensorflow/libtensorflow_cc.so)
+include_directories(
+    /usr/include
+    ${TF_INCLUDE_DIR}
+) 
 
 set(SOURCES1
     main.cpp
@@ -35,6 +46,7 @@ set(SOURCES1
     ViewTimeSeries.cpp
     qcustomplot.cpp
     PropsSection.cpp
+    ModelTfParser.cpp
 )
 
 set(HEADERS1
@@ -43,6 +55,7 @@ set(HEADERS1
     ViewTimeSeries.h
     qcustomplot.h
     PropsSection.h
+    ModelTfParser.h
 )
 
 qt4_wrap_cpp(SOURCES1 ${HEADERS1})
@@ -51,6 +64,11 @@ qt4_wrap_cpp(SOURCES1 ${HEADERS1})
 add_executable(${PROJECT_NAME}
     ${SOURCES1})
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} /usr/local/lib/libcryptopp.a)
+target_link_libraries(${PROJECT_NAME}
+    ${QT_LIBRARIES}
+    /usr/local/lib/libcryptopp.a
+    ${TF_LIBRARY}
+    ${PROTOBUF_LIBRARY}
+    )
 
 
