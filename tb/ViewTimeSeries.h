@@ -17,6 +17,8 @@ class ViewTimeSeries : public QWidget
         void layouts();
         void UI();
         void Connect();
+
+        QWidget* AddChartSection(QString title="");
     
     private:
         QTreeWidget* twJobFiles;
@@ -35,10 +37,12 @@ class ViewTimeSeries : public QWidget
         QVBoxLayout* vlytCharts;
         QWidget* CreatePlotWidget();
         QFrame* CreateVerticalSeparator();
+        QWidget* widSettings;
         QWidget* CreateChartSettingsWidget();
     
     private slots:
         void handleAddChartOnLyt();
+        void handleSettingsOnOff();
 };
 
 

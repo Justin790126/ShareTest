@@ -15,12 +15,21 @@ void ViewTimeSeries::widgets()
 void ViewTimeSeries::Connect()
 {
     connect(btnShowAllTags, SIGNAL(clicked()), this, SLOT(handleAddChartOnLyt()));
+    connect(btnSettings, SIGNAL(clicked()), this, SLOT(handleSettingsOnOff()));
 }
-#include <iostream>
-using namespace std;
-void ViewTimeSeries::handleAddChartOnLyt()
+
+void ViewTimeSeries::handleSettingsOnOff()
 {
-    PropsSection *section = new PropsSection;
+    QPushButton* btn = (QPushButton*)QObject::sender();
+    if (!btn) return;
+    bool onOff = btn->isChecked();
+    if (!widSettings) return;
+    widSettings->setVisible(onOff);
+}
+
+QWidget* ViewTimeSeries::AddChartSection(QString title)
+{
+    PropsSection *section = new PropsSection(title);
     {
         QVBoxLayout *vlyt = new QVBoxLayout;
         QWidget* wid = new QWidget;
@@ -34,6 +43,15 @@ void ViewTimeSeries::handleAddChartOnLyt()
         section->setContentLayout(*vlyt);
     }
     vlytCharts->addWidget(section);
+    return section;
+}
+
+#include <iostream>
+using namespace std;
+void ViewTimeSeries::handleAddChartOnLyt()
+{
+    PropsSection *section = (PropsSection *)AddChartSection("Title");
+    
 }
 
 QFrame *ViewTimeSeries::CreateVerticalSeparator()
@@ -69,7 +87,8 @@ QWidget *ViewTimeSeries::CreatePlotWidget()
     btnSettings = new QPushButton(tr("Settings"));
     btnSettings->setCheckable(true);
 
-    QWidget *widSetting = CreateChartSettingsWidget();
+    widSettings = CreateChartSettingsWidget();
+    widSettings->setVisible(false);
 
     QWidget *wid = new QWidget;
     {
@@ -101,7 +120,7 @@ QWidget *ViewTimeSeries::CreatePlotWidget()
                     scaCharts->setWidgetResizable(true);
 
                     hlytChartContent->addWidget(scaCharts, 7);
-                    hlytChartContent->addWidget(widSetting, 3);
+                    hlytChartContent->addWidget(widSettings, 3);
                 }
                 widChartContent->setLayout(hlytChartContent);
             }
@@ -111,6 +130,7 @@ QWidget *ViewTimeSeries::CreatePlotWidget()
         }
         wid->setLayout(vlytPlot);
     }
+
     return wid;
 }
 

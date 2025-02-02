@@ -3,6 +3,7 @@
 LcTensorBoard::LcTensorBoard(QObject *parent)
     : QObject(parent)
 {
+    
     if (!view) {
         view = new ViewTensorBoard();
         view->show();

@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     model.CreateExampleNode();
     Node* root = model.GetRootNode();
 
-    int alg = 3;
+    int alg = atoi(argv[1]);
     QImage img;
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     } else if (alg == 1) {
         // calibration
         img = QImage(1024, 768, QImage::Format_ARGB32);
+        img.fill(qRgb(255, 255, 255));
         model.SetTargetLyr(0);
         model.SetImage(&img);
         model.draw();
@@ -74,20 +75,27 @@ int main(int argc, char *argv[])
         QImage QImage1(1024, 768, QImage::Format_ARGB32);
         QImage1.fill(qRgb(255, 255, 255));
 
-        vector<QImage> vImgs(1024);
-        for (int i = 0; i < 1024; i++) {
-            vImgs[i] = std::move(QImage(1024, 768, QImage::Format_ARGB32));
-            vImgs[i].fill(Qt::transparent);
-            model.SetTargetLyr(i+1);
-            model.SetImage(&vImgs[i]);
-            model.draw();
+        vector<QImage> imgs(129, QImage(1024, 768, QImage::Format_ARGB32));
+        #pragma omp parallel
+        {
+            ModelTreeGen m;
+            m.SetRootNode(root);
+            #pragma omp for nowait 
+            {
+                
+                for (int i = 0; i < 128; i++) {
+                    m.SetTargetLyr(i);
+                    m.SetImage(&imgs[i]);
+                    m.draw();
+
+                    QPainter painter(&QImage1);
+                    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+                    painter.drawImage(0,0, imgs[i]);
+                    
+                }
+            }
         }
 
-        for (int i = 0; i < 1024; i++) {
-            QPainter painter(&QImage1);
-            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-            painter.drawImage(0,0, vImgs[i]);
-        }
         img = std::move(QImage1);
     }
      auto end = std::chrono::high_resolution_clock::now();

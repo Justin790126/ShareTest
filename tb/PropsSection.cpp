@@ -33,6 +33,7 @@
         mainLayout = new QGridLayout(this);
         btnClose = new QPushButton("x", this);
         btnClose->setFlat(true);
+        btnClose->setVisible(false);
 
         toggleButton->setStyleSheet("QToolButton {border: none;}");
         toggleButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);

@@ -30,6 +30,9 @@ class ModelTreeGen : public QThread
     ModelTreeGen(QWidget *parent=NULL);
     ~ModelTreeGen() = default;
 
+    void CreateExampleNode2(Node* node, int level, int parentLyrNum);
+
+    void TraverseNode(Node* node, int level, int parentLyrNum, QPainter* painter);
     void CreateExampleNode();
     void Wait();
 
@@ -46,6 +49,8 @@ class ModelTreeGen : public QThread
         Node* m_RootNode = NULL;
 
         QImage* m_pImg;
+
+        int m_iSubLyr = 0;
 
         int m_iTgtLyr;
 };
