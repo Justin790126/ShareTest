@@ -1,13 +1,11 @@
 #include <QtGui>
 #include <iostream>
-#include "TestWidget.h"
-
+#include "lcSDK.h"
 using namespace std;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    TestWidget w;
-    w.show();
+    lcSDK ctrller;
     return a.exec();
 }

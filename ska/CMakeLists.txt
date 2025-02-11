@@ -16,10 +16,14 @@ set(SOURCES
     ModelSktSvr.cpp
     ModelSktMsg.cpp
     TestWidget.cpp
+    ModelSDK.cpp
+    lcSDK.cpp
 )
 
 set(HEADERS
     TestWidget.h
+    ModelSDK.h
+    lcSDK.h
 )
 
 qt4_wrap_cpp(SOURCES ${HEADERS})
