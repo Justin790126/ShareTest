@@ -4,6 +4,7 @@
 #include <QtGui>
 #include "ModelSDK.h"
 #include "TestWidget.h"
+#include "ModelSktClnt.h"
 
 class lcSDK : public QObject
 {
@@ -15,6 +16,12 @@ class lcSDK : public QObject
     private:
     ModelSDK* model;
     TestWidget* view;
+
+    private slots:
+        void handleSendMsg();
+
+    private:
+        ModelSktClnt* m_clnt = NULL;
 };
 
 

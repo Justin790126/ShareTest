@@ -26,7 +26,7 @@ bool ModelSktSvr::init()
     // Bind the socket to a port
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr(m_sIp.c_str());
-    server_addr.sin_port = htons(8080); // Replace with desired port
+    server_addr.sin_port = htons(m_iPort); // Replace with desired port
 
     if (::bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
     {
@@ -43,7 +43,7 @@ bool ModelSktSvr::init()
         return result;
     }
 
-    sprintf(resMsg, "[ModelSktSvr] Server listening on port 8080...");
+    sprintf(resMsg, "[ModelSktSvr] Server listening on port %d...", m_iPort);
     m_sStatusMsg = std::move(resMsg);
     result = false;
     return result;
@@ -194,6 +194,7 @@ void ModelSktSvr::ContourMake(u_char flg)
 
 void ModelSktSvr::start()
 {
+    cout << "m_bSvrStop: " << (int)m_bSvrStop << endl;
     while (!m_bSvrStop)
     {
         client_addr_len = sizeof(client_addr);

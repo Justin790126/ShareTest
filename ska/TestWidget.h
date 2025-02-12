@@ -16,7 +16,6 @@ public:
     void Connect();
     void UI();
 
-private:
     QPushButton* btnConnect;
     QPushButton* btnSend;
     QPushButton* btnRecv;

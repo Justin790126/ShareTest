@@ -3,6 +3,14 @@
 ModelSDK::ModelSDK(QObject *parent)
     : QThread(parent)
 {
+    if (!m_clnt) {
+        m_clnt = new ModelSktClnt;
+    }
+}
+
+void ModelSDK::DlClose()
+{
+    ModelSktMsg msg;
 }
 
 void ModelSDK::run()

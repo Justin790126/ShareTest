@@ -33,12 +33,15 @@ void ModelSktMsg::printPkt(char *pkg, size_t dsize)
 
 void ModelSktMsg::generateChecksum(char *data, size_t sizeOfData, u_char *chksum)
 {
+    if (!m_bGenCksum)
+        return;
     SHA256(reinterpret_cast<const unsigned char *>(data), sizeOfData, chksum);
 }
 
 int ModelSktMsg::getDataSectionOffset()
 {
-    return sizeof(size_t) + SHA256_DIGEST_LENGTH + sizeof(char) + sizeof(char) + sizeof(char) + sizeof(int) + sizeof(int);
+    int chksumLen = m_bGenCksum ? SHA256_DIGEST_LENGTH : 0;
+    return sizeof(size_t) + chksumLen + sizeof(char) + sizeof(char) + sizeof(char) + sizeof(int) + sizeof(int);
 }
 
 char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char syncFlag, int pktId)
@@ -62,27 +65,31 @@ char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char sy
         offset += m_vDataSection[i].second;
     }
 
-    //printf("----total data section : %zu----\n", totalSizeOfDataSection);
-    //printPkt(dataSection, offset);
+    // printf("----total data section : %zu----\n", totalSizeOfDataSection);
+    // printPkt(dataSection, offset);
+    char *chksum = NULL;
+    if (m_bGenCksum)
+    {
+        u_char checksum[SHA256_DIGEST_LENGTH];
+        generateChecksum(dataSection, totalSizeOfDataSection, checksum);
+        chksum = (char *)checksum;
+    }
 
-    u_char checksum[SHA256_DIGEST_LENGTH];
-    generateChecksum(dataSection, totalSizeOfDataSection, checksum);
     // Calculate the SHA-256 checksum
-    //printf("---checksum----\n");
-    char *chksum = (char *)checksum;
-    //printPkt(chksum, SHA256_DIGEST_LENGTH);
+    // printf("---checksum----\n");
+    // printPkt(chksum, SHA256_DIGEST_LENGTH);
 
-    char senderByte = sender;   // FIXME: api enum here
+    char senderByte = sender;     // FIXME: api enum here
     char responseByte = response; // FIXME: api send 0x00, svr response with code
     char syncFlagByte = syncFlag;
     int pktIdByte = pktId;
-    
+
     int numOfParam = m_vDataSection.size();
 
-    size_t pktLen = sizeof(size_t) + (size_t)SHA256_DIGEST_LENGTH + 
-        sizeof(char) + sizeof(char) + 
-        sizeof(char) + sizeof(int) + sizeof(int) + 
-        totalSizeOfDataSection;
+    size_t pktLen = sizeof(size_t) + (size_t)SHA256_DIGEST_LENGTH +
+                    sizeof(char) + sizeof(char) +
+                    sizeof(char) + sizeof(int) + sizeof(int) +
+                    totalSizeOfDataSection;
 
     char *result = new char[pktLen];
     int totalPktOffset = 0;
@@ -90,8 +97,12 @@ char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char sy
     memcpy(result, &pktLen, sizeof(size_t));
     totalPktOffset += sizeof(size_t);
     // chksum
-    memcpy(result + totalPktOffset, &checksum, SHA256_DIGEST_LENGTH);
-    totalPktOffset += SHA256_DIGEST_LENGTH;
+    if (chksum)
+    {
+        memcpy(result + totalPktOffset, &chksum, SHA256_DIGEST_LENGTH);
+        totalPktOffset += SHA256_DIGEST_LENGTH;
+    }
+
     // sender
     memcpy(result + totalPktOffset, &senderByte, sizeof(char));
     totalPktOffset += sizeof(char);
@@ -139,17 +150,28 @@ template <typename T>
 char *ModelSktMsg::serialize(T data, size_t &outLen)
 {
     DType dtype;
-    if (typeid(T) == typeid(int)) {
+    if (typeid(T) == typeid(int))
+    {
         dtype = DTYPE_INT;
-    } else if (typeid(T) == typeid(float)) {
+    }
+    else if (typeid(T) == typeid(float))
+    {
         dtype = DTYPE_FLOAT;
-    } else if (typeid(T) == typeid(double)) {
+    }
+    else if (typeid(T) == typeid(double))
+    {
         dtype = DTYPE_DOUBLE;
-    } else if (typeid(T) == typeid(char)) {
+    }
+    else if (typeid(T) == typeid(char))
+    {
         dtype = DTYPE_CHAR;
-    } else if (typeid(T) == typeid(size_t)) {
+    }
+    else if (typeid(T) == typeid(size_t))
+    {
         dtype = DTYPE_SIZE_T;
-    } else {
+    }
+    else
+    {
         printf("[serialize] unsupported type\n");
         return NULL;
     }
@@ -173,9 +195,6 @@ char *ModelSktMsg::serialize(T data, size_t &outLen)
     memcpy(pkt + offset, &data, sizeof(T));
     offset += sizeof(T);
 
-    memcpy(pkt + offset, &endByte, sizeof(char));
-    offset += sizeof(char);
-
     outLen = offset;
 
     m_vDataSection.push_back(
@@ -194,15 +213,24 @@ template <typename T>
 char *ModelSktMsg::serializeArr(T *data, size_t dLen, size_t &outLen)
 {
     DType dtype;
-    if (typeid(T) == typeid(char)) {
+    if (typeid(T) == typeid(char))
+    {
         dtype = DTYPE_CHAR_ARR;
-    } else if (typeid(T) == typeid(int)) {
+    }
+    else if (typeid(T) == typeid(int))
+    {
         dtype = DTYPE_INT_ARR;
-    } else if (typeid(T) == typeid(float)) {
+    }
+    else if (typeid(T) == typeid(float))
+    {
         dtype = DTYPE_FLOAT_ARR;
-    } else if (typeid(T) == typeid(double)) {
+    }
+    else if (typeid(T) == typeid(double))
+    {
         dtype = DTYPE_DOUBLE_ARR;
-    } else {
+    }
+    else
+    {
         printf("[serializeArr] unsupported type");
         return NULL;
     }
@@ -225,9 +253,6 @@ char *ModelSktMsg::serializeArr(T *data, size_t dLen, size_t &outLen)
     // store float array data
     memcpy(farrPkt + offset, data, dLen * sizeof(T));
     offset += dLen * sizeof(T);
-
-    memcpy(farrPkt + offset, &endByte, sizeof(char));
-    offset += sizeof(char);
 
     outLen = offset;
     m_vDataSection.push_back(
@@ -267,41 +292,47 @@ template void ModelSktMsg::deserializeArr<int>(int *out, char *pkt, size_t numOf
 template void ModelSktMsg::deserializeArr<float>(float *out, char *pkt, size_t numOfBytes);
 template void ModelSktMsg::deserializeArr<double>(double *out, char *pkt, size_t numOfBytes);
 
-
-
 template <typename T>
 char *ModelSktMsg::createBatchPkt(T *data, size_t dLen, size_t &outLen)
 {
     DType dtype;
-    if (typeid(T) == typeid(char)) {
+    if (typeid(T) == typeid(char))
+    {
         dtype = DTYPE_CHAR_ARR;
-    } else if (typeid(T) == typeid(int)) {
+    }
+    else if (typeid(T) == typeid(int))
+    {
         dtype = DTYPE_INT_ARR;
-    } else if (typeid(T) == typeid(float)) {
+    }
+    else if (typeid(T) == typeid(float))
+    {
         dtype = DTYPE_FLOAT_ARR;
-    } else if (typeid(T) == typeid(double)) {
+    }
+    else if (typeid(T) == typeid(double))
+    {
         dtype = DTYPE_DOUBLE_ARR;
-    } else {
+    }
+    else
+    {
         printf("[serializeArr] unsupported type");
         return NULL;
     }
 
     int pktSize = sizeof(size_t) + dLen;
     outLen = pktSize;
-    char* pkt = new char[pktSize];
+    char *pkt = new char[pktSize];
 
     memset(pkt, 0x00, pktSize);
 
     int offset = 0;
     memcpy(pkt, &dLen, sizeof(size_t));
     offset += sizeof(size_t);
-    memcpy(pkt+offset, data, sizeof(T)*dLen);
-    offset += sizeof(T)*dLen;
+    memcpy(pkt + offset, data, sizeof(T) * dLen);
+    offset += sizeof(T) * dLen;
 
     outLen = offset;
     return pkt;
 }
-
 
 template char *ModelSktMsg::createBatchPkt<char>(char *data, size_t dLen, size_t &outLen);
 template char *ModelSktMsg::createBatchPkt<int>(int *data, size_t dLen, size_t &outLen);

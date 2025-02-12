@@ -99,10 +99,12 @@ public:
     template <typename T>
     char* createBatchPkt(T *data, size_t dLen, size_t &outLen);
 
+    void SetChecksum(bool onOff) { m_bGenCksum = onOff; }
+
 private:
     // <data, pkt size>
     std::vector<std::pair<char *, size_t>> m_vDataSection;
-    char endByte = 0xAB;
+    bool m_bGenCksum = true;
 };
 
 #endif /* MODEL_SKT_MSG */

@@ -4,6 +4,12 @@
 void ModelSktBase::Send(char* pkt, size_t pktLen)
 {
     int sendbytes = send(client_socket, pkt, pktLen, 0);
+    if (sendbytes < 0) {
+        char resMsg[128];
+        sprintf(resMsg, "[ModelSktBase] Send failed with byte len %d", sendbytes);
+        m_sStatusMsg = std::move(resMsg);
+        return;
+    }
     // printf("[ModelSktBase] send %d bytes\n", sendbytes);
 }
 
