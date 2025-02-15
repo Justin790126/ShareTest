@@ -220,8 +220,8 @@ void ModelSktSvr::start()
             // break;
         }
         cout << "res.size = " << res.size() << endl;
-        // m_bSvrStop = true;
-        // break;
+        m_bSvrStop = true;
+        break;
         // if (res.size() != 1)
         // {
         //     m_bSvrStop = true;
