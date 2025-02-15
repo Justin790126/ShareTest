@@ -68,16 +68,16 @@ char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char sy
     // printf("----total data section : %zu----\n", totalSizeOfDataSection);
     // printPkt(dataSection, offset);
     char *chksum = NULL;
+    size_t chkSumSize = 0;
     if (m_bGenCksum)
     {
+        chkSumSize = SHA256_DIGEST_LENGTH;
         u_char checksum[SHA256_DIGEST_LENGTH];
         generateChecksum(dataSection, totalSizeOfDataSection, checksum);
+        
         chksum = (char *)checksum;
     }
 
-    // Calculate the SHA-256 checksum
-    // printf("---checksum----\n");
-    // printPkt(chksum, SHA256_DIGEST_LENGTH);
 
     char senderByte = sender;     // FIXME: api enum here
     char responseByte = response; // FIXME: api send 0x00, svr response with code
@@ -86,7 +86,7 @@ char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char sy
 
     int numOfParam = m_vDataSection.size();
 
-    size_t pktLen = sizeof(size_t) + (size_t)SHA256_DIGEST_LENGTH +
+    size_t pktLen = sizeof(size_t) + (size_t)chkSumSize +
                     sizeof(char) + sizeof(char) +
                     sizeof(char) + sizeof(int) + sizeof(int) +
                     totalSizeOfDataSection;
@@ -97,9 +97,11 @@ char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char sy
     memcpy(result, &pktLen, sizeof(size_t));
     totalPktOffset += sizeof(size_t);
     // chksum
+    cout << "checksum" << endl;
+        printPkt(chksum, SHA256_DIGEST_LENGTH);
     if (chksum)
     {
-        memcpy(result + totalPktOffset, &chksum, SHA256_DIGEST_LENGTH);
+        memcpy(result + totalPktOffset, chksum, SHA256_DIGEST_LENGTH);
         totalPktOffset += SHA256_DIGEST_LENGTH;
     }
 

@@ -15,7 +15,8 @@ enum SvrCmd
     SVR_DLCLOSE = 0x01,
     SVR_DLOPEN,
     SVR_SETLYT,
-    SVR_CONTOUR_MAKE
+    SVR_CONTOUR_MAKE,
+    SVR_SHUTDOWN
 };
 
 enum DType
@@ -58,10 +59,12 @@ class PktRes
 };
 
 /*
-            pkt_len (8bytes), chksum (32bytes), sender(1bytes), response(1bytes), sync_flag, pkt_id, number of parameters (4bytes), dtype(1bytes), data_len(8bytes), data , data_end_byte...
+            pkt_len (8bytes), chksum (32bytes), sender(1bytes), response(1bytes), sync_flag, pkt_id, number of parameters (4bytes), dtype(1bytes), data_len(8bytes), data 
 
-store          size_t              char[32]          char            char             char       int          int                        char         size_t                     char
+store          size_t              char[32]          char            char             char       int          int                        char         size_t              
  */
+
+static bool m_bGenCksum = true;
 
 class ModelSktMsg
 {
@@ -104,7 +107,7 @@ public:
 private:
     // <data, pkt size>
     std::vector<std::pair<char *, size_t>> m_vDataSection;
-    bool m_bGenCksum = true;
+    
 };
 
 #endif /* MODEL_SKT_MSG */

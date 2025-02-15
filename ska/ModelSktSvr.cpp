@@ -197,56 +197,73 @@ void ModelSktSvr::start()
     cout << "m_bSvrStop: " << (int)m_bSvrStop << endl;
     while (!m_bSvrStop)
     {
+        // cout << "svr listening ..." << endl;
         client_addr_len = sizeof(client_addr);
         if (!Accept())
         {
+            cout << " Not accepted" << endl;
             m_bSvrStop = true;
             break;
         }
+        cout << "receive" << endl;
+        #if TEST_SEGMENTATION_FAULT
+            int* ptr = nullptr;  // Null pointer
+            // Attempting to dereference the null pointer will cause a segmentation fault
+            std::cout << *ptr << std::endl;
+        #endif
 
         vector<PktRes> res;
         if (!Receive(res))
         {
-            m_bSvrStop = true;
-            break;
+            cout << " Receive failed " << endl;
+            // m_bSvrStop = true;
+            // break;
         }
+        cout << "res.size = " << res.size() << endl;
+        // m_bSvrStop = true;
+        // break;
+        // if (res.size() != 1)
+        // {
+        //     m_bSvrStop = true;
+        //     m_sStatusMsg = "[ModelSktSvr] Parsing Result is empty";
+        //     break;
+        // }
 
-        if (res.size() != 1)
-        {
-            m_bSvrStop = true;
-            m_sStatusMsg = "[ModelSktSvr] Parsing Result is empty";
-            break;
-        }
+// // Getstatusmsg
+// #if TEST_ALL
+//         ModelSktMsg msg;
+//         size_t msgSize = m_sStatusMsg.length() + 1;
+//         size_t respktlen;
+//         char *response = new char[msgSize];
+//         strcpy(response, m_sStatusMsg.c_str());
+//         msg.serializeArr<char>(response, msgSize, respktlen);
+//         char *respkt = msg.createPkt(respktlen);
+//         Send(respkt, respktlen);
+// #endif
 
-// Getstatusmsg
-#if TEST_ALL
-        ModelSktMsg msg;
-        size_t msgSize = m_sStatusMsg.length() + 1;
-        size_t respktlen;
-        char *response = new char[msgSize];
-        strcpy(response, m_sStatusMsg.c_str());
-        msg.serializeArr<char>(response, msgSize, respktlen);
-        char *respkt = msg.createPkt(respktlen);
-        Send(respkt, respktlen);
-#endif
-
-        PktRes resFromClnt = res[0];
-        char cmdFrClnt = resFromClnt.cSender;
-        switch (cmdFrClnt)
-        {
-        case SVR_DLCLOSE:
-        {
-            DlClose((u_char)resFromClnt.cSyncFlg);
-            break;
-        }
-        case SVR_CONTOUR_MAKE:
-        {
-            ContourMake((u_char)resFromClnt.cSyncFlg);
-            break;
-        }
-        default:
-            break;
-        }
+        // PktRes resFromClnt = res[0];
+        // char cmdFrClnt = resFromClnt.cSender;
+        // switch (cmdFrClnt)
+        // {
+        // case SVR_DLCLOSE:
+        // {
+        //     DlClose((u_char)resFromClnt.cSyncFlg);
+        //     break;
+        // }
+        // case SVR_CONTOUR_MAKE:
+        // {
+        //     ContourMake((u_char)resFromClnt.cSyncFlg);
+        //     break;
+        // }
+        // case SVR_SHUTDOWN:
+        // {
+        //     cout << "Svr shutdown" << endl;
+        //     m_bSvrStop = true;
+        //     break;
+        // }
+        // default:
+        //     break;
+        // }
 
         close(client_socket);
     }
@@ -256,6 +273,7 @@ void ModelSktSvr::start()
         // send response to client and close
         close(client_socket);
     }
+    cout << "EOF ModelSktSvr" << endl;
 }
 
 void ModelSktSvr::Close()
