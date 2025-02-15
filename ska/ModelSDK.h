@@ -18,6 +18,7 @@ public:
     ~ModelSDK() = default;
 
     void DlClose();
+    void ContourMake();
 protected:
     virtual void run() override;
 

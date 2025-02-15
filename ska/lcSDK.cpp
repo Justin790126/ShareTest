@@ -9,7 +9,13 @@ lcSDK::lcSDK(QObject *parent): QObject(parent)
     view = new TestWidget();
     model->start();
     connect(view->btnSend, SIGNAL(clicked()), this, SLOT(handleSendMsg()));
+    connect(view->btnSendContourMaked, SIGNAL(clicked()), this, SLOT(handleSenContourMakedMsg()));
     view->show();
+}
+
+void lcSDK::handleSenContourMakedMsg()
+{
+    model->ContourMake();
 }
 
 

@@ -8,6 +8,19 @@ ModelSDK::ModelSDK(QObject *parent)
     }
 }
 
+void ModelSDK::ContourMake()
+{
+    cout << "contour make" << endl;
+    m_clnt->connect();
+    ModelSktMsg msg;
+    size_t pktLen;
+    msg.serialize<char>(0x00, pktLen);
+    char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, 0x00);
+    m_clnt->Send(pkt, pktLen);
+
+    m_clnt->Close();
+}
+
 void ModelSDK::DlClose()
 {
     m_clnt->connect();
@@ -20,13 +33,11 @@ void ModelSDK::DlClose()
     msg.serializeArr<char>(testmsg, sizeof(test) + 1, pktLen);
     
     char* pkt = msg.createPkt(pktLen, SVR_SHUTDOWN, 0x0a, (char)0x0b, 0x0C);
-    cout << "total pkt" << endl;
-    msg.printPkt(pkt, pktLen);
+    // msg.printPkt(pkt, pktLen);
     m_clnt->Send(pkt, pktLen);
     // delete[] pkt;
     vector<PktRes> res;
     m_clnt->Receive(res);
-
     m_clnt->Close();
 }
 

@@ -205,7 +205,6 @@ void ModelSktSvr::start()
             m_bSvrStop = true;
             break;
         }
-        cout << "receive" << endl;
         #if TEST_SEGMENTATION_FAULT
             int* ptr = nullptr;  // Null pointer
             // Attempting to dereference the null pointer will cause a segmentation fault
@@ -219,18 +218,10 @@ void ModelSktSvr::start()
             // m_bSvrStop = true;
             // break;
         }
-        cout << "res.size = " << res.size() << endl;
 
-        ModelSktMsg resMsg;
-        string test = "bye!";
-        char* testmsg = new char[sizeof(test) + 1];
-        strcpy(testmsg, test.c_str());
-        size_t resLen;
-        resMsg.serializeArr<char>(testmsg, sizeof(test) + 1, resLen);
-        char* resmsgpkt = resMsg.createPkt(resLen);
-        Send(resmsgpkt, resLen);
-        m_bSvrStop = true;
-        break;
+        
+        // m_bSvrStop = true;
+        // break;
         // if (res.size() != 1)
         // {
         //     m_bSvrStop = true;
@@ -249,6 +240,30 @@ void ModelSktSvr::start()
 //         char *respkt = msg.createPkt(respktlen);
 //         Send(respkt, respktlen);
 // #endif
+        for (int i = 0; i < res.size(); i++) {
+            PktRes* resFromClnt = &res[i];
+            char cmdFrClnt = resFromClnt->cSender;
+            switch (cmdFrClnt)
+            {
+                case SVR_SHUTDOWN: {
+                    cout << "svr shutdown" << endl;
+                    ModelSktMsg resMsg;
+                    string test = "bye!";
+                    char* testmsg = new char[sizeof(test) + 1];
+                    strcpy(testmsg, test.c_str());
+                    size_t resLen;
+                    resMsg.serializeArr<char>(testmsg, sizeof(test) + 1, resLen);
+                    char* resmsgpkt = resMsg.createPkt(resLen);
+                    Send(resmsgpkt, resLen);
+                    m_bSvrStop = true;
+                    break;
+                }
+                case SVR_CONTOUR_MAKE: {
+                    cout << "contour make" << endl;
+                    break;
+                }
+            }
+        }
 
         // PktRes resFromClnt = res[0];
         // char cmdFrClnt = resFromClnt.cSender;

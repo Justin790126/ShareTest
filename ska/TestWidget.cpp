@@ -26,7 +26,7 @@ void TestWidget::layouts()
     {
         hlyt->addWidget(btnConnect);
         hlyt->addWidget(btnSend);
-        hlyt->addWidget(btnRecv);
+        hlyt->addWidget(btnSendContourMaked);
     }
     layout->addLayout(hlyt);
     setLayout(layout);
@@ -36,8 +36,8 @@ void TestWidget::layouts()
 void TestWidget::widgets()
 {
     btnConnect = new QPushButton("Connect");
-    btnSend = new QPushButton("Send");
-    btnRecv = new QPushButton("Receive");
+    btnSend = new QPushButton("Server shutdown");
+    btnSendContourMaked = new QPushButton("Contour Make");
     teOutput = new QTextEdit;
     teOutput->setReadOnly(true);
 }

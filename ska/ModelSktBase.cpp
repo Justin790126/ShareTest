@@ -50,7 +50,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     bool result = false;
     char resMsg[1024];
     ModelSktMsg msg;
-    int verbose = 1;
+    int verbose = m_iVerbose;
 
     char sizeBytes[8];
     int bytes_received = recv(client_socket, sizeBytes, sizeof(size_t), 0);
@@ -61,7 +61,6 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
         return result; // Connection closed or error
     }
     size_t pktLen = msg.deserialize<size_t>(sizeBytes);
-    cout << "pktLen: " << pktLen << endl;
 
     if (verbose > 0) {
         printf("[ModelSktBase] pktLen = %zu \n", pktLen);
@@ -91,13 +90,19 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     // // Verify checksum
     u_char svrChksum[32];
     msg.generateChecksum(ds, lenDs, svrChksum);
-    cout << "checksum generate from data section " << endl;
-    msg.printPkt((char*)svrChksum, 32);
+    if (verbose > 0) {
+        cout << "checksum generate from data section " << endl;
+        msg.printPkt((char*)svrChksum, 32);
+    }
+    
     // // if (verbose > 0) msg.printPkt((char *)svrChksum, 32);
     u_char clntChksum[32];
     msg.deserializeArr<u_char>(clntChksum, pkt + sizeof(size_t), 32);
-    cout << "clntChksum:" << endl;
-    msg.printPkt((char*)clntChksum, 32);
+    if (verbose > 0) {
+        cout << "clntChksum:" << endl;
+        msg.printPkt((char*)clntChksum, 32);
+    }
+    
     bool chksumSame = msg.verifyChksum(clntChksum, svrChksum);
     // if (verbose > 0)
     // {
@@ -123,7 +128,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
     headerOffset += sizeof(char);
     int pktid = msg.deserialize<int>(pkt + sizeof(size_t) + headerOffset);
     headerOffset += sizeof(int);
-    if (verbose > 0) {
+    if (verbose > 1) {
         printf("clnt sender: 0x%02x \n", sender);
         printf("svr response: 0x%02x \n", response);
         printf("sync flag: 0x%02x \n", syncFlag);
@@ -162,7 +167,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
 
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_INT\n");
                 printf("data len: %zu, data: %d\n", dataLen, param.iData);
             }
@@ -172,7 +177,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.cData = msg.deserialize<char>(ds + pktOffset + 1 + sizeof(size_t));
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_CHAR\n");
                 printf("data len: %zu, data: 0x%02x\n", dataLen, param.cData);
             }
@@ -183,7 +188,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.fData = msg.deserialize<float>(ds + pktOffset + 1 + sizeof(size_t));
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_FLOAT\n");
                 printf("data len: %zu, data: %f\n", dataLen, param.fData);
             }
@@ -193,7 +198,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.dData = msg.deserialize<double>(ds + pktOffset + 1 + sizeof(size_t));
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_DOUBLE\n");
                 printf("data len: %zu, data: %f\n", dataLen, param.dData);
             }
@@ -203,7 +208,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.sData = msg.deserialize<size_t>(ds + pktOffset + 1 + sizeof(size_t));
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_SIZE_T\n");
                 printf("data len: %zu, data: %f\n", dataLen, param.sData);
             }
@@ -217,7 +222,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.arr = (void*)iArr;
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_INT_ARR\n");
                 printf("iarr size in bytes: %zu\n", dataLen);
                 printf("iarr size : %d\n", arrSize);
@@ -253,7 +258,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.arrSize = arrSize;
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_DOUBLE_ARR\n");
                 printf("darr size in bytes: %zu\n", dataLen);
                 printf("darr size : %d\n", arrSize);
@@ -271,7 +276,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             param.arr = (void*)cArr;
             pktOffset += (1 + sizeof(size_t) + dataLen + 1);
             oRes.emplace_back(param);
-            if (verbose > 0) {
+            if (verbose > 1) {
                 printf("---- parse DTYPE_CHAR_ARR\n");
                 printf("darr size in bytes: %zu\n", dataLen);
                 printf("darr size : %d\n", arrSize);

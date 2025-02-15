@@ -18,7 +18,7 @@ public:
 
     QPushButton* btnConnect;
     QPushButton* btnSend;
-    QPushButton* btnRecv;
+    QPushButton* btnSendContourMaked;
     QTextEdit* teOutput;
 };
 

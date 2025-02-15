@@ -97,8 +97,10 @@ char *ModelSktMsg::createPkt(size_t &outLen, char sender, char response, char sy
     memcpy(result, &pktLen, sizeof(size_t));
     totalPktOffset += sizeof(size_t);
     // chksum
-    cout << "checksum" << endl;
+    #if TEST_SKT_CHKSUM
+        cout << "checksum" << endl;
         printPkt(chksum, SHA256_DIGEST_LENGTH);
+    #endif
     if (chksum)
     {
         memcpy(result + totalPktOffset, chksum, SHA256_DIGEST_LENGTH);

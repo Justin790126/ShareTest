@@ -19,6 +19,7 @@ class lcSDK : public QObject
 
     private slots:
         void handleSendMsg();
+        void handleSenContourMakedMsg();
 
     private:
         ModelSktClnt* m_clnt = NULL;
