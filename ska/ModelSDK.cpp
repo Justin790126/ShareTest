@@ -1,5 +1,5 @@
 #include "ModelSDK.h"
-
+#include <QApplication>
 ModelSDK::ModelSDK(QObject *parent)
     : QThread(parent)
 {
@@ -17,6 +17,16 @@ void ModelSDK::ContourMake()
     msg.serialize<char>(0x00, pktLen);
     char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, 0x00);
     m_clnt->Send(pkt, pktLen);
+    bool echo = false;
+    while (!echo) {
+        vector<PktRes> res;
+        m_clnt->Receive(res);
+        if (res.size() > 0) {
+            echo = true;
+        }
+        usleep(1000);
+        QApplication::processEvents();
+    }
 
     m_clnt->Close();
 }

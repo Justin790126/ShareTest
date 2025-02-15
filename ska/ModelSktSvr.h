@@ -45,6 +45,8 @@ class ModelSktSvr : public ModelSktBase
         int m_iBatchId = 0;
         int m_iNumPktSent = 0;
 
+        void fakeImg(char* data);
+
 
 };
 

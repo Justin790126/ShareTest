@@ -191,6 +191,45 @@ void ModelSktSvr::ContourMake(u_char flg)
     // }
     // pkts.clear();
 }
+#include <iostream>
+#include <fstream>
+void ModelSktSvr::fakeImg(char* data)
+{
+    const std::string fileName = "lena4096_4096.png";
+
+    // Open the file in binary mode
+    std::ifstream file(fileName, std::ios::binary | std::ios::ate);
+
+    if (!file.is_open()) {
+        std::cerr << "Unable to open file" << std::endl;
+        data = NULL;
+        return;
+    }
+
+    // Get the size of the file
+    std::streamsize fileSize = file.tellg();  // Get file size by seeking to the end
+    file.seekg(0, std::ios::beg);             // Move back to the beginning of the file
+
+    // Dynamically allocate memory for the file content
+    data = new char[fileSize];
+
+    // Read the entire file into the allocated memory
+    if (file.read(data, fileSize)) {
+        std::cout << "File read successfully, size: " << fileSize << " bytes." << std::endl;
+
+        // Optionally, print out the first few bytes (for debugging)
+        // for (int i = 0; i < 10 && i < fileSize; ++i) {
+        //     std::cout << static_cast<int>(data[i]) << " ";
+        // }
+        // std::cout << std::endl;
+
+    } else {
+        std::cerr << "Failed to read the file." << std::endl;
+        delete[] data;  // Clean up allocated memory
+        data = NULL;
+    }
+
+}
 
 void ModelSktSvr::start()
 {
@@ -219,27 +258,6 @@ void ModelSktSvr::start()
             // break;
         }
 
-        
-        // m_bSvrStop = true;
-        // break;
-        // if (res.size() != 1)
-        // {
-        //     m_bSvrStop = true;
-        //     m_sStatusMsg = "[ModelSktSvr] Parsing Result is empty";
-        //     break;
-        // }
-
-// // Getstatusmsg
-// #if TEST_ALL
-//         ModelSktMsg msg;
-//         size_t msgSize = m_sStatusMsg.length() + 1;
-//         size_t respktlen;
-//         char *response = new char[msgSize];
-//         strcpy(response, m_sStatusMsg.c_str());
-//         msg.serializeArr<char>(response, msgSize, respktlen);
-//         char *respkt = msg.createPkt(respktlen);
-//         Send(respkt, respktlen);
-// #endif
         for (int i = 0; i < res.size(); i++) {
             PktRes* resFromClnt = &res[i];
             char cmdFrClnt = resFromClnt->cSender;
@@ -260,34 +278,15 @@ void ModelSktSvr::start()
                 }
                 case SVR_CONTOUR_MAKE: {
                     cout << "contour make" << endl;
+                    char* img = NULL;
+                    fakeImg(img);
+
+                    if (img) delete[] img;
                     break;
                 }
             }
         }
 
-        // PktRes resFromClnt = res[0];
-        // char cmdFrClnt = resFromClnt.cSender;
-        // switch (cmdFrClnt)
-        // {
-        // case SVR_DLCLOSE:
-        // {
-        //     DlClose((u_char)resFromClnt.cSyncFlg);
-        //     break;
-        // }
-        // case SVR_CONTOUR_MAKE:
-        // {
-        //     ContourMake((u_char)resFromClnt.cSyncFlg);
-        //     break;
-        // }
-        // case SVR_SHUTDOWN:
-        // {
-        //     cout << "Svr shutdown" << endl;
-        //     m_bSvrStop = true;
-        //     break;
-        // }
-        // default:
-        //     break;
-        // }
 
         close(client_socket);
     }
