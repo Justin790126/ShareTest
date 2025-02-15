@@ -24,6 +24,8 @@ void ModelSDK::DlClose()
     msg.printPkt(pkt, pktLen);
     m_clnt->Send(pkt, pktLen);
     // delete[] pkt;
+    vector<PktRes> res;
+    m_clnt->Receive(res);
 
     m_clnt->Close();
 }

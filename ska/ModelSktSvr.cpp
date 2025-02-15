@@ -220,6 +220,15 @@ void ModelSktSvr::start()
             // break;
         }
         cout << "res.size = " << res.size() << endl;
+
+        ModelSktMsg resMsg;
+        string test = "bye!";
+        char* testmsg = new char[sizeof(test) + 1];
+        strcpy(testmsg, test.c_str());
+        size_t resLen;
+        resMsg.serializeArr<char>(testmsg, sizeof(test) + 1, resLen);
+        char* resmsgpkt = resMsg.createPkt(resLen);
+        Send(resmsgpkt, resLen);
         m_bSvrStop = true;
         break;
         // if (res.size() != 1)
