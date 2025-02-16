@@ -283,6 +283,9 @@ void ModelSktSvr::start()
                         writeFloatToPNG("lenaqq.png", m_pfImg, 4096, 4096);
                         m_sImgSize = 4096 * 4096 * 3 * sizeof(float);
 
+                        m_pcImg = new char[m_sImgSize];
+                        memcpy(m_pcImg, m_pfImg, m_sImgSize);
+
                         size_t sendSize = 0;
                         m_vpPktOffsetAndPktSize.clear();
                         m_vpPktOffsetAndPktSize.reserve(m_sImgSize/m_sBatchSize);
@@ -293,20 +296,11 @@ void ModelSktSvr::start()
                             if (sendSize + m_sBatchSize > m_sImgSize) {
                                 bytesToSend = m_sImgSize - sendSize;
                             }
-                            // cout << "send " << bytesToSend << endl;
-                            // char* buf = new char[bytesToSend];
-                            // memset(buf, 0, bytesToSend);
-                            // memcpy(buf, img + sendSize, bytesToSend);
-                            // // // print buf
                             size_t offset = sendSize;
                             auto pair = std::make_pair(offset, bytesToSend);
                             m_vpPktOffsetAndPktSize.emplace_back(pair);
 
-
-                            // Send(buf, bytesToSend);
-                            // resMsg.printPkt(buf, bytesToSend);
                             sendSize += bytesToSend;
-                            // delete[] buf;
                         }
                         m_vpPktOffsetAndPktSize.shrink_to_fit();
 
@@ -324,11 +318,11 @@ void ModelSktSvr::start()
                         auto pair = m_vpPktOffsetAndPktSize[id];
                         size_t offset = pair.first;
                         size_t size = pair.second;
-                        printf("client ask for pkt id : %d, offset : %zu, size : %zu\n", resFromClnt->pktId, offset, size);
+                        // printf("client ask for pkt id : %d, offset : %zu, size : %zu\n", resFromClnt->pktId, offset, size);
                         
                         
                         char* buf = new char[size];
-                        memcpy(buf, m_pfImg+offset, size);
+                        memcpy(buf, m_pcImg+offset, size);
                         Send(buf, size);
                         if (buf) delete[] buf;
 

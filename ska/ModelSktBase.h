@@ -23,8 +23,8 @@ class ModelSktBase
         string GetStatusMsg() { return m_sStatusMsg; }
         bool Receive(vector<PktRes>& oRes);
         size_t BatchReceive(float* img);
-        void Send(char* pkt, size_t pktLen);
-        void Recv(char* buf, size_t pktLen);
+        bool Send(char* pkt, size_t pktLen);
+        bool Recv(char* buf, size_t pktLen);
 
         string m_sIp="127.0.0.1";
         int m_iPort=9527;

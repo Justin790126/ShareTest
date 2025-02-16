@@ -41,41 +41,54 @@ void ModelSDK::ContourMake()
     cout << "Start to receive packets: " << imgSize << endl;
     cout << "batch size: " << imgBatchSize << endl;
     cout << "Number of requests: " << numOfReqs << endl;
+    m_clnt->Close();
 
-    float* data = new float[imgSize];
+    char* data = new char[imgSize];
     memset(data, 0, imgSize);
     size_t recvSize = 0;
-    m_clnt->connect();
+    
     // for (size_t i =0;i< numOfReqs; i++) {
-    for (size_t i =0;i< numOfReqs; i++) {
-        
-            ModelSktMsg msg;
-            size_t pktLen;
-            msg.serialize<char>(0x00, pktLen);
-            char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, i);
+    size_t iStart = 0;
+    for (size_t i = 0;i< numOfReqs; ) {
+        m_clnt->connect();
+
+                ModelSktMsg msg;
+                size_t pktLen;
+                msg.serialize<char>(0x00, pktLen);
+                char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, i);
         m_clnt->Send(pkt, pktLen);
 
-            size_t bytesToRecv = imgBatchSize;
-            if (recvSize + bytesToRecv > imgSize) {
-                bytesToRecv = imgSize - recvSize;
-            }
-            char *buf = new char[bytesToRecv];
-        m_clnt->Recv(buf, bytesToRecv);
-            // // copy buf to data
+                size_t bytesToRecv = imgBatchSize;
+                if (recvSize + bytesToRecv > imgSize) {
+                    bytesToRecv = imgSize - recvSize;
+                }
+                char *buf = new char[bytesToRecv];
+        if (m_clnt->Recv(buf, bytesToRecv)) {
+            m_clnt->Close();
             memcpy(data+recvSize, buf, bytesToRecv);
             if (buf) delete [] buf;
             printf("id : %zu, offset : %zu, size : %zu \n", i, recvSize, bytesToRecv);
 
             // // msg.printPkt(data+recvSize, bytesToRecv);
             recvSize += bytesToRecv;
-        
-        
+                
+            i++;
+            usleep(1000);
+        } else {
+            iStart = i;
+            cout << "Failed to receive data" << endl;
+            break;
+        }
     }
-    m_clnt->Close();
-    m_clnt->writeFloatToPNG("modelsdk.png", data, 4096, 4096);
+
+
+    float* fdata = new float[imgSize/sizeof(float)];
+    memcpy(fdata, data, imgSize);
+
+    m_clnt->writeFloatToPNG("modelsdk.png", fdata, 4096, 4096);
 
     if (data) delete[] data;
-    m_clnt->Close();
+    
 }
 
 void ModelSDK::DlClose()

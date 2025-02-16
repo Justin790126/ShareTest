@@ -1,29 +1,39 @@
 #include "ModelSktBase.h"
 
 
-void ModelSktBase::Send(char* pkt, size_t pktLen)
+bool ModelSktBase::Send(char* pkt, size_t pktLen)
 {
     int sendbytes = send(client_socket, pkt, pktLen, 0);
     if (sendbytes < 0) {
         char resMsg[128];
         sprintf(resMsg, "[ModelSktBase] Send failed with byte len %d", sendbytes);
         m_sStatusMsg = std::move(resMsg);
-        return;
+        return false;
     }
+    return true;
     // printf("[ModelSktBase] send %d bytes\n", sendbytes);
 }
 
-void ModelSktBase::Recv(char* buf, size_t pktLen)
+bool ModelSktBase::Recv(char* buf, size_t pktLen)
 {
     int bytes_received = recv(client_socket, buf, pktLen, 0);
     if (bytes_received <= 0)
     {
+        // get error code
+
         char resMsg[128];
-        sprintf(resMsg, "[ModelSktBase] Receive size bytes failed");
+        int errnum = errno;
+        sprintf(resMsg, "[ModelSktBase] Error %d: %s", errnum, strerror(errno));
         m_sStatusMsg = std::move(resMsg);
-        cout << resMsg << endl;
-        return; // Connection closed or error
+        
+        if (errnum == EAGAIN ) {
+            cout << "EAGAIN" << endl;
+        } else if (errnum == EWOULDBLOCK) {
+            cout << "EWOULDBLOCK" << endl;
+        }
+        return false; // Connection closed or error
     }
+    return true;
 }
 
 size_t ModelSktBase::BatchReceive(float* img)

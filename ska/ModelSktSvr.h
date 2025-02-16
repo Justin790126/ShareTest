@@ -47,7 +47,7 @@ class ModelSktSvr : public ModelSktBase
 
         void fakeImg(char* data, size_t& size);
 
-    char* m_pImg = NULL;
+    char* m_pcImg = NULL;
     float* m_pfImg = NULL;
     size_t m_sImgSize = 0;
     size_t m_sBatchSize = 4096*3;
