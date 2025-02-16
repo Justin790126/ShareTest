@@ -7,6 +7,23 @@ ModelSDK::ModelSDK(QObject *parent)
         m_clnt = new ModelSktClnt;
     }
 }
+#include <fstream>
+void savePNG(string outputname, char* data, size_t fileSize)
+{
+     // Open the output file
+    std::ofstream outputFile(outputname, std::ios::binary);
+
+    if (!outputFile) {
+        std::cerr << "Error opening output file!" << std::endl;
+        return;
+    }
+
+    // Write the data to the output file
+    outputFile.write(data, fileSize);
+    outputFile.close();
+
+    std::cout << "File copied successfully!" << std::endl;
+}
 
 void ModelSDK::ContourMake()
 {
@@ -18,15 +35,28 @@ void ModelSDK::ContourMake()
     char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, 0x00);
     m_clnt->Send(pkt, pktLen);
     bool echo = false;
+    size_t imgSize = 0;
     while (!echo) {
         vector<PktRes> res;
         m_clnt->Receive(res);
         if (res.size() > 0) {
+            imgSize = res[0].sData;
             echo = true;
         }
         usleep(1000);
         QApplication::processEvents();
     }
+    cout << "Start to receive packets: " << imgSize << endl;
+
+    size_t recvSize = 0;
+    char* data = new char[imgSize];
+    while (recvSize < imgSize) {
+        
+
+
+    }
+    savePNG("output.png", data, imgSize);
+
 
     m_clnt->Close();
 }

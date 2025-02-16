@@ -193,7 +193,7 @@ void ModelSktSvr::ContourMake(u_char flg)
 }
 #include <iostream>
 #include <fstream>
-void ModelSktSvr::fakeImg(char* data)
+void ModelSktSvr::fakeImg(char* data, size_t& size)
 {
     const std::string fileName = "lena4096_4096.png";
 
@@ -216,7 +216,7 @@ void ModelSktSvr::fakeImg(char* data)
     // Read the entire file into the allocated memory
     if (file.read(data, fileSize)) {
         std::cout << "File read successfully, size: " << fileSize << " bytes." << std::endl;
-
+        size = fileSize;
         // Optionally, print out the first few bytes (for debugging)
         // for (int i = 0; i < 10 && i < fileSize; ++i) {
         //     std::cout << static_cast<int>(data[i]) << " ";
@@ -279,7 +279,28 @@ void ModelSktSvr::start()
                 case SVR_CONTOUR_MAKE: {
                     cout << "contour make" << endl;
                     char* img = NULL;
-                    fakeImg(img);
+                    size_t imgSize;
+                    fakeImg(img, imgSize);
+
+                    // echo back to client to ask client for receive batch file
+                    ModelSktMsg resMsg;
+                    size_t pktLen;
+                    resMsg.serialize<size_t>(imgSize, pktLen);
+                    char* resmsgpkt = resMsg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, 0x00);
+                    Send(resmsgpkt, pktLen);
+
+                    // send bytes
+                    size_t sendSize = 0;
+                    size_t batchSize = 1024;
+                    while (sendSize < imgSize) {
+                        // send img with batchSize by calling Send
+                        size_t bytesToSend = batchSize;
+                        if (sendSize + batchSize > imgSize) {
+                            bytesToSend = imgSize - sendSize;
+                        }
+                        Send(img + sendSize, bytesToSend);
+                        sendSize += bytesToSend;
+                    }
 
                     if (img) delete[] img;
                     break;

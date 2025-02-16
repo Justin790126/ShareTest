@@ -13,6 +13,18 @@ void ModelSktBase::Send(char* pkt, size_t pktLen)
     // printf("[ModelSktBase] send %d bytes\n", sendbytes);
 }
 
+void ModelSktBase::Recv(char* buf, size_t pktLen)
+{
+    int bytes_received = recv(client_socket, buf, pktLen, 0);
+    if (bytes_received <= 0)
+    {
+        char resMsg[128];
+        sprintf(resMsg, "[ModelSktBase] Receive size bytes failed");
+        m_sStatusMsg = std::move(resMsg);
+        return; // Connection closed or error
+    }
+}
+
 size_t ModelSktBase::BatchReceive(float* img)
 {
     size_t recvBytes = 0;
