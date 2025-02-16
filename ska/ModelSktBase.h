@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <iostream>
 #include <vector>
+#include <opencv2/opencv.hpp>
 #include "ModelSktMsg.h"
 
 using namespace std;
@@ -29,6 +30,11 @@ class ModelSktBase
         int m_iPort=9527;
         int client_socket;
         string m_sStatusMsg;
+
+
+    float* readPNGToFloat(const std::string& filePath, int width, int height);
+    bool writeFloatToPNG(const std::string& outputPath, float* imageData, int width, int height);
+
 
     protected:
         char* m_pPkt=NULL;

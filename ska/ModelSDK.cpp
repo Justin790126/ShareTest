@@ -7,24 +7,6 @@ ModelSDK::ModelSDK(QObject *parent)
         m_clnt = new ModelSktClnt;
     }
 }
-#include <fstream>
-void savePNG(string outputname, char* data, size_t fileSize)
-{
-     // Open the output file
-    std::ofstream outputFile(outputname, std::ios::binary| std::ios::ate);
-
-    if (!outputFile) {
-        std::cerr << "Error opening output file!" << std::endl;
-        return;
-    }
-
-    // Write the data to the output file
-    outputFile.write(data, fileSize);
-    outputFile.close();
-
-    std::cout << "File copied successfully!" << std::endl;
-}
-
 void ModelSDK::ContourMake()
 {
     cout << "contour make" << endl;
@@ -60,57 +42,39 @@ void ModelSDK::ContourMake()
     cout << "batch size: " << imgBatchSize << endl;
     cout << "Number of requests: " << numOfReqs << endl;
 
-    char* data = new char[imgSize];
+    float* data = new float[imgSize];
     memset(data, 0, imgSize);
     size_t recvSize = 0;
+    m_clnt->connect();
+    // for (size_t i =0;i< numOfReqs; i++) {
     for (size_t i =0;i< numOfReqs; i++) {
-        if (m_clnt->connect()) {
+        
             ModelSktMsg msg;
             size_t pktLen;
             msg.serialize<char>(0x00, pktLen);
             char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, i);
-            m_clnt->Send(pkt, pktLen);
+        m_clnt->Send(pkt, pktLen);
 
             size_t bytesToRecv = imgBatchSize;
             if (recvSize + bytesToRecv > imgSize) {
                 bytesToRecv = imgSize - recvSize;
             }
-            // char *buf = new char[bytesToRecv];
-            // memset(buf, 0, bytesToRecv);
-            // m_clnt->Recv(buf, bytesToRecv);
+            char *buf = new char[bytesToRecv];
+        m_clnt->Recv(buf, bytesToRecv);
             // // copy buf to data
-            // memcpy(data+recvSize, buf, bytesToRecv);
-            // delete[] buf;
+            memcpy(data+recvSize, buf, bytesToRecv);
+            if (buf) delete [] buf;
             printf("id : %zu, offset : %zu, size : %zu \n", i, recvSize, bytesToRecv);
 
             // // msg.printPkt(data+recvSize, bytesToRecv);
             recvSize += bytesToRecv;
-            m_clnt->Close();
-        }
+        
+        
     }
+    m_clnt->Close();
+    m_clnt->writeFloatToPNG("modelsdk.png", data, 4096, 4096);
 
-   
-    // for (size_t i = 0; i < numOfReqs; i++) {
-
-    // size_t recvSize = 0;
-    // char* data = new char[imgSize];
-    // memset(data, 0, imgSize);
-    // while (recvSize < imgSize) {
-    //     if (m_clnt->connect()) {
-
-    //     }
-    //     // size_t bytesToRecv = imgBatchSize;
-    //     // if (recvSize + bytesToRecv > imgSize) {
-    //     //     bytesToRecv = imgSize - recvSize;
-    //     // }
-    //     // m_clnt->Recv(data+recvSize, bytesToRecv);
-    //     // // msg.printPkt(data+recvSize, bytesToRecv);
-    //     // recvSize += bytesToRecv;
-    // }
-    // cout << "recvSize: "<< recvSize << endl;
-    savePNG("output.png", data, imgSize);
-
-    // if (data) delete[] data;
+    if (data) delete[] data;
     m_clnt->Close();
 }
 

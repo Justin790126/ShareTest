@@ -48,8 +48,9 @@ class ModelSktSvr : public ModelSktBase
         void fakeImg(char* data, size_t& size);
 
     char* m_pImg = NULL;
+    float* m_pfImg = NULL;
     size_t m_sImgSize = 0;
-    size_t m_sBatchSize = 0;
+    size_t m_sBatchSize = 4096*3;
     vector<pair<size_t, size_t>> m_vpPktOffsetAndPktSize;
 
 };

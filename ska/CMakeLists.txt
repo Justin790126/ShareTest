@@ -7,6 +7,7 @@ project(ska)
 
 find_package(Qt4 4.8 REQUIRED QtCore QtGui)
 find_package(OpenSSL REQUIRED)
+find_package(OpenCV REQUIRED)
 include(${QT_USE_FILE} ${OPENSSL_INCLUDE_DIR})
 
 set(SOURCES
@@ -32,7 +33,7 @@ qt4_wrap_cpp(SOURCES ${HEADERS})
 add_executable(${PROJECT_NAME}
     ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} OpenSSL::SSL)
+target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES} ${OpenCV_LIBS} OpenSSL::SSL)
 
 
 

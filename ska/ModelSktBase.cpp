@@ -58,6 +58,76 @@ size_t ModelSktBase::BatchReceive(float* img)
     return recvBytes;
 }
 
+
+
+float* ModelSktBase::readPNGToFloat(const std::string& filePath, int width, int height) {
+    // Read the image as a 3-channel color (RGB) image
+    cv::Mat img = cv::imread(filePath, cv::IMREAD_COLOR);  // IMREAD_COLOR loads the image in RGB format
+
+    if (img.empty()) {
+        std::cerr << "Failed to load image!" << std::endl;
+        return nullptr;
+    }
+
+    // Ensure the image is in RGB888 format (3 channels)
+    if (img.channels() != 3) {
+        std::cerr << "Image is not in RGB888 format!" << std::endl;
+        return nullptr;
+    }
+
+    // Allocate a float array to store the image data (RGB values as float)
+    float* floatImage = new float[img.rows * img.cols * 3];
+
+    // Convert the image data to float and normalize it to [0.0, 1.0]
+    for (int i = 0; i < img.rows; i++) {
+        for (int j = 0; j < img.cols; j++) {
+            // Extract RGB channels and normalize to [0.0, 1.0]
+            cv::Vec3b pixel = img.at<cv::Vec3b>(i, j);
+            floatImage[(i * img.cols + j) * 3 + 0] = pixel[2] / 255.0f;  // Red channel
+            floatImage[(i * img.cols + j) * 3 + 1] = pixel[1] / 255.0f;  // Green channel
+            floatImage[(i * img.cols + j) * 3 + 2] = pixel[0] / 255.0f;  // Blue channel
+        }
+    }
+
+    // Set output width and height
+    width = img.cols;
+    height = img.rows;
+
+    return floatImage;
+}
+
+bool ModelSktBase::writeFloatToPNG(const std::string& outputPath, float* imageData, int width, int height) {
+    // Create a cv::Mat from the float* data, scaling it back to [0, 255]
+    cv::Mat img(height, width, CV_8UC3);  // 8-bit 3-channel image (RGB)
+    
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            // The input float* is assumed to have the data in RGB order (R, G, B)
+            int r = static_cast<int>(imageData[(i * width + j) * 3 + 0] * 255.0f);  // Red channel
+            int g = static_cast<int>(imageData[(i * width + j) * 3 + 1] * 255.0f);  // Green channel
+            int b = static_cast<int>(imageData[(i * width + j) * 3 + 2] * 255.0f);  // Blue channel
+
+            // Clamp values to ensure they are within the valid range [0, 255]
+            img.at<cv::Vec3b>(i, j) = cv::Vec3b(
+                std::min(std::max(b, 0), 255),  // Blue
+                std::min(std::max(g, 0), 255),  // Green
+                std::min(std::max(r, 0), 255)   // Red
+            );
+        }
+    }
+
+    // Write the image to the specified output path
+    if (cv::imwrite(outputPath, img)) {
+        std::cout << "Image saved successfully to " << outputPath << std::endl;
+        return true;
+    } else {
+        std::cerr << "Failed to save image!" << std::endl;
+        return false;
+    }
+}
+
+
+
 bool ModelSktBase::Receive(vector<PktRes>& oRes)
 {
     bool result = false;

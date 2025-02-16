@@ -277,11 +277,11 @@ void ModelSktSvr::start()
                     break;
                 }
                 case SVR_CONTOUR_MAKE: {
-                    cout << "contour make" << endl;
                     if (resFromClnt->cSyncFlg == 0x00) {
-                        m_pImg = NULL;
-                        fakeImg(m_pImg, m_sImgSize);
-                        m_sBatchSize = 1024;
+                        m_pfImg = NULL;
+                        m_pfImg = readPNGToFloat("lena4096_4096.png", 4096, 4096);
+                        writeFloatToPNG("lenaqq.png", m_pfImg, 4096, 4096);
+                        m_sImgSize = 4096 * 4096 * 3 * sizeof(float);
 
                         size_t sendSize = 0;
                         m_vpPktOffsetAndPktSize.clear();
@@ -310,9 +310,6 @@ void ModelSktSvr::start()
                         }
                         m_vpPktOffsetAndPktSize.shrink_to_fit();
 
-                        // save m_pImg to test.png
-                        
-
                         // echo back to client to ask client for receive batch file
                         ModelSktMsg resMsg;
                         size_t pktLen;
@@ -328,41 +325,13 @@ void ModelSktSvr::start()
                         size_t offset = pair.first;
                         size_t size = pair.second;
                         printf("client ask for pkt id : %d, offset : %zu, size : %zu\n", resFromClnt->pktId, offset, size);
-                        // char* buf = new char[size];
-                        // if (!m_pResImg) {
-                        //     m_pResImg = new char[m_sImgSize];
-                        // }
-                        // memcpy(m_pResImg + offset, m_pImg + offset, size);
-
-                        // memset(buf, 0, size);
-                        // memcpy(buf, m_pImg + offset, size);
-                        // Send(buf, size);
-                        // delete[] buf;
-
                         
                         
-                    
-                        // while (sendSize < imgSize) {
-                            
-                        //     // send img with batchSize by calling Send
-                        //     size_t bytesToSend = batchSize;
-                        //     if (sendSize + batchSize > imgSize) {
-                        //         bytesToSend = imgSize - sendSize;
-                        //     }
-                        //     cout << "send " << bytesToSend << endl;
-                        //     char* buf = new char[bytesToSend];
-                        //     memset(buf, 0, bytesToSend);
-                        //     memcpy(buf, img + sendSize, bytesToSend);
-                        //     // // print buf
+                        char* buf = new char[size];
+                        memcpy(buf, m_pfImg+offset, size);
+                        Send(buf, size);
+                        if (buf) delete[] buf;
 
-
-                        //     Send(buf, bytesToSend);
-                        //     // resMsg.printPkt(buf, bytesToSend);
-                        //     sendSize += bytesToSend;
-                        //     // delete[] buf;
-                        // }
-
-                        // if (img) delete[] img;
                     }
 
                     // send bytes
