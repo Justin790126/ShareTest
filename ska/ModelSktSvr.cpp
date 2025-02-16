@@ -218,10 +218,10 @@ void ModelSktSvr::fakeImg(char* data, size_t& size)
         std::cout << "File read successfully, size: " << fileSize << " bytes." << std::endl;
         size = fileSize;
         // Optionally, print out the first few bytes (for debugging)
-        // for (int i = 0; i < 10 && i < fileSize; ++i) {
-        //     std::cout << static_cast<int>(data[i]) << " ";
-        // }
-        // std::cout << std::endl;
+        for (int i = 0; i < 10 && i < fileSize; ++i) {
+            std::cout << static_cast<int>(data[i]) << " ";
+        }
+        std::cout << std::endl;
 
     } else {
         std::cerr << "Failed to read the file." << std::endl;
@@ -278,33 +278,95 @@ void ModelSktSvr::start()
                 }
                 case SVR_CONTOUR_MAKE: {
                     cout << "contour make" << endl;
-                    char* img = NULL;
-                    size_t imgSize;
-                    fakeImg(img, imgSize);
+                    if (resFromClnt->cSyncFlg == 0x00) {
+                        m_pImg = NULL;
+                        fakeImg(m_pImg, m_sImgSize);
+                        m_sBatchSize = 1024;
 
-                    // echo back to client to ask client for receive batch file
-                    ModelSktMsg resMsg;
-                    size_t pktLen;
-                    size_t batchSize = 1024;
-                    resMsg.serialize<size_t>(imgSize, pktLen);
-                    resMsg.serialize<size_t>(batchSize, pktLen);
-                    char* resmsgpkt = resMsg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, 0x00);
-                    Send(resmsgpkt, pktLen);
+                        size_t sendSize = 0;
+                        m_vpPktOffsetAndPktSize.clear();
+                        m_vpPktOffsetAndPktSize.reserve(m_sImgSize/m_sBatchSize);
+                        while (sendSize < m_sImgSize) {
+                            
+                            // send img with batchSize by calling Send
+                            size_t bytesToSend = m_sBatchSize;
+                            if (sendSize + m_sBatchSize > m_sImgSize) {
+                                bytesToSend = m_sImgSize - sendSize;
+                            }
+                            // cout << "send " << bytesToSend << endl;
+                            // char* buf = new char[bytesToSend];
+                            // memset(buf, 0, bytesToSend);
+                            // memcpy(buf, img + sendSize, bytesToSend);
+                            // // // print buf
+                            size_t offset = sendSize;
+                            auto pair = std::make_pair(offset, bytesToSend);
+                            m_vpPktOffsetAndPktSize.emplace_back(pair);
 
-                    // send bytes
-                    size_t sendSize = 0;
-                    
-                    while (sendSize < imgSize) {
-                        // send img with batchSize by calling Send
-                        size_t bytesToSend = batchSize;
-                        if (sendSize + batchSize > imgSize) {
-                            bytesToSend = imgSize - sendSize;
+
+                            // Send(buf, bytesToSend);
+                            // resMsg.printPkt(buf, bytesToSend);
+                            sendSize += bytesToSend;
+                            // delete[] buf;
                         }
-                        Send(img + sendSize, bytesToSend);
-                        sendSize += bytesToSend;
+                        m_vpPktOffsetAndPktSize.shrink_to_fit();
+
+                        // save m_pImg to test.png
+                        
+
+                        // echo back to client to ask client for receive batch file
+                        ModelSktMsg resMsg;
+                        size_t pktLen;
+                        resMsg.serialize<size_t>(m_sImgSize, pktLen);
+                        resMsg.serialize<size_t>(m_sBatchSize, pktLen);
+                        resMsg.serialize<size_t>(m_vpPktOffsetAndPktSize.size(), pktLen);
+                        char* resmsgpkt = resMsg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, 0x00);
+                        Send(resmsgpkt, pktLen);
+                    } else if (resFromClnt->cSyncFlg == 0x01) {
+                        // size_t sendSize = 0;
+                        int id = resFromClnt->pktId;
+                        auto pair = m_vpPktOffsetAndPktSize[id];
+                        size_t offset = pair.first;
+                        size_t size = pair.second;
+                        printf("client ask for pkt id : %d, offset : %zu, size : %zu\n", resFromClnt->pktId, offset, size);
+                        // char* buf = new char[size];
+                        // if (!m_pResImg) {
+                        //     m_pResImg = new char[m_sImgSize];
+                        // }
+                        // memcpy(m_pResImg + offset, m_pImg + offset, size);
+
+                        // memset(buf, 0, size);
+                        // memcpy(buf, m_pImg + offset, size);
+                        // Send(buf, size);
+                        // delete[] buf;
+
+                        
+                        
+                    
+                        // while (sendSize < imgSize) {
+                            
+                        //     // send img with batchSize by calling Send
+                        //     size_t bytesToSend = batchSize;
+                        //     if (sendSize + batchSize > imgSize) {
+                        //         bytesToSend = imgSize - sendSize;
+                        //     }
+                        //     cout << "send " << bytesToSend << endl;
+                        //     char* buf = new char[bytesToSend];
+                        //     memset(buf, 0, bytesToSend);
+                        //     memcpy(buf, img + sendSize, bytesToSend);
+                        //     // // print buf
+
+
+                        //     Send(buf, bytesToSend);
+                        //     // resMsg.printPkt(buf, bytesToSend);
+                        //     sendSize += bytesToSend;
+                        //     // delete[] buf;
+                        // }
+
+                        // if (img) delete[] img;
                     }
 
-                    if (img) delete[] img;
+                    // send bytes
+                    
                     break;
                 }
             }
@@ -319,6 +381,7 @@ void ModelSktSvr::start()
         // send response to client and close
         close(client_socket);
     }
+
     cout << "EOF ModelSktSvr" << endl;
 }
 

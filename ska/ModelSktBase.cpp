@@ -21,6 +21,7 @@ void ModelSktBase::Recv(char* buf, size_t pktLen)
         char resMsg[128];
         sprintf(resMsg, "[ModelSktBase] Receive size bytes failed");
         m_sStatusMsg = std::move(resMsg);
+        cout << resMsg << endl;
         return; // Connection closed or error
     }
 }
