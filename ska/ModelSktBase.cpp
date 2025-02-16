@@ -176,7 +176,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
         case DTYPE_INT:
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             param.iData = msg.deserialize<int>(ds + pktOffset + 1 + sizeof(size_t));
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
 
             if (verbose > 1) {
@@ -187,7 +187,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
         case DTYPE_CHAR:
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             param.cData = msg.deserialize<char>(ds + pktOffset + 1 + sizeof(size_t));
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             if (verbose > 1) {
                 printf("---- parse DTYPE_CHAR\n");
@@ -198,7 +198,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             // pktOffset++;
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             param.fData = msg.deserialize<float>(ds + pktOffset + 1 + sizeof(size_t));
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             if (verbose > 1) {
                 printf("---- parse DTYPE_FLOAT\n");
@@ -208,7 +208,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
         case DTYPE_DOUBLE:
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             param.dData = msg.deserialize<double>(ds + pktOffset + 1 + sizeof(size_t));
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             if (verbose > 1) {
                 printf("---- parse DTYPE_DOUBLE\n");
@@ -218,7 +218,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
         case DTYPE_SIZE_T:
             dataLen = msg.deserialize<size_t>(ds + pktOffset + 1);
             param.sData = msg.deserialize<size_t>(ds + pktOffset + 1 + sizeof(size_t));
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             if (verbose > 1) {
                 printf("---- parse DTYPE_SIZE_T\n");
@@ -232,7 +232,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             msg.deserializeArr<int>(iArr, ds + pktOffset + 1 + sizeof(size_t), dataLen);
             param.arrSize = arrSize;
             param.arr = (void*)iArr;
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             if (verbose > 1) {
                 printf("---- parse DTYPE_INT_ARR\n");
@@ -250,7 +250,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             msg.deserializeArr<float>(fArr, ds + pktOffset + 1 + sizeof(size_t), dataLen);
             param.arr = (void*)fArr;
             param.arrSize = arrSize;
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             // if (verbose > 0) {
             //     printf("---- parse DTYPE_FLOAT_ARR\n");
@@ -268,7 +268,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             msg.deserializeArr<double>(dArr, ds + pktOffset + 1 + sizeof(size_t), dataLen);
             param.arr = (void*)dArr;
             param.arrSize = arrSize;
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             if (verbose > 1) {
                 printf("---- parse DTYPE_DOUBLE_ARR\n");
@@ -286,7 +286,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
             msg.deserializeArr<char>(cArr, ds + pktOffset + 1 + sizeof(size_t), dataLen);
             param.arrSize = arrSize;
             param.arr = (void*)cArr;
-            pktOffset += (1 + sizeof(size_t) + dataLen + 1);
+            pktOffset += (1 + sizeof(size_t) + dataLen);
             oRes.emplace_back(param);
             if (verbose > 1) {
                 printf("---- parse DTYPE_CHAR_ARR\n");
@@ -308,7 +308,7 @@ bool ModelSktBase::Receive(vector<PktRes>& oRes)
 
     if (m_pPkt) delete[] m_pPkt;
     m_pPkt = NULL;
-
+    oRes.shrink_to_fit();
     result = true;
     return result;
 }

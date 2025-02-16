@@ -285,13 +285,15 @@ void ModelSktSvr::start()
                     // echo back to client to ask client for receive batch file
                     ModelSktMsg resMsg;
                     size_t pktLen;
+                    size_t batchSize = 1024;
                     resMsg.serialize<size_t>(imgSize, pktLen);
+                    resMsg.serialize<size_t>(batchSize, pktLen);
                     char* resmsgpkt = resMsg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, 0x00);
                     Send(resmsgpkt, pktLen);
 
                     // send bytes
                     size_t sendSize = 0;
-                    size_t batchSize = 1024;
+                    
                     while (sendSize < imgSize) {
                         // send img with batchSize by calling Send
                         size_t bytesToSend = batchSize;

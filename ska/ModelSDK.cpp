@@ -36,28 +36,31 @@ void ModelSDK::ContourMake()
     m_clnt->Send(pkt, pktLen);
     bool echo = false;
     size_t imgSize = 0;
+    size_t imgBatchSize = 0;
     while (!echo) {
         vector<PktRes> res;
         m_clnt->Receive(res);
+        cout << res.size() << endl;
         if (res.size() > 0) {
             imgSize = res[0].sData;
+            imgBatchSize = res[1].sData;
             echo = true;
         }
         usleep(1000);
         QApplication::processEvents();
     }
     cout << "Start to receive packets: " << imgSize << endl;
+    cout << "batch size: " << imgBatchSize << endl;
 
-    size_t recvSize = 0;
-    char* data = new char[imgSize];
-    while (recvSize < imgSize) {
+    // size_t recvSize = 0;
+    // char* data = new char[imgSize];
+    // while (recvSize < imgSize) {
         
 
+    // }
+    // savePNG("output.png", data, imgSize);
 
-    }
-    savePNG("output.png", data, imgSize);
-
-
+    // if (data) delete[] data;
     m_clnt->Close();
 }
 

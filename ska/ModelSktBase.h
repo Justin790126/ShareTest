@@ -34,7 +34,7 @@ class ModelSktBase
         char* m_pPkt=NULL;
         ushort m_usVerbose = 0;
     private:
-        int m_iVerbose = 0;
+        int m_iVerbose = 2;
 };
 
 #endif /* MODEL_SKT_BASE */
