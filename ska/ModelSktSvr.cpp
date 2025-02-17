@@ -16,6 +16,16 @@ bool ModelSktSvr::init()
         return result;
     }
 
+    int sendBufferSize;
+    socklen_t len = sizeof(sendBufferSize);
+    if (getsockopt(server_socket, SOL_SOCKET, SO_SNDBUF, &sendBufferSize, &len) == -1) {
+        std::cerr << "Failed to get send buffer size!" << std::endl;
+        return 1;
+    }
+    std::cout << "Socket send buffer size: " << sendBufferSize << " bytes" << std::endl;
+    m_sBatchSize = sendBufferSize;
+
+
     int opt = 1;
     if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)))
     {
@@ -312,8 +322,10 @@ void ModelSktSvr::start()
                         resMsg.serialize<size_t>(m_vpPktOffsetAndPktSize.size(), pktLen);
                         char* resmsgpkt = resMsg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, 0x00);
                         Send(resmsgpkt, pktLen);
+                        if (resmsgpkt) delete[] resmsgpkt;
+
                     } else if (resFromClnt->cSyncFlg == 0x01) {
-                        // size_t sendSize = 0;
+                        // batch send
                         int id = resFromClnt->pktId;
                         auto pair = m_vpPktOffsetAndPktSize[id];
                         size_t offset = pair.first;
@@ -326,6 +338,19 @@ void ModelSktSvr::start()
                         Send(buf, size);
                         if (buf) delete[] buf;
 
+                    } else if (resFromClnt->cSyncFlg == 0x02) {
+                        // clear resources
+                        if (m_pfImg) delete[] m_pfImg;
+                        m_pfImg = NULL;
+                        if (m_pcImg) delete[] m_pcImg;
+                        m_pcImg = NULL;
+
+                        ModelSktMsg resMsg;
+                        size_t pktLen;
+                        resMsg.serialize<char>(0x01, pktLen);
+                        char* resmsgpkt = resMsg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x02, 0x00);
+                        Send(resmsgpkt, pktLen);
+                        if (resmsgpkt) delete[] resmsgpkt;
                     }
 
                     // send bytes

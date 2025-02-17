@@ -14,6 +14,7 @@
 #include <vector>
 #include <cmath>
 #include "ModelSktBase.h"
+#include "ReqestCtx.h"
 
 using namespace std;
 
@@ -50,7 +51,7 @@ class ModelSktSvr : public ModelSktBase
     char* m_pcImg = NULL;
     float* m_pfImg = NULL;
     size_t m_sImgSize = 0;
-    size_t m_sBatchSize = 4096*3;
+    size_t m_sBatchSize = 4096*1;
     vector<pair<size_t, size_t>> m_vpPktOffsetAndPktSize;
 
 };

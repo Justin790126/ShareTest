@@ -14,13 +14,10 @@ void ModelSDK::ContourMake()
     ModelSktMsg msg;
     size_t pktLen;
     msg.serialize<char>(0x00, pktLen);
-    char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x00, 0x00);
+    char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x00, 0x00, 0x00);
     m_clnt->Send(pkt, pktLen);
     bool echo = false;
-
-    // char rcv[1024];
-    // m_clnt->Recv(rcv, sizeof(rcv));
-    // msg.printPkt(rcv, sizeof(rcv));
+    if (pkt) delete[] pkt;
 
     size_t imgSize = 0;
     size_t imgBatchSize = 0;
@@ -48,6 +45,7 @@ void ModelSDK::ContourMake()
     size_t recvSize = 0;
     
     // for (size_t i =0;i< numOfReqs; i++) {
+    auto sttime = std::chrono::system_clock::now();
     size_t iStart = 0;
     for (size_t i = 0;i< numOfReqs; ) {
         m_clnt->connect();
@@ -55,7 +53,7 @@ void ModelSDK::ContourMake()
                 ModelSktMsg msg;
                 size_t pktLen;
                 msg.serialize<char>(0x00, pktLen);
-                char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x01, 0x01, i);
+                char* pkt = msg.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x00, 0x01, i);
         m_clnt->Send(pkt, pktLen);
 
                 size_t bytesToRecv = imgBatchSize;
@@ -67,20 +65,23 @@ void ModelSDK::ContourMake()
             m_clnt->Close();
             memcpy(data+recvSize, buf, bytesToRecv);
             if (buf) delete [] buf;
-            printf("id : %zu, offset : %zu, size : %zu \n", i, recvSize, bytesToRecv);
+            // printf("id : %zu, offset : %zu, size : %zu \n", i, recvSize, bytesToRecv);
 
             // // msg.printPkt(data+recvSize, bytesToRecv);
             recvSize += bytesToRecv;
                 
             i++;
-            usleep(1000);
+            // usleep(1000);
         } else {
             iStart = i;
-            cout << "Failed to receive data" << endl;
+            cout << "Failed to receive data at idx: " << i << endl;
             break;
         }
     }
 
+    auto etime = std::chrono::system_clock::now();
+    std::chrono::duration<float> diff = etime - sttime;
+    cout << "Time taken: " << diff.count() << " seconds" << endl;
 
     float* fdata = new float[imgSize/sizeof(float)];
     memcpy(fdata, data, imgSize);
@@ -88,7 +89,22 @@ void ModelSDK::ContourMake()
     m_clnt->writeFloatToPNG("modelsdk.png", fdata, 4096, 4096);
 
     if (data) delete[] data;
-    
+    if (fdata) delete[] fdata;
+
+    m_clnt->connect();
+    ModelSktMsg msgEnd;
+    msgEnd.serialize<char>(0x00, pktLen);
+    char* pktEnd = msgEnd.createPkt(pktLen, SVR_CONTOUR_MAKE, 0x00, 0x02, 0x00);
+    m_clnt->Send(pktEnd, pktLen);
+    if (pktEnd) delete[] pktEnd;
+    vector<PktRes> res;
+    m_clnt->Receive(res);
+        // cout << res.size() << endl;
+    if (res.size() > 0) {
+        // print char with hex
+        printf("[Resource free] Response 0x%02x, Sync flg 0x%02x\n", res[0].cResCode, res[0].cSyncFlg);
+    }
+    m_clnt->Close();
 }
 
 void ModelSDK::DlClose()
