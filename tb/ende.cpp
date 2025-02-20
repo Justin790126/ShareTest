@@ -34,14 +34,14 @@ int main(int argc, char **argv)
             sK = optarg;
             break;
         default:
-            std::cerr << "Usage: " << argv[0] << " -i <input_file> -m <mode> -o <output_file>" << std::endl;
+            // std::cerr << "Usage: " << argv[0] << " -i <input_file> -m <mode> -o <output_file>" << std::endl;
             return 1;
         }
     }
 
     if (input_file.empty() || mode == -1 || output_file.empty())
     {
-        std::cerr << "All options (-i, -m, -o) must be provided." << std::endl;
+        // std::cerr << "All options (-i, -m, -o) must be provided." << std::endl;
         return 1;
     }
 

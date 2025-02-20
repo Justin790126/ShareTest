@@ -8,6 +8,8 @@
 #include "ModelSktSvr.h"
 #include "ModelSktClnt.h"
 
+#include <chrono>
+
 using namespace std;
 
 class ModelSDK : public QThread

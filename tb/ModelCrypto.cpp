@@ -45,9 +45,9 @@ std::string decrypt(const std::string& sInput,
 void ModelCrypto::run()
 {
     CryptoPP::byte aIV[CryptoPP::AES::BLOCKSIZE];
-    cout << "Number of passwd: " << (int)CryptoPP::AES::BLOCKSIZE << endl;
-    for (int i = 0; i < CryptoPP::AES::BLOCKSIZE; ++i)
-        aIV[i] = 0;
+    // cout << "Number of passwd: " << (int)CryptoPP::AES::BLOCKSIZE << endl;
+    // for (int i = 0; i < CryptoPP::AES::BLOCKSIZE; ++i)
+    //     aIV[i] = 0;
 
     // initialize encryptor
     CryptoPP::CFB_Mode<CryptoPP::AES>::Encryption enc;
@@ -67,7 +67,7 @@ void ModelCrypto::run()
         inputFile.close();
 
         std::string sEncData = encrypt(fileContent, m_sK, aIV);
-        std::cout << "Encrypted: " << sEncData << "\n";
+        // std::cout << "Encrypted: " << sEncData << "\n";
 
         ofstream outputFile(m_sOptName);
         outputFile.write(sEncData.c_str(), sEncData.size());
@@ -87,7 +87,7 @@ void ModelCrypto::run()
         inputFile.close();
 
         std::string sDecData = decrypt(fileContent, m_sK, aIV);
-        std::cout << "Decrypted: " << sDecData << "\n";
+        // std::cout << "Decrypted: " << sDecData << "\n";
 
         ofstream outputFile(m_sOptName);
         outputFile.write(sDecData.c_str(), sDecData.size());
