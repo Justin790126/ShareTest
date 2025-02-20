@@ -14,7 +14,6 @@
 #include <tensorflow/core/framework/tensor.h>
 #include <tensorflow/core/framework/types.h>
 
-
 using namespace std;
 using namespace tensorflow;
 
@@ -24,10 +23,14 @@ class ModelTfParser : public QThread
     public:
         ModelTfParser();
         ~ModelTfParser() = default; // FIXME: resource free implementation
-
+        void SetLogDir(const string &logDir) { m_sLogDir = logDir; }
+        string GetLogDir() const { return m_sLogDir; }
+        void Wait();
     protected:
         virtual void run() override;
     private:
+
+        string m_sLogDir;
 };
 
 
