@@ -47,6 +47,7 @@ set(SOURCES1
     qcustomplot.cpp
     PropsSection.cpp
     ModelTfParser.cpp
+    utils.cpp
 )
 
 set(HEADERS1
@@ -56,6 +57,7 @@ set(HEADERS1
     qcustomplot.h
     PropsSection.h
     ModelTfParser.h
+    utils.h
 )
 
 qt4_wrap_cpp(SOURCES1 ${HEADERS1})

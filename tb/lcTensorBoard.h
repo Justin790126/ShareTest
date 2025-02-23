@@ -21,7 +21,7 @@ class LcTensorBoard : public QObject
 
     private:
         ViewTensorBoard *view=NULL;
-        ModelTfParser* model=NULL;
+        ModelTfWatcher* fsWatcher=NULL;
 };
 
 #endif /* LC_TENSORBOARD */

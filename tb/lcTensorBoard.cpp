@@ -5,12 +5,11 @@ LcTensorBoard::LcTensorBoard(TbArgs args, QObject *parent)
 {
     tbArgs = args;
 
-    // feed logdir to ModelTfParser
-    model = new ModelTfParser;
+    // feed logdir to ModelTfWatcher
+    fsWatcher = new ModelTfWatcher;
     if (!tbArgs.m_sLogDir.empty()) {
-        model->SetLogDir(tbArgs.m_sLogDir);
-        model->start();
-        model->Wait();
+        fsWatcher->SetLogDir(tbArgs.m_sLogDir);
+        fsWatcher->start();
     }
     
 
@@ -22,6 +21,9 @@ LcTensorBoard::LcTensorBoard(TbArgs args, QObject *parent)
 
 LcTensorBoard::~LcTensorBoard()
 {
+    if (fsWatcher) {
+        fsWatcher->SetWatcher(false);
+    }
     if (view) delete view;
     view = NULL;
 }
