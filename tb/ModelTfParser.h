@@ -102,16 +102,28 @@ class ModelTfParser : public QThread
 {
     Q_OBJECT
     public:
+        const string tagKeras = "keras"; // string type data
+        const string tagEpochLoss = "epoch_loss"; // float type data
+        const string tagEpochAcc = "epoch_accuracy"; // float type data
+
         ModelTfParser();
         ~ModelTfParser();
         void SetInputName(const string &inputName) { m_sFname = inputName; }
         string GetInputName() { return m_sFname; }
+
+        uint64_t GetCurPos() { return m_uCurPos; }
 
     protected:
         virtual void run() override;
     private:
         int m_iVerbose;
         string m_sFname;
+
+        std::ifstream m_fp;
+
+        uint64_t m_uCurPos;
+
+        void ListEntry(const tensorflow::Event &event);
 
 };
 

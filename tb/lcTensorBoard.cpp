@@ -38,13 +38,23 @@ void LcTensorBoard::handleTfFileChanged()
     if (!watcher) return;
 
     vector<TfLiveInfo*>* infos = watcher->GetLiveInfo();
-    for (size_t i = 0;infos&& i < infos->size(); i++)
-    {
-        TfLiveInfo* info = infos->at(i);
-        cout << *info << endl;
-        ModelTfParser* parser = new ModelTfParser;
-        parser->SetInputName(info->GetFileName());
-        parser->start();
-    }
+    if (!infos) return;
+    if (infos->empty()) return;
+
+    TfLiveInfo* info = infos->at(0);
+    cout << *info << endl;
+    ModelTfParser* parser = new ModelTfParser;
+    parser->SetInputName(info->GetFileName());
+    parser->start();
+
+
+    // for (size_t i = 0;infos&& i < infos->size(); i++)
+    // {
+    //     TfLiveInfo* info = infos->at(i);
+    //     cout << *info << endl;
+    //     ModelTfParser* parser = new ModelTfParser;
+    //     parser->SetInputName(info->GetFileName());
+    //     parser->start();
+    // }
     
 }

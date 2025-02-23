@@ -68,7 +68,6 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     ${QT_LIBRARIES}
-    /usr/local/lib/libcryptopp.a
     ${TF_LIBRARY}
     ${PROTOBUF_LIBRARY}
     )
