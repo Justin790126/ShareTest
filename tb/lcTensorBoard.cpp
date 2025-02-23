@@ -7,9 +7,12 @@ LcTensorBoard::LcTensorBoard(TbArgs args, QObject *parent)
 
     // feed logdir to ModelTfParser
     model = new ModelTfParser;
-    model->SetLogDir(tbArgs.m_sLogDir);
-    model->start();
-    model->Wait();
+    if (!tbArgs.m_sLogDir.empty()) {
+        model->SetLogDir(tbArgs.m_sLogDir);
+        model->start();
+        model->Wait();
+    }
+    
 
     if (!view) {
         view = new ViewTensorBoard();

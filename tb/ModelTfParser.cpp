@@ -17,5 +17,5 @@ void ModelTfParser::Wait()
 
 void ModelTfParser::run()
 {
-    cout << "parse tf" << endl;
+    printf("Parsing log dir %s\n", m_sLogDir.c_str());
 }
