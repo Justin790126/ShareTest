@@ -8,14 +8,15 @@ ModelTfWatcher::ModelTfWatcher()
 ModelTfWatcher::~ModelTfWatcher()
 {
     ClearLiveInfo();
+    m_bStop = true;
 }
 
 void ModelTfWatcher::ClearLiveInfo()
 {
-    for (size_t i = 0; i < m_vsTfFilesMonitorPos.size(); i++) {
-        if (m_vsTfFilesMonitorPos[i]) delete m_vsTfFilesMonitorPos[i];
+    for (size_t i = 0; i < m_vinfoTfFiles.size(); i++) {
+        if (m_vinfoTfFiles[i]) delete m_vinfoTfFiles[i];
     }
-    m_vsTfFilesMonitorPos.clear();
+    m_vinfoTfFiles.clear();
 }
 
 void ModelTfWatcher::Wait()
@@ -82,36 +83,36 @@ void ModelTfWatcher::run()
             printf("Found subdirectory: %s\n", dir.c_str());
         }
     }
-    m_vsTfFilesMonitorPos.clear();
+    m_vinfoTfFiles.clear();
     for (const auto& dir : m_vsSubdirs) {
-        ListTfFiles(dir, m_vsTfFilesMonitorPos);
+        ListTfFiles(dir, m_vinfoTfFiles);
     }
     
     if (m_iVerbose == 2) {
         printf("Found TensorFlow event files in %s\n", m_sLogDir.c_str());
-        for (const auto& info : m_vsTfFilesMonitorPos) {
+        for (const auto& info : m_vinfoTfFiles) {
             cout << info << endl;
         }
     }
     emit tfFileChanged();
 
     while (!m_bStop) {
-        // pooling directory and files and compare m_vsTfFilesMonitorPos file size
-        // if size change, update m_vsTfFilesMonitorPos
+        // pooling directory and files and compare m_vinfoTfFiles file size
+        // if size change, update m_vinfoTfFiles
 
         // vector<TfLiveInfo*> curInfos;
         // for (const auto& dir : m_vsSubdirs) {
         //     ListTfFiles(dir, curInfos);
         // }
 
-        // // compare curInfos and m_vsTfFilesMonitorPos
-        // // if diffrent emit signal change, update m_vsTfFilesMonitorPos
+        // // compare curInfos and m_vinfoTfFiles
+        // // if diffrent emit signal change, update m_vinfoTfFiles
         // for (const auto& info : curInfos) {
         //     bool found = false;
-        //     for (size_t i = 0; i < m_vsTfFilesMonitorPos.size(); i++) {
-        //         if (info->GetFileName() == m_vsTfFilesMonitorPos[i]->GetFileName()) {
+        //     for (size_t i = 0; i < m_vinfoTfFiles.size(); i++) {
+        //         if (info->GetFileName() == m_vinfoTfFiles[i]->GetFileName()) {
         //             found = true;
-        //             if (info->GetFileSize()!= m_vsTfFilesMonitorPos[i]->GetFileSize()) {
+        //             if (info->GetFileSize()!= m_vinfoTfFiles[i]->GetFileSize()) {
         //                 emit tfFileChanged();
         //             }
         //             break;
@@ -129,4 +130,26 @@ void ModelTfWatcher::run()
 
     // TODO: parse m_vsTfFiles
     cout << "End of Tf file watcher" << endl;
+}
+
+
+/*
+
+    ModelTfParser
+
+ */
+
+ModelTfParser::ModelTfParser()
+{
+
+}
+
+ModelTfParser::~ModelTfParser()
+{
+
+}
+
+void ModelTfParser::run()
+{
+    printf("Parse tf file %s\n", m_sFname.c_str());
 }

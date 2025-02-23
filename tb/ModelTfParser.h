@@ -69,6 +69,8 @@ class ModelTfWatcher : public QThread
         string GetLogDir() const { return m_sLogDir; }
         void Wait();
         void SetWatcher(bool onOff) { m_bStop = onOff; }
+
+        vector<TfLiveInfo*>* GetLiveInfo() { return &m_vinfoTfFiles; }
     signals:
         void tfFileChanged();
 
@@ -83,12 +85,34 @@ class ModelTfWatcher : public QThread
         vector<string> m_vsSubdirs;
         void ListSubDir(const string & iDir, vector<string>& oSubDirs);
 
-        vector<TfLiveInfo*> m_vsTfFilesMonitorPos;
+        vector<TfLiveInfo*> m_vinfoTfFiles;
         void ListTfFiles(const string & iDir, vector<TfLiveInfo*>& oTfFiles);
 
         void ClearLiveInfo();
 
 };
 
+/*
+
+    ModelTfParser
+
+ */
+
+class ModelTfParser : public QThread
+{
+    Q_OBJECT
+    public:
+        ModelTfParser();
+        ~ModelTfParser();
+        void SetInputName(const string &inputName) { m_sFname = inputName; }
+        string GetInputName() { return m_sFname; }
+
+    protected:
+        virtual void run() override;
+    private:
+        int m_iVerbose;
+        string m_sFname;
+
+};
 
 #endif /* MODEL_TF_PARSER_H */

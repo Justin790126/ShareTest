@@ -22,6 +22,9 @@ class LcTensorBoard : public QObject
     private:
         ViewTensorBoard *view=NULL;
         ModelTfWatcher* fsWatcher=NULL;
+
+    private slots:
+        void handleTfFileChanged();
 };
 
 #endif /* LC_TENSORBOARD */
