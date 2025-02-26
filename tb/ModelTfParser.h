@@ -19,6 +19,9 @@
 #include <tensorflow/core/framework/tensor.h>
 #include <tensorflow/core/framework/types.h>
 
+#include <QVector>
+#include <QDebug>
+
 #include "utils.h"
 
 using namespace std;
@@ -113,6 +116,9 @@ class ModelTfParser : public QThread
 
         uint64_t GetCurPos() { return m_uCurPos; }
 
+        QVector<float>* GetEpochLoss() { return &m_qvfEpLoss; }
+        QVector<float>* GetEpochAcc() { return &m_qvfEpAcc; }
+
     protected:
         virtual void run() override;
     private:
@@ -125,6 +131,12 @@ class ModelTfParser : public QThread
 
         void ListEntry(const tensorflow::Event &event);
 
+    private:
+        void ParseKerasTag(const tensorflow::Summary::Value &value);
+        void ParseFloatTensor(const tensorflow::Summary::Value &value, QVector<float>& oResult);
+
+        QVector<float> m_qvfEpLoss;
+        QVector<float> m_qvfEpAcc;
 };
 
 #endif /* MODEL_TF_PARSER_H */

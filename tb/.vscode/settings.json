@@ -66,6 +66,8 @@
         "fstream": "cpp",
         "iomanip": "cpp",
         "regex": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "utility": "cpp",
+        "*.tcc": "cpp"
     }
 }

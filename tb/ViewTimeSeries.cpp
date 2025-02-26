@@ -14,7 +14,7 @@ void ViewTimeSeries::widgets()
 
 void ViewTimeSeries::Connect()
 {
-    connect(btnShowAllTags, SIGNAL(clicked()), this, SLOT(handleAddChartOnLyt()));
+    // connect(btnShowAllTags, SIGNAL(clicked()), this, SLOT(handleAddChartOnLyt()));
     connect(btnSettings, SIGNAL(clicked()), this, SLOT(handleSettingsOnOff()));
 }
 

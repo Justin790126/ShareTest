@@ -2,7 +2,6 @@
 
 ModelTfWatcher::ModelTfWatcher()
 {
-
 }
 
 ModelTfWatcher::~ModelTfWatcher()
@@ -13,8 +12,10 @@ ModelTfWatcher::~ModelTfWatcher()
 
 void ModelTfWatcher::ClearLiveInfo()
 {
-    for (size_t i = 0; i < m_vinfoTfFiles.size(); i++) {
-        if (m_vinfoTfFiles[i]) delete m_vinfoTfFiles[i];
+    for (size_t i = 0; i < m_vinfoTfFiles.size(); i++)
+    {
+        if (m_vinfoTfFiles[i])
+            delete m_vinfoTfFiles[i];
     }
     m_vinfoTfFiles.clear();
 }
@@ -28,42 +29,48 @@ void ModelTfWatcher::Wait()
     }
 }
 
-void ModelTfWatcher::ListSubDir(const string & iDir, vector<string>& oSubDirs)
+void ModelTfWatcher::ListSubDir(const string &iDir, vector<string> &oSubDirs)
 {
     // use QT to realize
     QDir dir(QString::fromStdString(iDir));
-    if (!dir.exists()) {
+    if (!dir.exists())
+    {
         printf("Cannot access directory: %s\n", iDir.c_str());
         return;
     }
 
     dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
     QFileInfoList list = dir.entryInfoList();
-    for (const auto& info : list) {
-        if (info.isDir()) {
+    for (const auto &info : list)
+    {
+        if (info.isDir())
+        {
             oSubDirs.push_back(info.absoluteFilePath().toStdString());
         }
     }
 }
 
-void ModelTfWatcher::ListTfFiles(const string & iDir, vector<TfLiveInfo*>& oTfFiles)
+void ModelTfWatcher::ListTfFiles(const string &iDir, vector<TfLiveInfo *> &oTfFiles)
 {
     // use QT to realize
     QDir dir(QString::fromStdString(iDir));
-    if (!dir.exists()) {
+    if (!dir.exists())
+    {
         printf("Cannot access directory: %s\n", iDir.c_str());
         return;
     }
 
     dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     QFileInfoList list = dir.entryInfoList();
-    for (const auto& info : list) {
+    for (const auto &info : list)
+    {
         // check file satisfy *.tfevents.*
-        if (info.fileName().contains(".tfevents.")) {
-            TfLiveInfo* tfInfo = new TfLiveInfo;
+        if (info.fileName().contains(".tfevents."))
+        {
+            TfLiveInfo *tfInfo = new TfLiveInfo;
             tfInfo->SetFileName(info.absoluteFilePath().toStdString());
             tfInfo->SetFileSize(info.size());
-            tfInfo->SetWatchingPos(0);  // reset to 0 when new file added
+            tfInfo->SetWatchingPos(0); // reset to 0 when new file added
             oTfFiles.push_back(tfInfo);
         }
     }
@@ -71,32 +78,36 @@ void ModelTfWatcher::ListTfFiles(const string & iDir, vector<TfLiveInfo*>& oTfFi
     // monitor file change
 }
 
-
 void ModelTfWatcher::run()
 {
     m_iVerbose = Utils::m_iVerbose;
     m_vsSubdirs.clear();
     ListSubDir(m_sLogDir, m_vsSubdirs);
-    if (m_iVerbose == 1) {
+    if (m_iVerbose == 1)
+    {
         printf("Parsing log dir %s\n", m_sLogDir.c_str());
-        for (const auto& dir : m_vsSubdirs) {
+        for (const auto &dir : m_vsSubdirs)
+        {
             printf("Found subdirectory: %s\n", dir.c_str());
         }
     }
     m_vinfoTfFiles.clear();
-    for (const auto& dir : m_vsSubdirs) {
+    for (const auto &dir : m_vsSubdirs)
+    {
         ListTfFiles(dir, m_vinfoTfFiles);
     }
-    
-    if (m_iVerbose == 2) {
-        printf("Found TensorFlow event files in %s\n", m_sLogDir.c_str());
-        for (const auto& info : m_vinfoTfFiles) {
-            cout << info << endl;
+
+    if (m_iVerbose == 2)
+    {
+        for (const auto &info : m_vinfoTfFiles)
+        {
+            cout << *info << endl;
         }
     }
     emit tfFileChanged();
 
-    while (!m_bStop) {
+    while (!m_bStop)
+    {
         // pooling directory and files and compare m_vinfoTfFiles file size
         // if size change, update m_vinfoTfFiles
 
@@ -123,15 +134,13 @@ void ModelTfWatcher::run()
         //     // }
         // }
 
-        usleep(1000000);  // 1 second
+        usleep(1000000); // 1 second
         QApplication::processEvents();
-
     }
 
     // TODO: parse m_vsTfFiles
     cout << "End of Tf file watcher" << endl;
 }
-
 
 /*
 
@@ -141,58 +150,97 @@ void ModelTfWatcher::run()
 
 ModelTfParser::ModelTfParser()
 {
-
 }
 
 ModelTfParser::~ModelTfParser()
 {
-
 }
 
+void ModelTfParser::ParseKerasTag(const tensorflow::Summary::Value &value)
+{
+    if (value.has_tensor())
+    {
+        const tensorflow::TensorProto &tensor = value.tensor();
+        Tensor t;
+        if (t.FromProto(tensor))
+        {
+            if (t.dtype() == DT_STRING)
+            {
+                // Replace 'auto' with 'Eigen::Tensor<tstring, 1, Eigen::RowMajor>'
+                std::vector<std::string> strings;
+                Eigen::Tensor<tstring, 1, Eigen::RowMajor> string_tensor = t.flat<tstring>();
+                strings.reserve(string_tensor.size());
+                for (int i = 0; i < string_tensor.size(); ++i)
+                {
+                    strings.emplace_back(string_tensor(i));
+                }
+            }
+        }
+    }
+}
+
+void ModelTfParser::ParseFloatTensor(const tensorflow::Summary::Value &value, QVector<float>& losses)
+{
+    if (value.has_tensor())
+    {
+        const tensorflow::TensorProto &tensor = value.tensor();
+        Tensor t;
+        if (t.FromProto(tensor))
+        {
+            if (t.dtype() == DT_FLOAT) {
+                // Get the number of elements in the tensor
+                int num_elements = t.NumElements();
+                
+                // Access the float data directly
+                const float* data = t.flat<float>().data();
+                
+                // Reserve space in QVector to avoid multiple reallocations
+                losses.reserve(num_elements);
+                
+                // Copy the tensor data into the QVector
+                for (int i = 0; i < num_elements; ++i) {
+                    losses.append(data[i]);
+                }
+            }
+        }
+    }
+}
 
 void ModelTfParser::ListEntry(const tensorflow::Event &event)
 {
-//   cout << "wall time: " << event.wall_time() << endl;
-//   cout << "step: " << event.step() << endl;
-  if (event.has_summary()) {
-      const tensorflow::Summary summary = event.summary();
-      for (const auto& value : summary.value()) {
-        cout << "Tag: " << value.tag() << ", Value: " << value.simple_value() << endl;
-        // print tensor
+    //   cout << "wall time: " << event.wall_time() << endl;
+    //   cout << "step: " << event.step() << endl;
+    if (event.has_summary())
+    {
+        const tensorflow::Summary summary = event.summary();
+        for (int i = 0; i < summary.value_size(); i++)
+        {
+            const tensorflow::Summary::Value &value = summary.value(i);
+            // Work with value here
+            // For example: value.tag(), value.simple_value(), etc.
 
-        if (value.tag() == tagKeras) {
-            
-        }
+            // cout << "Tag: " << value.tag() << ", Value: " << value.simple_value() << endl;
+            // print tensor
 
-        if (value.has_tensor()) {
-          cout << "tensror exists: " << endl;
-          const auto& tensor = value.tensor();
-          cout << "Tensor DType: " << tensor.dtype() << endl;
-          Tensor t;
-          if (t.FromProto(tensor)) {
-            cout << "shape: " << t.shape().DebugString() << endl;
-
-            if (t.dtype() == DT_FLOAT) {
-              auto float_tensor = t.flat<float>();
-              for (int i = 0; i < float_tensor.size(); ++i) {
-                cout << "float value: " << float_tensor(i) << endl;
-              }
-            } else if (t.dtype() == DT_STRING) {
-              auto string_tensor = t.flat<tstring>();
-              cout << "Tensor contains strings:" << endl;
-              for (int i = 0; i < string_tensor.size(); ++i) {
-                cout << "  String[" << i << "]: " << string_tensor(i) << endl;
-              }
+            if (value.tag() == tagKeras)
+            {
+                ParseKerasTag(value);
             }
-          }
+            else if (value.tag() == tagEpochLoss)
+            {
+                ParseFloatTensor(value, m_qvfEpLoss);
+            }
+            else if (value.tag() == tagEpochAcc)
+            {
+                ParseFloatTensor(value, m_qvfEpAcc);
+            }
         }
-        
-      }
     }
 }
 
 void ModelTfParser::run()
 {
+    m_iVerbose = Utils::m_iVerbose;
     printf("Parse tf file %s\n", m_sFname.c_str());
     m_uCurPos = 0;
     std::uint64_t length;
@@ -211,6 +259,8 @@ void ModelTfParser::run()
         m_fp.close();
     }
 
+    m_qvfEpLoss.clear();
+    m_qvfEpAcc.clear();
     while (m_fp.read(reinterpret_cast<char *>(&length), sizeof(std::uint64_t)))
     {
         if (m_fp.eof())
@@ -236,4 +286,9 @@ void ModelTfParser::run()
         m_fp.read(reinterpret_cast<char *>(&crc), sizeof(std::uint32_t));
     }
     m_fp.close();
+
+    if (m_iVerbose == 2) {
+        qDebug() << m_qvfEpLoss << endl;
+        qDebug() << m_qvfEpAcc << endl;
+    }
 }
