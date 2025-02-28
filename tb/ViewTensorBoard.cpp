@@ -23,6 +23,21 @@ void ViewTensorBoard::widgets()
 
 }
 
+void ViewTensorBoard::CreateJobItems(const vector<string>& jobs)
+{
+    QTreeWidget* tw = viewTimeSeries->GetTwJobsTree();
+
+    // iterate jobs and create QTreeWidgetItem in tw
+    for (const auto& job : jobs)
+    {
+        QTreeWidgetItem* item = new QTreeWidgetItem(tw);
+        item->setText(0, QString::fromStdString(job));
+        // set item checkable
+        
+        item->setCheckState(0, Qt::Unchecked);
+    }
+}
+
 void ViewTensorBoard::layouts()
 {
     QVBoxLayout *vlytMain = new QVBoxLayout(this);

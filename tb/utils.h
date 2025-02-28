@@ -17,6 +17,8 @@ public:
     ~Utils() = default;
 
     int isDir(const char *path);
+
+    string GetBaseName(string input);
 };
 
 #endif /* UTILS_H */

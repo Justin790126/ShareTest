@@ -3,6 +3,7 @@
 
 #include "ViewTensorBoard.h"
 #include "ModelTfParser.h"
+#include "utils.h"
 
 struct TbArgs
 {
@@ -22,6 +23,7 @@ class LcTensorBoard : public QObject
     private:
         ViewTensorBoard *view=NULL;
         ModelTfWatcher* fsWatcher=NULL;
+        Utils* utils=Utils::GetInstance();
 
     private slots:
         void handleTfFileChanged();

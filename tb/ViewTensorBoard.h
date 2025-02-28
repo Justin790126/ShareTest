@@ -15,6 +15,10 @@ class ViewTensorBoard : public QWidget
 public:
     ViewTensorBoard(QWidget *parent = NULL);
     ~ViewTensorBoard() = default;
+    
+    void CreateJobItems(const vector<string>& jobs);
+
+    QTreeWidget* GetTwJobsTree() { return viewTimeSeries->GetTwJobsTree(); }
 
 private:
     void widgets();

@@ -10,6 +10,18 @@ ModelTfWatcher::~ModelTfWatcher()
     m_bStop = true;
 }
 
+vector<string> ModelTfWatcher::GetSubFolder()
+{
+    Utils* utils = Utils::GetInstance();
+    vector<string> folders;
+    folders.resize(m_vsSubdirs.size());
+    for (size_t i = 0; i < m_vsSubdirs.size(); i++)
+    {
+        folders[i] = utils->GetBaseName(m_vsSubdirs[i]);
+    }
+    return folders;
+}
+
 void ModelTfWatcher::ClearLiveInfo()
 {
     for (size_t i = 0; i < m_vinfoTfFiles.size(); i++)
@@ -290,5 +302,14 @@ void ModelTfParser::run()
     if (m_iVerbose == 2) {
         qDebug() << m_qvfEpLoss << endl;
         qDebug() << m_qvfEpAcc << endl;
+    }
+}
+
+void ModelTfParser::Wait()
+{
+    while (isRunning())
+    {
+        usleep(1000);
+        QApplication::processEvents();
     }
 }

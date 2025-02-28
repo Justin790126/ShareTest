@@ -74,6 +74,7 @@ class ModelTfWatcher : public QThread
         void SetWatcher(bool onOff) { m_bStop = onOff; }
 
         vector<TfLiveInfo*>* GetLiveInfo() { return &m_vinfoTfFiles; }
+        vector<string> GetSubFolder();
     signals:
         void tfFileChanged();
 
@@ -118,6 +119,8 @@ class ModelTfParser : public QThread
 
         QVector<float>* GetEpochLoss() { return &m_qvfEpLoss; }
         QVector<float>* GetEpochAcc() { return &m_qvfEpAcc; }
+
+        void Wait();
 
     protected:
         virtual void run() override;

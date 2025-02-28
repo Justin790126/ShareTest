@@ -19,6 +19,8 @@ class ViewTimeSeries : public QWidget
         void Connect();
 
         QWidget* AddChartSection(QString title="");
+
+        QTreeWidget* GetTwJobsTree() { return twJobFiles; }
     
     private:
         QTreeWidget* twJobFiles;

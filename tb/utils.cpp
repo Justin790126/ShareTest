@@ -35,3 +35,12 @@ int Utils::isDir(const char *path)
         return 0; // It is not a directory
     }
 }
+
+string Utils::GetBaseName(string input)
+{
+    size_t pos = input.find_last_of("\\/");
+    if (pos == string::npos)
+        return input;
+    else
+        return input.substr(pos + 1);
+}
