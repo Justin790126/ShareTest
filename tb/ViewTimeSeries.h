@@ -6,6 +6,20 @@
 #include "qcustomplot.h"
 
 
+class ChartInfo
+{
+    public:
+        QVector<float> m_qvfEpochLoss;
+        QVector<float> m_qvfEpochAccuracy;
+};
+
+
+// write a class inherit PropsSection
+class LineChartProps : public PropsSection
+{
+    public:
+};
+
 class ViewTimeSeries : public QWidget
 {
     Q_OBJECT
@@ -18,7 +32,7 @@ class ViewTimeSeries : public QWidget
         void UI();
         void Connect();
 
-        QWidget* AddChartSection(QString title="");
+        QWidget* AddChartSection(QString title="", ChartInfo* info=NULL);
 
         QTreeWidget* GetTwJobsTree() { return twJobFiles; }
     

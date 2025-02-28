@@ -38,6 +38,11 @@ void ViewTensorBoard::CreateJobItems(const vector<string>& jobs)
     }
 }
 
+void ViewTensorBoard::CreateChartSection(QString title, ChartInfo* chartInfo)
+{
+    viewTimeSeries->AddChartSection(title, chartInfo);
+}
+
 void ViewTensorBoard::layouts()
 {
     QVBoxLayout *vlytMain = new QVBoxLayout(this);

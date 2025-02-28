@@ -9,6 +9,7 @@
 
 using namespace std;
 
+
 class ViewTensorBoard : public QWidget
 {
     Q_OBJECT
@@ -19,6 +20,8 @@ public:
     void CreateJobItems(const vector<string>& jobs);
 
     QTreeWidget* GetTwJobsTree() { return viewTimeSeries->GetTwJobsTree(); }
+
+    void CreateChartSection(QString title, ChartInfo* chartInfo);
 
 private:
     void widgets();

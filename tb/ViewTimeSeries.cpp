@@ -27,7 +27,7 @@ void ViewTimeSeries::handleSettingsOnOff()
     widSettings->setVisible(onOff);
 }
 
-QWidget* ViewTimeSeries::AddChartSection(QString title)
+QWidget* ViewTimeSeries::AddChartSection(QString title, ChartInfo* info)
 {
     PropsSection *section = new PropsSection(title);
     {

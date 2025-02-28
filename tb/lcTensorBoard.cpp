@@ -46,15 +46,29 @@ void LcTensorBoard::handleTfFileChanged()
     if (!infos) return;
     if (infos->empty()) return;
 
-
-    for (size_t i = 0;infos&& i < infos->size(); i++)
+    QStringList figs = {"Epoch Accuracy", "Epoch Loss"};
+    // iterate figs
+    for (int i = 0; i < figs.count(); i++)
     {
-        TfLiveInfo* info = infos->at(i);
-        cout << *info << endl;
-        ModelTfParser* parser = new ModelTfParser;
-        parser->SetInputName(info->GetFileName());
-        parser->start();
-        parser->Wait();
+        view->CreateChartSection(figs[i], NULL);
     }
+    
+    // for (size_t i = 0;infos&& i < infos->size(); i++)
+    // {
+    //     TfLiveInfo* info = infos->at(i);
+    //     cout << *info << endl;
+    //     ModelTfParser* parser = new ModelTfParser;
+    //     parser->SetInputName(info->GetFileName());
+    //     parser->start();
+    //     parser->Wait();
+
+    //     QVector<float>* epocshAcc = parser->GetEpochAcc();
+    //     QVector<float>* epocshLoss = parser->GetEpochLoss();
+
+    //     ChartInfo* ci = new ChartInfo;
+    //     ci->m_qvfEpochLoss = *epocshLoss;
+    //     ci->m_qvfEpochAccuracy = *epocshAcc;
+        
+    // }
     
 }
