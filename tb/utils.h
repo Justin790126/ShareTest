@@ -5,8 +5,27 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <iostream>
+#include <QVector>
 
 using namespace std;
+
+
+class ChartInfo
+{
+    public:
+        QVector<double> m_qvdXData;
+        QVector<double> m_qvdYData;
+        string m_sXLabel;
+        string m_sYLabel;
+};
+
+class TfTags
+{
+public:
+    const string tagKeras = "keras";             // string type data
+    const string tagEpochLoss = "epoch_loss";    // float type data
+    const string tagEpochAcc = "epoch_accuracy"; // float type data
+};
 
 class Utils
 {

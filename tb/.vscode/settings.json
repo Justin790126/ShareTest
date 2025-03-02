@@ -68,6 +68,12 @@
         "regex": "cpp",
         "stack": "cpp",
         "utility": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "list": "cpp",
+        "iterator": "cpp",
+        "map": "cpp",
+        "memory_resource": "cpp",
+        "thread": "cpp",
+        "cinttypes": "cpp"
     }
 }

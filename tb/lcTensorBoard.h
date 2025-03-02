@@ -25,8 +25,10 @@ class LcTensorBoard : public QObject
         ModelTfWatcher* fsWatcher=NULL;
         Utils* utils=Utils::GetInstance();
 
+
     private slots:
         void handleTfFileChanged();
+        void handleTreeItemClicked(QTreeWidgetItem* item, int idx);
 };
 
 #endif /* LC_TENSORBOARD */

@@ -44,6 +44,7 @@ set(SOURCES1
     lcTensorBoard.cpp
     ViewTensorBoard.cpp
     ViewTimeSeries.cpp
+    ViewLineChartSection.cpp
     qcustomplot.cpp
     PropsSection.cpp
     ModelTfParser.cpp
@@ -54,6 +55,7 @@ set(HEADERS1
     lcTensorBoard.h
     ViewTensorBoard.h
     ViewTimeSeries.h
+    ViewLineChartSection.h
     qcustomplot.h
     PropsSection.h
     ModelTfParser.h

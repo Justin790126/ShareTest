@@ -191,7 +191,7 @@ void ModelTfParser::ParseKerasTag(const tensorflow::Summary::Value &value)
     }
 }
 
-void ModelTfParser::ParseFloatTensor(const tensorflow::Summary::Value &value, QVector<float>& losses)
+void ModelTfParser::ParseFloatTensor(const tensorflow::Summary::Value &value, QVector<double>& losses)
 {
     if (value.has_tensor())
     {
@@ -234,15 +234,15 @@ void ModelTfParser::ListEntry(const tensorflow::Event &event)
             // cout << "Tag: " << value.tag() << ", Value: " << value.simple_value() << endl;
             // print tensor
 
-            if (value.tag() == tagKeras)
+            if (value.tag() == m_tags.tagKeras)
             {
                 ParseKerasTag(value);
             }
-            else if (value.tag() == tagEpochLoss)
+            else if (value.tag() == m_tags.tagEpochLoss)
             {
                 ParseFloatTensor(value, m_qvfEpLoss);
             }
-            else if (value.tag() == tagEpochAcc)
+            else if (value.tag() == m_tags.tagEpochAcc)
             {
                 ParseFloatTensor(value, m_qvfEpAcc);
             }

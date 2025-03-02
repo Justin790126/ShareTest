@@ -9,6 +9,30 @@
 
 using namespace std;
 
+class ViewTfTreeItem : public QTreeWidgetItem
+{
+public:
+    // Constructor with optional parent QTreeWidget
+    explicit ViewTfTreeItem(QTreeWidget* parent = 0)
+        : QTreeWidgetItem(parent)
+    {
+        // Initialization code can go here if needed
+    }
+
+    // Constructor with parent and text for a single column
+    ViewTfTreeItem(QTreeWidget* parent, const QString& text)
+        : QTreeWidgetItem(parent)
+    {
+        setText(0, text); // Set text in the first column
+    }
+
+    // Destructor
+    ~ViewTfTreeItem()
+    {
+        // Cleanup code can go here if needed
+        // QTreeWidgetItem handles its own memory management for basic cases
+    }
+};
 
 class ViewTensorBoard : public QWidget
 {
@@ -21,7 +45,7 @@ public:
 
     QTreeWidget* GetTwJobsTree() { return viewTimeSeries->GetTwJobsTree(); }
 
-    void CreateChartSection(QString title, ChartInfo* chartInfo);
+    QWidget* CreateChartSection(QString title, ChartInfo* chartInfo);
 
 private:
     void widgets();

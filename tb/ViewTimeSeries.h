@@ -2,23 +2,9 @@
 #define VIEW_TIME_SERIES
 
 #include <QtGui>
-#include "PropsSection.h"
+#include "ViewLineChartSection.h"
 #include "qcustomplot.h"
-
-
-class ChartInfo
-{
-    public:
-        QVector<float> m_qvfEpochLoss;
-        QVector<float> m_qvfEpochAccuracy;
-};
-
-
-// write a class inherit PropsSection
-class LineChartProps : public PropsSection
-{
-    public:
-};
+#include "utils.h"
 
 class ViewTimeSeries : public QWidget
 {

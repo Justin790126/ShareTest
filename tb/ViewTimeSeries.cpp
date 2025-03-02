@@ -27,9 +27,10 @@ void ViewTimeSeries::handleSettingsOnOff()
     widSettings->setVisible(onOff);
 }
 
+
 QWidget* ViewTimeSeries::AddChartSection(QString title, ChartInfo* info)
 {
-    PropsSection *section = new PropsSection(title);
+    ViewLineChartProps *section = new ViewLineChartProps(title);
     {
         QVBoxLayout *vlyt = new QVBoxLayout;
         QWidget* wid = new QWidget;
@@ -37,9 +38,9 @@ QWidget* ViewTimeSeries::AddChartSection(QString title, ChartInfo* info)
         wid->setFixedHeight(250);
         vlyt->addWidget(wid);
 
-        QCustomPlot *plot = new QCustomPlot(wid);
+        CustomPlot *plot = new CustomPlot(wid);
         plot->resize(wid->size());
-
+        section->SetQcp(plot);
         section->setContentLayout(*vlyt);
     }
     vlytCharts->addWidget(section);

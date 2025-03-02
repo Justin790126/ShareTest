@@ -106,9 +106,6 @@ class ModelTfParser : public QThread
 {
     Q_OBJECT
     public:
-        const string tagKeras = "keras"; // string type data
-        const string tagEpochLoss = "epoch_loss"; // float type data
-        const string tagEpochAcc = "epoch_accuracy"; // float type data
 
         ModelTfParser();
         ~ModelTfParser();
@@ -117,8 +114,8 @@ class ModelTfParser : public QThread
 
         uint64_t GetCurPos() { return m_uCurPos; }
 
-        QVector<float>* GetEpochLoss() { return &m_qvfEpLoss; }
-        QVector<float>* GetEpochAcc() { return &m_qvfEpAcc; }
+        QVector<double>* GetEpochLoss() { return &m_qvfEpLoss; }
+        QVector<double>* GetEpochAcc() { return &m_qvfEpAcc; }
 
         void Wait();
 
@@ -136,10 +133,11 @@ class ModelTfParser : public QThread
 
     private:
         void ParseKerasTag(const tensorflow::Summary::Value &value);
-        void ParseFloatTensor(const tensorflow::Summary::Value &value, QVector<float>& oResult);
+        void ParseFloatTensor(const tensorflow::Summary::Value &value, QVector<double>& oResult);
 
-        QVector<float> m_qvfEpLoss;
-        QVector<float> m_qvfEpAcc;
+        QVector<double> m_qvfEpLoss;
+        QVector<double> m_qvfEpAcc;
+        const TfTags m_tags;
 };
 
 #endif /* MODEL_TF_PARSER_H */
