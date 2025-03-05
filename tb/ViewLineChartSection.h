@@ -20,6 +20,14 @@ public:
 
     void DrawLineChart(ChartInfo *info);
 
+    void EditChartInfoBy(int idx, ChartInfo* info);
+    void UpdateLineChartBy(int idx);
+
+    vector<ChartInfo*>* GetChartInfos() { return &m_vcInfos; }
+
+    void SetLineChartVisibility(int idx, bool visible);
+
+
 private:
     QCustomPlot *m_qcp = NULL;
 

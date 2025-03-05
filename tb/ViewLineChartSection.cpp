@@ -9,6 +9,15 @@ ViewLineChartProps::~ViewLineChartProps()
     }
 }
 
+void ViewLineChartProps::SetLineChartVisibility(int idx, bool visible)
+{
+    if (!m_qcp) return;
+    if (idx < 0 || idx >= m_qcp->graphCount()) return;
+    m_qcp->graph(idx)->setVisible(visible);
+    m_qcp->replot();
+}
+
+
 void ViewLineChartProps::DrawLineChart(ChartInfo *info)
 {
     if (!m_qcp)

@@ -24,6 +24,7 @@ class LcTensorBoard : public QObject
         ViewTensorBoard *view=NULL;
         ModelTfWatcher* fsWatcher=NULL;
         Utils* utils=Utils::GetInstance();
+        vector<QWidget*> m_vChartSections;
 
 
     private slots:

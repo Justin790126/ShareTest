@@ -32,6 +32,26 @@ LcTensorBoard::~LcTensorBoard()
 
 void LcTensorBoard::handleTreeItemClicked(QTreeWidgetItem* item, int idx)
 {
+    QTreeWidget* tw = view->GetTwJobsTree();
+    ViewTfTreeItem* it = (ViewTfTreeItem*) item;
+    if (!it) return;
+    int liveIdx = it->GetTfLiveIdx();
+
+    vector<TfLiveInfo*>* infos = fsWatcher->GetLiveInfo();
+    if (!infos) return;
+    if (infos->empty()) return;
+    TfLiveInfo* info = (*infos)[liveIdx];
+    if (!info) return;
+
+    cout << item->text(0).toStdString() << endl;
+    // update info
+    ViewLineChartProps* vpAcc = (ViewLineChartProps*)m_vChartSections[0];
+    ViewLineChartProps* vpLoss = (ViewLineChartProps*)m_vChartSections[1];
+
+    // check item is checked
+    bool visibility = (item->checkState(0) == Qt::Checked);
+    vpAcc->SetLineChartVisibility(liveIdx, visibility);
+    vpLoss->SetLineChartVisibility(liveIdx, visibility);
 
 }
 
@@ -44,7 +64,10 @@ void LcTensorBoard::handleTfFileChanged()
 
     vector<string> folders = watcher->GetSubFolder();
     if (folders.empty()) return;
-    view->CreateJobItems(folders);
+    vector<QTreeWidgetItem*> twItems = view->CreateJobItems(folders);
+    
+
+    // connect relation of job items , TfLiveInfo, and 
 
     QTreeWidget* tw = view->GetTwJobsTree();
     disconnect(tw, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
@@ -56,16 +79,17 @@ void LcTensorBoard::handleTfFileChanged()
     if (!infos) return;
     if (infos->empty()) return;
 
-    // connect QTreeWidget with GetLiveInfo
+    // connect QTreeWidget with TfLiveInfo, ViewLineChartProps
+
 
     const TfTags tags;
     QStringList figs = {tags.tagEpochAcc.c_str(), tags.tagEpochLoss.c_str()};
-    vector<QWidget*> sections(2);
+    m_vChartSections.resize(figs.count());
     // iterate figs
     for (int i = 0; i < figs.count(); i++)
     {
         QWidget* sec = view->CreateChartSection(figs[i], NULL);
-        sections[i] = sec;
+        m_vChartSections[i] = sec;
     }
 
     for (size_t i = 0;infos&& i < infos->size(); i++)
@@ -96,11 +120,11 @@ void LcTensorBoard::handleTfFileChanged()
         ciAcc->m_sYLabel = tags.tagEpochAcc;
         ciLoss->m_sYLabel = tags.tagEpochLoss;
 
-        ViewLineChartProps* vpAcc = (ViewLineChartProps*)sections[0];
+        ViewLineChartProps* vpAcc = (ViewLineChartProps*)m_vChartSections[0];
         if (vpAcc) {
             vpAcc->DrawLineChart(ciAcc);
         }
-        ViewLineChartProps* vpLoss = (ViewLineChartProps*)sections[1];
+        ViewLineChartProps* vpLoss = (ViewLineChartProps*)m_vChartSections[1];
         if (vpLoss) {
             vpLoss->DrawLineChart(ciLoss);
         }

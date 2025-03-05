@@ -32,6 +32,10 @@ public:
         // Cleanup code can go here if needed
         // QTreeWidgetItem handles its own memory management for basic cases
     }
+    int GetTfLiveIdx() const { return m_iTfLiveIdx; }
+    void SetTfLiveIdx(int idx) { m_iTfLiveIdx = idx; }
+private:
+    int m_iTfLiveIdx;
 };
 
 class ViewTensorBoard : public QWidget
@@ -41,7 +45,7 @@ public:
     ViewTensorBoard(QWidget *parent = NULL);
     ~ViewTensorBoard() = default;
     
-    void CreateJobItems(const vector<string>& jobs);
+    vector<QTreeWidgetItem*> CreateJobItems(const vector<string>& jobs);
 
     QTreeWidget* GetTwJobsTree() { return viewTimeSeries->GetTwJobsTree(); }
 

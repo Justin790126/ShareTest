@@ -23,10 +23,12 @@ void ViewTensorBoard::widgets()
 
 }
 
-void ViewTensorBoard::CreateJobItems(const vector<string>& jobs)
+vector<QTreeWidgetItem*> ViewTensorBoard::CreateJobItems(const vector<string>& jobs)
 {
     QTreeWidget* tw = viewTimeSeries->GetTwJobsTree();
-
+    vector<QTreeWidgetItem*> items;
+    items.reserve(jobs.size());
+    int idx = 0;
     // iterate jobs and create QTreeWidgetItem in tw
     for (const auto& job : jobs)
     {
@@ -35,7 +37,12 @@ void ViewTensorBoard::CreateJobItems(const vector<string>& jobs)
         // set item checkable
         
         item->setCheckState(0, Qt::Unchecked);
+        item->SetTfLiveIdx(idx);
+        items.emplace_back(item);
+
+        idx++;
     }
+    return items;
 }
 
 QWidget* ViewTensorBoard::CreateChartSection(QString title, ChartInfo* chartInfo)
