@@ -10,6 +10,8 @@
 #include <QCheckBox>
 #include <QFile>
 #include <QTextStream>
+#include <QLabel>
+#include <QGroupBox>
 #include "qcustomplot.h"
 #include <dirent.h>
 #include <fstream>
@@ -23,7 +25,8 @@ class ProcessModel : public QAbstractTableModel {
     Q_OBJECT
 public:
     ProcessModel(QObject* parent = 0)
-        : QAbstractTableModel(parent), selectedPid(-1), recordToFile(false) {}
+        : QAbstractTableModel(parent), selectedPid(-1), recordToFile(false),
+          maxCpuUsage(0.0), maxMemoryUsage(0) {}
 
     struct UsageData {
         double cpuUsage;
@@ -74,6 +77,8 @@ public:
         if (ok && newPid != selectedPid) {
             selectedPid = newPid;
             usageHistory.clear(); // Clear history when PID changes
+            maxCpuUsage = 0.0;    // Reset max values when PID changes
+            maxMemoryUsage = 0;
         } else if (!ok) {
             selectedPid = -1; // Invalid PID filter clears selection
         }
@@ -106,7 +111,7 @@ public:
                 info.memoryUsage = getMemoryUsage(pid);
                 processes.append(info);
 
-                // Update usage history for selected PID
+                // Update usage history and max values for selected PID
                 if (pid == selectedPid) {
                     qint64 time = QDateTime::currentMSecsSinceEpoch();
                     UsageData usage;
@@ -114,8 +119,11 @@ public:
                     usage.memoryUsage = info.memoryUsage;
                     usageHistory[time / 1000.0] = usage;
 
+                    // Update maximum values
+                    maxCpuUsage = qMax(maxCpuUsage, info.cpuUsage);
+                    maxMemoryUsage = qMax(maxMemoryUsage, info.memoryUsage);
+
                     if (recordToFile) {
-                        // Updated file name format: username_processname_pid_usage.txt
                         QString filename = QString("%1_%2_%3_usage.txt")
                                               .arg(username)
                                               .arg(name)
@@ -143,6 +151,8 @@ public:
     }
 
     QMap<double, UsageData> getUsageHistory() const { return usageHistory; }
+    double getMaxCpuUsage() const { return maxCpuUsage; }
+    long getMaxMemoryUsage() const { return maxMemoryUsage; }
 
 private:
     struct ProcessInfo {
@@ -158,6 +168,8 @@ private:
     pid_t selectedPid;
     QMap<double, UsageData> usageHistory;
     bool recordToFile;
+    double maxCpuUsage;    // Maximum CPU usage for selected PID
+    long maxMemoryUsage;   // Maximum memory usage for selected PID
 
     QString getUsername(pid_t pid) {
         std::ostringstream path;
@@ -297,13 +309,34 @@ public:
         plot->graph(0)->setName("Memory");
         plot->setMinimumHeight(200);
 
+        // Right layout with QGroupBox
+        QWidget* rightWidget = new QWidget(this);
+        
+        QVBoxLayout* vlytRight = new QVBoxLayout;
+        
+        QGroupBox* gpbRtStatistics = new QGroupBox("Live Statistics", this);
+        QVBoxLayout* statsLayout = new QVBoxLayout;
+        gpbRtStatistics->setLayout(statsLayout);
+
+        // Labels for max CPU and memory usage
+        maxCpuLabel = new QLabel("Max CPU Usage: 0.00 %", this);
+        maxMemoryLabel = new QLabel("Max Memory Usage: 0 KB", this);
+        statsLayout->addWidget(maxCpuLabel);
+        statsLayout->addWidget(maxMemoryLabel);
+        statsLayout->addStretch(); // Push labels to the top
+
+        vlytRight->addWidget(gpbRtStatistics);
+        rightWidget->setLayout(vlytRight);
+
+
         // Splitter
         splitter = new QSplitter(Qt::Horizontal, this);
         QWidget* leftWidget = new QWidget(this);
         leftWidget->setLayout(leftLayout);
         splitter->addWidget(leftWidget);
         splitter->addWidget(plot);
-        QList<int> sizes = {400, 700};
+        splitter->addWidget(rightWidget);
+        QList<int> sizes = {400, 700, 200};
         splitter->setSizes(sizes);
 
         // Main layout
@@ -313,7 +346,6 @@ public:
         QStatusBar* statusBar = new QStatusBar;
         statusBar->setFixedHeight(40);
         mainLayout->addWidget(statusBar);
-        // set text in statusBar
         statusBar->showMessage("Ready");
     }
 
@@ -327,6 +359,8 @@ public:
     QTableView* getTableView() const { return tableView; }
     QCustomPlot* getPlot() const { return plot; }
     QCheckBox* getRecordCheckBox() const { return recordCheckBox; }
+    QLabel* getMaxCpuLabel() const { return maxCpuLabel; }         // Getter for max CPU label
+    QLabel* getMaxMemoryLabel() const { return maxMemoryLabel; }   // Getter for max memory label
 
 private:
     QTableView* tableView;
@@ -336,6 +370,8 @@ private:
     QCustomPlot* plot;
     QCheckBox* recordCheckBox;
     QSplitter* splitter;
+    QLabel* maxCpuLabel;      // Label for max CPU usage
+    QLabel* maxMemoryLabel;   // Label for max memory usage
 };
 
 // Controller: Manages interactions, plotting, and recording
@@ -376,6 +412,7 @@ private slots:
                               view->getPidFilterEdit()->text(),
                               view->getUserFilterEdit()->text());
         updatePlot();
+        updateStatistics(); // Update live statistics
     }
 
     void updatePlot() {
@@ -395,6 +432,14 @@ private slots:
         plot->xAxis->setRange(0, time.isEmpty() ? 10 : time.last() + 1);
         plot->yAxis->setRange(0, mem.isEmpty() ? 1000 : *std::max_element(mem.begin(), mem.end()) * 1.1);
         plot->replot();
+    }
+
+    void updateStatistics() {
+        // Update the labels with max CPU and memory usage
+        double maxCpu = model->getMaxCpuUsage();
+        long maxMemory = model->getMaxMemoryUsage();
+        view->getMaxCpuLabel()->setText(QString("Max CPU Usage: %1 %").arg(maxCpu, 0, 'f', 2));
+        view->getMaxMemoryLabel()->setText(QString("Max Memory Usage: %1 KB").arg(maxMemory));
     }
 
 private:
