@@ -28,6 +28,22 @@ target_link_libraries(${PROJECT_NAME} ${QT_LIBRARIES})
 
 
 
+set(SOURCES1
+    test.cpp
+    qcustomplot.cpp
+)
+
+set(HEADERS
+    qcustomplot.h
+)
+
+qt4_wrap_cpp(SOURCES1 ${HEADERS})
+
+
+add_executable(test ${SOURCES1})
+target_link_libraries(test ${QT_LIBRARIES})
+
+
 
 
 # cmake_minimum_required(VERSION 3.10)

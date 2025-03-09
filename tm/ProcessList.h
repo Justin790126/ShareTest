@@ -308,6 +308,7 @@ public:
         plot->legend->setVisible(true);
         plot->graph(0)->setName("Memory");
         plot->setMinimumHeight(200);
+        plot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignBottom | Qt::AlignRight);
 
         // Right layout with QGroupBox
         QWidget* rightWidget = new QWidget(this);
