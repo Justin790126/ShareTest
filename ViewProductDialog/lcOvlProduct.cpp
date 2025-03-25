@@ -3,32 +3,35 @@
 lcOvlProduct::lcOvlProduct()
 {
 
-    model = new ModelOvlConf();
-    // model->SetFname("rcsv.txt");
-    // connect(model, SIGNAL(allPageReaded()), this, SLOT(handelRcsvReaded()));
-    // model->start();
-    // ModelOvlConf *cf = (ModelOvlConf*)QObject::sender();
-    // cout << "handleRcsv: " << cf->GetFname()  << endl;
+    // model = new ModelOvlConf();
+    // // model->SetFname("rcsv.txt");
+    // // connect(model, SIGNAL(allPageReaded()), this, SLOT(handelRcsvReaded()));
+    // // model->start();
+    // // ModelOvlConf *cf = (ModelOvlConf*)QObject::sender();
+    // // cout << "handleRcsv: " << cf->GetFname()  << endl;
 
-    view = new ViewProductDialog();
-    connect(view, SIGNAL(addNewProduct()), this, SLOT(handleAddNewProduct()));
-    connect(view, SIGNAL(loadConfig()), this, SLOT(handleLoadOvlConfig()));
-    connect(view, SIGNAL(saveConfig()), this, SLOT(handleSaveOvlConfig()));
-    connect(view, SIGNAL(delSelProduct()), this, SLOT(handleDelSelProduct()));
-    connect(view, SIGNAL(searchKeyChanged(const QString &)), this, SLOT(handleSearchKeyChanged(const QString &)));
-    if (view->exec())
-    {
-        cout << "Selection accept" << endl;
-        QTreeWidget *wid = view->GetProductTreeWidget();
-        // get selected item
-        QTreeWidgetItem *item = wid->currentItem();
-        if (item)
-        {
-            ProductTreeItem *product = (ProductTreeItem *)item;
-            OvlProductInfo *info = product->GetProductInfo();
-            cout << *info << endl;
-        }
-    }
+    // view = new ViewProductDialog();
+    // connect(view, SIGNAL(addNewProduct()), this, SLOT(handleAddNewProduct()));
+    // connect(view, SIGNAL(loadConfig()), this, SLOT(handleLoadOvlConfig()));
+    // connect(view, SIGNAL(saveConfig()), this, SLOT(handleSaveOvlConfig()));
+    // connect(view, SIGNAL(delSelProduct()), this, SLOT(handleDelSelProduct()));
+    // connect(view, SIGNAL(searchKeyChanged(const QString &)), this, SLOT(handleSearchKeyChanged(const QString &)));
+    // if (view->exec())
+    // {
+    //     cout << "Selection accept" << endl;
+    //     QTreeWidget *wid = view->GetProductTreeWidget();
+    //     // get selected item
+    //     QTreeWidgetItem *item = wid->currentItem();
+    //     if (item)
+    //     {
+    //         ProductTreeItem *product = (ProductTreeItem *)item;
+    //         OvlProductInfo *info = product->GetProductInfo();
+    //         cout << *info << endl;
+    //     }
+    // }
+
+    ViewLytMergeDialog* lytMgD = new ViewLytMergeDialog;
+    lytMgD->exec();
 }
 
 lcOvlProduct::~lcOvlProduct()

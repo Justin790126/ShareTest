@@ -7,6 +7,7 @@ using namespace std;
 
 #include "ModelOvlConf.h"
 #include "ViewProductDialog.h"
+#include "ViewLytMergeDialog.h"
 
 class lcOvlProduct : public QObject
 {
