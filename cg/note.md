@@ -16,3 +16,10 @@
 ## Equivalent vector
 
 * same magnitude and the same direction
+
+## Classify a point relative to a line segment
+
+using cross product
+
+* cross product > 0, left side
+* cross product < 0, right side

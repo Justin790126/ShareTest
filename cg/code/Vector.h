@@ -50,7 +50,7 @@ namespace jmk {
             Vector(coordinate_type _x, coordinate_type _y) : coords({_x, _y}) {}
 
             // Equality check
-            bool operator==(const Vector<coordinate_type, dimension>&);
+            bool operator==(const Vector<coordinate_type, dimension>&) const;
 
             // Not equal
             bool operator!=(const Vector<coordinate_type, dimension>&);
@@ -83,7 +83,7 @@ namespace jmk {
 
 
     template<class coordinate_type, size_t dimension>
-    inline bool Vector<coordinate_type, dimension>::operator == (const Vector<coordinate_type, dimension>& _other)
+    inline bool Vector<coordinate_type, dimension>::operator == (const Vector<coordinate_type, dimension>& _other) const
     {
         for (size_t i = 0; i < dimension; i++) {
             if (!isEqualD(coords[i], _other.coords[i])) {
@@ -188,7 +188,7 @@ namespace jmk {
 
     }
 
-    float crossroduct2D(Vector2f v1, Vector2f v2);
+    float crossProduct2D(Vector2f v1, Vector2f v2);
 
     Vector3f crossProduct2D(Vector3f v1, Vector3f v2);
 

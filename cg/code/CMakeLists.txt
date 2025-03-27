@@ -10,3 +10,7 @@ set(SOURCES
 
 add_executable(${PROJECT_NAME}
     ${SOURCES})
+
+add_library(${PROJECT_NAME}lib
+    Vector.cpp
+    GeoUtils.cpp)
