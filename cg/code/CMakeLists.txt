@@ -13,4 +13,5 @@ add_executable(${PROJECT_NAME}
 
 add_library(${PROJECT_NAME}lib
     Vector.cpp
-    GeoUtils.cpp)
+    GeoUtils.cpp
+    Line.h)
