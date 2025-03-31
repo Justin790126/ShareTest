@@ -14,12 +14,14 @@ set(SOURCES
     ModelOvlConf.cpp
     ViewProductDialog.cpp
     ViewLytMergeDialog.cpp
+    ViewGaugeSetupDialog.cpp
 )
 
 set(HEADERS
     lcOvlProduct.h
     ViewProductDialog.h
     ViewLytMergeDialog.h
+    ViewGaugeSetupDialog.h
     ModelOvlConf.h
 )
 

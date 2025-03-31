@@ -31,7 +31,10 @@ lcOvlProduct::lcOvlProduct()
     // }
 
     ViewLytMergeDialog* lytMgD = new ViewLytMergeDialog;
-    lytMgD->exec();
+    lytMgD->show();
+
+    ViewGaugeSetupDialog* gs = new ViewGaugeSetupDialog;
+    gs->show();
 }
 
 lcOvlProduct::~lcOvlProduct()

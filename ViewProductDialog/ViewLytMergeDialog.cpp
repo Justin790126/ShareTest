@@ -2,7 +2,7 @@
 
 /*
 
-    Main Product Dialog
+    ViewLytMergeDialog
 
  */
 ViewLytMergeDialog::ViewLytMergeDialog(QWidget *parent) : QDialog(parent)
