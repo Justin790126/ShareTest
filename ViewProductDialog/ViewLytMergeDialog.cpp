@@ -16,7 +16,7 @@ ViewLytMergeDialog::ViewLytMergeDialog(QWidget *parent) : QDialog(parent)
 void ViewLytMergeDialog::Connect()
 {
     connect(btnMergeStepMapping, SIGNAL(clicked()), this, SLOT(handleToggleLyrMappingWidget()));
-    connect(btnMergeStepOffsetRot, SIGNAL(clicked()), this, SLOT(handleToggleLyrOffsetRotWidget()));
+    // connect(btnMergeStepOffsetRot, SIGNAL(clicked()), this, SLOT(handleToggleLyrOffsetRotWidget()));
     // connect(btnOk, SIGNAL(clicked()), this, SLOT(accept()));
     // connect(btnCancel, SIGNAL(clicked()), this, SLOT(reject()));
     // connect(btnLoad, SIGNAL(clicked()), this, SIGNAL(loadConfig()));
@@ -31,6 +31,7 @@ void ViewLytMergeDialog::handleToggleLyrMappingWidget()
 {
     bool vis = !widLytMapping->isVisible();
     widLytMapping->setVisible(vis);
+    widLytOffsetRot->setVisible(vis);
 }
 
 void ViewLytMergeDialog::handleToggleLyrOffsetRotWidget()
@@ -59,15 +60,15 @@ void ViewLytMergeDialog::Widgets()
     btnMergeStepMapping->setIcon(rightArrowIcon);
 
     tbLyrMapping = new QTableWidget();
-    tbLyrMapping->setColumnCount(2);
-    tbLyrMapping->setHorizontalHeaderLabels(QStringList() << "Possible Layers" << "Renamed Layers");
+    tbLyrMapping->setColumnCount(3);
+    tbLyrMapping->setHorizontalHeaderLabels(QStringList() << "Layout Name" << "All Layers" << "Renamed Layers");
 
     widLytMapping = new QWidget;
     widLytMapping->setVisible(false);
 
     twLytOffsetRotation = new QTreeWidget();
-    twLytOffsetRotation->setColumnCount(3);
-    twLytOffsetRotation->setHeaderLabels(QStringList() << "Offset X(um)" << "Offset Y(um)" << "Rotation");
+    twLytOffsetRotation->setColumnCount(4);
+    twLytOffsetRotation->setHeaderLabels(QStringList() << "Layout Name" << "Offset X(um)" << "Offset Y(um)" << "Rotation");
 
     btnMergeStepOffsetRot = new QPushButton();
     btnMergeStepOffsetRot->setIcon(rightArrowIcon);
@@ -117,14 +118,14 @@ void ViewLytMergeDialog::Layout()
                     vlytLytMapping->addWidget(new QLabel("Rename layers"));
                     vlytLytMapping->addWidget(tbLyrMapping);
                 }
-                QVBoxLayout *vlytOffsetRot = new QVBoxLayout;
-                {
-                    vlytOffsetRot->addStretch();
-                    vlytOffsetRot->addWidget(btnMergeStepOffsetRot);
-                    vlytOffsetRot->addStretch();
-                }
+                // QVBoxLayout *vlytOffsetRot = new QVBoxLayout;
+                // {
+                //     vlytOffsetRot->addStretch();
+                //     vlytOffsetRot->addWidget(btnMergeStepOffsetRot);
+                //     vlytOffsetRot->addStretch();
+                // }
                 hlytLytMapping->addLayout(vlytLytMapping);
-                hlytLytMapping->addLayout(vlytOffsetRot);
+                // hlytLytMapping->addLayout(vlytOffsetRot);
             }
 
             widLytMapping->setLayout(hlytLytMapping);
