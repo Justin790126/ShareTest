@@ -36,6 +36,7 @@ T GetUint(std::ifstream& file)
     char c;
     do {
         file.get(c);
+        // printf("0x%02x ", (unsigned char)c);
         v += static_cast<T>(c & 0x7f) * vm;
         vm <<= 7;
     } while ((c & 0x80) != 0);
@@ -45,7 +46,9 @@ T GetUint(std::ifstream& file)
 
 double GetReal(ifstream& file)
 {
-  unsigned int type = GetUint<unsigned int>(file);
+  unsigned int typeB = GetUint<unsigned int>(file);
+  unsigned int type = typeB & 0x07;
+  // cout << "type: " << type << endl;
   if (type == 0) {
     return double(GetUint<unsigned long>(file));
   }
@@ -108,20 +111,18 @@ int main(int argc, char **argv) {
     cout << "table offset not at end" << endl;
     exit(-1);
   }
+  printf("\n");
 
   // file.get(ch);
 
-  while(true) {
+  while(file.get(ch)) {
 
-    if (!file.get(ch)) {
-      cout << "Get char failed "<< endl;
-      break;
-    }
+    // printf("0x%02x ", (unsigned char)ch);
 
     if (ch == 0 /*PAD*/) {
       cout << "[PAD] hit" << endl;
       // file.get(ch);
-    } else if (ch == 2 /*END*/) {
+    } else if (ch == 0x02 /*END*/) {
       cout << "[END] hit" << endl;
       break;
     } else if (ch ==3 || ch == 4 /*CELLNAME*/) {
