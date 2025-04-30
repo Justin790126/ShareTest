@@ -1,6 +1,7 @@
 # CMakeLists.txt
 cmake_minimum_required(VERSION 3.5)
 project(cg)
+add_compile_options(-fpermissive)
 
 # set(CMAKE_CXX_STANDARD 11)
 
@@ -15,4 +16,6 @@ add_library(${PROJECT_NAME}lib
     Vector.cpp
     GeoUtils.cpp
     Line.h
-    Plane.h)
+    Plane.h
+    Intersection.cpp
+    Angle.cpp)

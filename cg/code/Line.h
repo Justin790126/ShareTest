@@ -15,23 +15,27 @@ namespace jmk {
 
             Line(Vector<coord_type, dim>& p1, Vector<coord_type, dim>& p2) {
                 dir = p2 - p1;
+                dir.normalize();
                 point = p1;
             }
 
-            Vector<coord_type, dim> getPoint();
+            Vector<coord_type, dim> getPoint() const;
 
-            Vector<coord_type, dim> getDir();
+            Vector<coord_type, dim> getDir() const;
 
     };
 
+    typedef Line<float, DIM2> Line2d;
+    typedef Line<float, DIM2> Line3d;
+
     template<class coord_type, size_t dim>
-    inline Vector<coord_type, dim> Line<coord_type, dim>::getPoint()
+    inline Vector<coord_type, dim> Line<coord_type, dim>::getPoint() const
     {
         return point;
     }
 
     template<class coord_type, size_t dim>
-    inline Vector<coord_type, dim> Line<coord_type, dim>::getDir()
+    inline Vector<coord_type, dim> Line<coord_type, dim>::getDir() const
     {
         return dir;
     }
