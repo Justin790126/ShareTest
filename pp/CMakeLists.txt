@@ -69,6 +69,37 @@ add_executable(${PROJECT_NAME}4
     ${SOURCES4})
 target_link_libraries(${PROJECT_NAME}4 ${QT_LIBRARIES})
 
+
+
+set(SOURCES5
+    wid.cpp
+    ra.cpp
+    ModelTreeGen.cpp
+)
+set(HEADERS5
+    ra.h
+    ModelTreeGen.h
+)
+qt4_wrap_cpp(SOURCES5 ${HEADERS5})
+add_executable(${PROJECT_NAME}5
+    ${SOURCES5})
+target_link_libraries(${PROJECT_NAME}5 ${QT_LIBRARIES})
+
+
+
+set(SOURCES6
+    it.cpp
+    ra.cpp
+    ModelTreeGen.cpp
+)
+set(HEADERS6
+    ra.h
+    ModelTreeGen.h
+)
+qt4_wrap_cpp(SOURCES6 ${HEADERS6})
+add_executable(${PROJECT_NAME}6
+    ${SOURCES5})
+target_link_libraries(${PROJECT_NAME}6 ${QT_LIBRARIES})
 # cmake_minimum_required(VERSION 3.10)
 # project(yaml_parser)
 # set(CMAKE_CXX_STANDARD 11)
