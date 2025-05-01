@@ -28,7 +28,13 @@ namespace jmk
                 d = dotProduct(normal, _p1);
             }
 
+            Vector3f getNormal() const {
+                return normal;
+            }
+
     };
+
+    typedef Plane<float> Planef;
 };
 
 #endif /* PLANE_H */

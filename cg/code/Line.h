@@ -26,7 +26,7 @@ namespace jmk {
     };
 
     typedef Line<float, DIM2> Line2d;
-    typedef Line<float, DIM2> Line3d;
+    typedef Line<float, DIM3> Line3d;
 
     template<class coord_type, size_t dim>
     inline Vector<coord_type, dim> Line<coord_type, dim>::getPoint() const
@@ -39,6 +39,7 @@ namespace jmk {
     {
         return dir;
     }
+
 
 
 }
