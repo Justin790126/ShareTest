@@ -44,9 +44,9 @@ private:
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
-    const int imageWidth = 2048;
-    const int imageHeight = 2048;
-    const int tileSize = 256;
+    const int imageWidth = 4096;
+    const int imageHeight = 4096;
+    const int tileSize = 2048;
 
     QImage outputImage(imageWidth, imageHeight, QImage::Format_ARGB32);
     outputImage.fill(qRgba(0, 0, 0, 0));

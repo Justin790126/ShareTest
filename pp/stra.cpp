@@ -8,8 +8,8 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     // Define the large image dimensions
-    const int imageWidth = 2048;
-    const int imageHeight = 2048;
+    const int imageWidth = 4096;
+    const int imageHeight = 4096;
     const int tileSize = 256;
 
     // Create the output image

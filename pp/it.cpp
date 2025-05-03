@@ -3,6 +3,7 @@
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGraphicsItem>
+#include <QtGui/QGraphicsSceneEvent> // Added for QGraphicsSceneMouseEvent
 #include <QtCore/QThreadPool>
 #include <QtCore/QRunnable>
 #include <QStyleOption>
@@ -122,7 +123,6 @@ protected:
         if (event->button() == Qt::LeftButton) {
             isDragging = true;
             lastPos = event->scenePos();
-            // Simulate resize on right-click for testing
         } else if (event->button() == Qt::RightButton) {
             // Toggle between two sizes to simulate resizeEvent
             if (imageWidth == 2048) {

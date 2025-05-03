@@ -5,8 +5,9 @@ project(ra)
 # Check for nullptr support
 
 
-find_package(Qt4 4.8 REQUIRED QtCore QtGui)
+find_package(Qt4 4.8 REQUIRED QtCore QtGui QtOpenGL)
 include(${QT_USE_FILE})
+find_package(OpenGL REQUIRED)
 
 set(SOURCES1
     main.cpp
@@ -98,8 +99,10 @@ set(HEADERS6
 )
 qt4_wrap_cpp(SOURCES6 ${HEADERS6})
 add_executable(${PROJECT_NAME}6
-    ${SOURCES5})
+    ${SOURCES6})
 target_link_libraries(${PROJECT_NAME}6 ${QT_LIBRARIES})
+
+
 # cmake_minimum_required(VERSION 3.10)
 # project(yaml_parser)
 # set(CMAKE_CXX_STANDARD 11)
