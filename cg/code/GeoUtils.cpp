@@ -50,5 +50,34 @@ namespace jmk
         }
         return (int)RELATIVE_POSITION::BETWEEN;
     }
+
+    bool collinear(const Vector3f& a, const Vector3f& b)
+    {
+        auto v1 = a[X] * b[Y] - a[Y] * b[X];
+        auto v2 = a[Y] * b[Z] - a[Z] * b[Y];
+        auto v3 = a[X] * b[Z] - a[Z] * b[X];
+        return isEqualD(v1, ZERO) && isEqualD(v2, ZERO) && isEqualD(v3, ZERO);
+    }
+
+    bool collinear(const Point3d& a, const Point3d& b, const Point3d& c)
+    {
+        auto AB = b-a;
+        auto AC = c-a;
+        return collinear(AB, AC);
+    }
+
+    bool coplaner(const Point3d& a, const Point3d& b, const Point3d& c, const Point3d& d)
+    {
+        auto AB = b-a;
+        auto AC = c-a;
+        auto AD = d-a;
+        return coplaner(AB,AC,AD);
+    }
+
+    bool coplaner(const Vector3f& a, const Vector3f& b, const Vector3f& c)
+    {
+        float value = scalerTripleProduct(a, b, c);
+        return isEqualD(value, ZERO);
+    }
 }
 
