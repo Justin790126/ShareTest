@@ -23,3 +23,10 @@ using cross product
 
 * cross product > 0, left side
 * cross product < 0, right side
+
+## Dot product between a point and plane
+
+Ax+By+Cz = D
+(A, B, C) . (x, y, z) = D
+
+* Dot product between a point on plane and normal vector on plane means the constant value D describe in plane

@@ -30,7 +30,7 @@ bool jmk::Intersection(const jmk::Point2d &a, const jmk::Point2d &b,
 
 bool jmk::Intersection(const jmk::Point2d &a, const jmk::Point2d &b,
                        const jmk::Point2d &c, const jmk::Point2d &d,
-                       const jmk::Point2d &intersection) {
+                       jmk::Point2d &intersection) {
   Vector2f AB = b - a;
   Vector2f CD = d - c;
 
@@ -57,7 +57,7 @@ bool jmk::Intersection(const jmk::Point2d &a, const jmk::Point2d &b,
 }
 
 bool jmk::Intersection(const jmk::Line2d &l1, const jmk::Line2d &l2,
-                       const jmk::Point2d &intersection) {
+                       jmk::Point2d &intersection) {
 
   auto l1s = l1.getPoint();
   auto l1e = l1s + l1.getDir();
@@ -65,4 +65,23 @@ bool jmk::Intersection(const jmk::Line2d &l1, const jmk::Line2d &l2,
   auto l2e = l2s + l2.getDir();
 
   return Intersection(l1s, l1e, l2s, l2e, intersection);
+}
+
+bool jmk::Intersection(const jmk::Line3d &line, const jmk::Planef &plane,
+                       jmk::Point3d &point) {
+  auto n = plane.getNormal();
+  auto D = plane.getD();
+  auto d = line.getDir();
+  auto p = line.getPoint();
+  auto  nd = dotProduct(n,d);
+  auto dot = dotProduct(n, d);
+  if (!isEqualD(dot, ZERO)) {
+    auto t = (-1*dotProduct(n, p) + D)/nd;
+    point.assign(X, p[X]+t*d[X]);
+    point.assign(Y, p[Y]+t*d[Y]);
+    point.assign(Z, p[Z]+t*d[Z]);
+    return true;
+  } else {
+    return false;
+  }
 }
