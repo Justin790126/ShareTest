@@ -23,6 +23,9 @@ namespace jmk {
 
             Vector<coord_type, dim> getDir() const;
 
+            void setDirection(Vector<coord_type, dim>& d);
+
+            void setPoint(Vector<coord_type, dim>& p);
     };
 
     typedef Line<float, DIM2> Line2d;
@@ -40,6 +43,17 @@ namespace jmk {
         return dir;
     }
 
+    template<class coord_type, size_t dim>
+    inline void Line<coord_type, dim>::setDirection(Vector<coord_type, dim>& d) 
+    {
+        dir = d;
+    }
+
+    template<class coord_type, size_t dim>
+    inline void Line<coord_type, dim>::setPoint(Vector<coord_type, dim>& p) 
+    {
+        point = p;
+    }
 
 
 }

@@ -85,3 +85,31 @@ bool jmk::Intersection(const jmk::Line3d &line, const jmk::Planef &plane,
     return false;
   }
 }
+
+bool jmk::intersect(const jmk::Planef& p1 ,jmk::Planef& p2, jmk::Line3d& l)
+{
+  auto n1 = p1.getNormal();
+  auto n2 = p2.getNormal();
+  auto d1 = p1.getD();
+  auto d2 = p2.getD();
+
+  auto direction = crossProduct3D(n1, n2);
+
+  if (isEqualD(direction.magnitude(), ZERO)) {
+    return false;
+  }
+
+  auto n1n2 = dotProduct(n1, n2);
+  auto n1n2_2 = n1n2 * n1n2;
+
+  auto a = (d2*n1n2-d1)/(n1n2_2 -1);
+  auto b = (d1*n1n2-d2)/(n1n2_2 -1);
+
+  auto point = n1*a + n2*b;
+
+  l.setPoint(point);
+  direction.normalize();
+  l.setDirection(direction);
+
+  return true;
+}

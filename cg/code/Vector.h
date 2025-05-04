@@ -61,6 +61,8 @@ namespace jmk {
             // Subtraction
             Vector<coordinate_type, dimension> operator-(const Vector<coordinate_type, dimension>&) const;
 
+            Vector<coordinate_type, dimension> operator*(float scalar) const;
+
             // Less than operator
             bool operator<(const Vector<coordinate_type, dimension>&) const;
 
@@ -115,6 +117,16 @@ namespace jmk {
         std::array<coordinate_type, dimension> temp_array;
         for (size_t i = 0; i < dimension; i++) {
             temp_array[i] = coords[i] - _other.coords[i];
+        }
+        return Vector<coordinate_type, dimension>(temp_array);
+    }
+
+    template<class coordinate_type, size_t dimension>
+    inline Vector<coordinate_type, dimension> Vector<coordinate_type, dimension>::operator*(float scalar) const
+    {
+        std::array<coordinate_type, dimension> temp_array;
+        for (size_t i = 0; i < dimension; i++) {
+            temp_array[i] *= scalar;
         }
         return Vector<coordinate_type, dimension>(temp_array);
     }
