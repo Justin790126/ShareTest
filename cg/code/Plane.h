@@ -12,6 +12,13 @@ namespace jmk
         Vector3f normal;
         float d = 0;
 
+        /*
+            Ax+By+Cz = d
+            normal: (A, B, C)
+            d: dot product of input point 
+        */ 
+
+
         public:
             Plane() {}
 
@@ -30,6 +37,10 @@ namespace jmk
 
             Vector3f getNormal() const {
                 return normal;
+            }
+
+            float getD() const {
+                return d;
             }
 
     };
