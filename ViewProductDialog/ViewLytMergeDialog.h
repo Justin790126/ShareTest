@@ -4,6 +4,14 @@
 #include <QtGui>
 #include <iostream>
 
+/*
+    Features TODO:
+        1. Change dbu
+        2. Merge layout
+        3. Preview merge result with bbox
+        4. Extract bbox column
+*/
+
 class ViewLytMergeDialog : public QDialog
 {
     Q_OBJECT
@@ -15,24 +23,14 @@ public:
     QFrame *CreateVerticalSeparator();
 
 private slots:
-    void handleToggleLyrMappingWidget();
-    void handleToggleLyrOffsetRotWidget();
 
 private:
-    QPushButton *btnOk = NULL;
+    QPushButton *btnMerge = NULL;
+    QPushButton *btnPreview = NULL;
     QPushButton *btnCancel = NULL;
     QPushButton *btnLoad = NULL;
-    QToolButton* tlbtnMerge = NULL;
-    QPushButton *btnMergeStepMapping = NULL;
-    QPushButton *btnMergeStepOffsetRot = NULL;
-
-    QTreeWidget *twLytPreLoad = NULL;
-    QWidget *widLytMapping = NULL;
-    QTableWidget *tbLyrMapping = NULL;
-    QWidget* widLytOffsetRot = NULL;
-    QTreeWidget *twLytOffsetRotation = NULL;
-    QLineEdit *leLytOutName = NULL;
-
+   
+    QTreeWidget *twMergeSetting = NULL;
     QProgressBar *pgMergeState = NULL;
 
     void Widgets();
