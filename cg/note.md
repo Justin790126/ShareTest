@@ -30,3 +30,10 @@ Ax+By+Cz = D
 (A, B, C) . (x, y, z) = D
 
 * Dot product between a point on plane and normal vector on plane means the constant value D describe in plane
+
+## Art gallery theorem
+
+Aim to find number of guard in garden --> number of triangle in guard
+
+* For simple polygons, number of triangles is N-2, where N is the number of edges in the polygon
+* Guards = n / 3, where n is number of edges in the polygon
