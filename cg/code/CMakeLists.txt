@@ -19,4 +19,5 @@ add_library(${PROJECT_NAME}lib
     Plane.h
     Intersection.cpp
     Angle.cpp
-    Polygon.h)
+    Polygon.h
+    Triangulation.cpp)
