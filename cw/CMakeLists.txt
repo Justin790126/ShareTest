@@ -11,12 +11,18 @@ include(${QT_USE_FILE})
 set(SOURCES
     main.cpp
     qcustomplot.cpp
+    lcChartWizard.cpp
+    ViewChartProps.cpp
     PropsSection.cpp
+    ViewLineChartProps.cpp
 )
 
 set(HEADERS
     PropsSection.h
+    lcChartWizard.h
+    ViewChartProps.h
     qcustomplot.h
+    ViewLineChartProps.h
 )
 
 qt4_wrap_cpp(SOURCES ${HEADERS})
