@@ -64,6 +64,12 @@ void lcChartWizard::ConnectGeneralProps()
   if (vcpGeneral) {
     connect(vcpGeneral, SIGNAL(chartTitleChanged(const QString &)), this,
             SLOT(handleGeneralTitleChanged(const QString &)));
+    connect(vcpGeneral, SIGNAL(xLabelChanged(const QString &)), this,
+            SLOT(handleGeneralXLabelChanged(const QString &)));
+    connect(vcpGeneral, SIGNAL(yLabelChanged(const QString &)), this,
+            SLOT(handleGeneralYLabelChanged(const QString &)));
+    connect(vcpGeneral, SIGNAL(legendVisibilityChanged(bool)), this,
+            SLOT(handleGeneralLegendVisibilityChanged(bool)));
   }
 }
 
@@ -76,6 +82,30 @@ void lcChartWizard::handleGeneralTitleChanged(const QString &title) {
     qcp->replot(); // Replot to reflect changes
   } else {
   } 
+}
+
+void lcChartWizard::handleGeneralXLabelChanged(const QString &label) {
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (qcp) {
+    qcp->xAxis->setLabel(label);
+    qcp->replot(); // Replot to reflect changes
+  }
+}
+
+void lcChartWizard::handleGeneralYLabelChanged(const QString &label) {
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (qcp) {
+    qcp->yAxis->setLabel(label);
+    qcp->replot(); // Replot to reflect changes
+  }
+}
+
+void lcChartWizard::handleGeneralLegendVisibilityChanged(bool visible) {
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (qcp) {
+    qcp->legend->setVisible(visible);
+    qcp->replot(); // Replot to reflect changes
+  }
 }
 
 void lcChartWizard::ConnectLineChartProps() {

@@ -83,6 +83,9 @@ private:
 
 private slots:
   void handleGeneralTitleChanged(const QString &title);
+  void handleGeneralXLabelChanged(const QString &label);
+  void handleGeneralYLabelChanged(const QString &label);
+  void handleGeneralLegendVisibilityChanged(bool visible);
 
   void handleLineChartSelection();
   void handleLineNameChanged(const QString &name);

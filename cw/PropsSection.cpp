@@ -59,10 +59,10 @@
         mainLayout->setVerticalSpacing(0);
         mainLayout->setContentsMargins(0, 0, 0, 0);
 
-        int row = 0;
-        mainLayout->addWidget(toggleButton, row, 0, 1, 1, Qt::AlignLeft);
-        mainLayout->addWidget(headerLine, row, 1, 1, 1);
-        mainLayout->addWidget(btnClose, row++, 2, 1, 1, Qt::AlignRight);
+        int row = 0;    
+        mainLayout->addWidget(toggleButton, row, 1, 1, 1, Qt::AlignLeft);
+        mainLayout->addWidget(headerLine, row, 2, 1, 1);
+        mainLayout->addWidget(btnClose, row++, 3, 1, 1, Qt::AlignRight);
         btnClose->setVisible(false);
         
         mainLayout->addWidget(contentArea, row, 0, 1, 3);

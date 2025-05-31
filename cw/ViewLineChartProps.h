@@ -5,7 +5,7 @@
 #include "qcustomplot.h"
 #include <QtGui>
 
-class ViewLineChartProps : public ViewChartProps
+class ViewLineChartProps : public PropsSection
 {
     Q_OBJECT
 public:
@@ -16,6 +16,8 @@ public:
     QComboBox* getDotStyleComboBox() const { return cbbDotStyle; }
     QDoubleSpinBox* getDotSizeSpinBox() const { return dsbDotSize; }
     QDoubleSpinBox* getLineWidthSpinBox() const { return dsbLineWidth; }
+
+    void UI();
 
 signals:
     void lineNameChanged(const QString& name);

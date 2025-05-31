@@ -1,9 +1,13 @@
 #include "ViewLineChartProps.h"
 
 ViewLineChartProps::ViewLineChartProps(const QString& title, const int animationDuration, QWidget* parent)
-    : ViewChartProps(title, animationDuration, parent)
+    : PropsSection(title, animationDuration, parent)
 {
-    // Constructor implementation
+    UI();
+}
+
+void ViewLineChartProps::UI()
+{
     QVBoxLayout *vlyt = new QVBoxLayout;
     {
         QHBoxLayout* hlytLineName = new QHBoxLayout;
