@@ -11,7 +11,8 @@ public:
 
     ~ViewChartProps();
 
-    // Additional methods specific to ViewChartProps can be added here
+private:
+    
 };
 
 

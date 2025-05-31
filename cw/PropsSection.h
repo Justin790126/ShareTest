@@ -52,6 +52,14 @@
 
     public:
         static const int DEFAULT_DURATION = 0;
+
+        void setExpanded(bool expanded) {
+            if (isExpanded != expanded) {
+                isExpanded = expanded;
+                toggleButton->setChecked(isExpanded);
+                handleToggle(isExpanded);
+            }
+        }
     
         // initialize PropsSection
         explicit PropsSection(const QString& title = "", const int animationDuration = DEFAULT_DURATION, QWidget* parent = 0);
