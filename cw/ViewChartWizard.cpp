@@ -1,30 +1,27 @@
 #include "ViewChartWizard.h"
+#include "ViewColorCombobox.h"
 
-ViewChartWizard::ViewChartWizard(QWidget* parent)
-    : QWidget(parent)
-{
-    UI();
+ViewChartWizard::ViewChartWizard(QWidget *parent) : QWidget(parent) {
+  UI();
 
-    resize(800, 400);
+  resize(800, 400);
 }
-ViewChartWizard::~ViewChartWizard()
-{
-    // Destructor implementation
+ViewChartWizard::~ViewChartWizard() {
+  // Destructor implementation
 }
-void ViewChartWizard::Widgets()
-{
-    // Create widgets for the chart wizard
-    // This method will create all necessary widgets for the wizard
+void ViewChartWizard::Widgets() {
+  // Create widgets for the chart wizard
+  // This method will create all necessary widgets for the wizard
 }
-void ViewChartWizard::Layouts()
-{
-    QSplitter *splt = new QSplitter(Qt::Horizontal, this);
+void ViewChartWizard::Layouts() {
+  QSplitter *splt = new QSplitter(Qt::Horizontal, this);
 
   vlytLeft = new QVBoxLayout;
   vlytLeft->setContentsMargins(0, 0, 0, 0);
   {
     vlytLeftProps = new QVBoxLayout;
     vlytLeft->addLayout(vlytLeftProps);
+
     vlytLeft->addStretch(5);
   }
 
@@ -49,8 +46,7 @@ void ViewChartWizard::Layouts()
   vlytMain->addWidget(splt);
   setLayout(vlytMain);
 }
-void ViewChartWizard::UI()
-{
-    Widgets();
-    Layouts();
+void ViewChartWizard::UI() {
+  Widgets();
+  Layouts();
 }

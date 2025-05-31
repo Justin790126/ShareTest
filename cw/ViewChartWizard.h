@@ -5,6 +5,8 @@
 #include "qcustomplot.h"
 #include <QtGui>
 
+
+
 class ViewChartWizard : public QWidget {
   Q_OBJECT
 public:
