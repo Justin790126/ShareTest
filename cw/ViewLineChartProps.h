@@ -3,6 +3,8 @@
 
 #include "ViewChartProps.h"
 
+#include <QtGui>
+
 class ViewLineChartProps : public ViewChartProps
 {
     Q_OBJECT
@@ -11,7 +13,12 @@ public:
 
     ~ViewLineChartProps();
 
+signals:
+    void lineNameChanged(const QString& name);
+
 private:
+    QLineEdit* leLineName;
+
 };
 
 #endif /* VIEW_LINE_CHART_PROPS_H */

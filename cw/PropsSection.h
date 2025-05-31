@@ -60,6 +60,9 @@
                 handleToggle(isExpanded);
             }
         }
+        void setTile(const QString& title) {
+            toggleButton->setText(title);
+        }
     
         // initialize PropsSection
         explicit PropsSection(const QString& title = "", const int animationDuration = DEFAULT_DURATION, QWidget* parent = 0);

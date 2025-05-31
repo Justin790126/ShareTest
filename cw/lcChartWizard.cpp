@@ -55,6 +55,49 @@ lcChartWizard::lcChartWizard(QWidget *parent) : QWidget(parent) {
   // signal / slot to handle user select the line chart
   connect(m_qcp, SIGNAL(selectionChangedByUser()), this,
           SLOT(handleLineChartSelection()));
+
+  ConnectLineChartProps();
+}
+
+void lcChartWizard::ConnectLineChartProps() {
+  // Connect signals from ViewLineChartProps to lcChartWizard
+  for (const auto &pair : m_vWidChartInfo) {
+    ViewLineChartProps *lineProps =
+        qobject_cast<ViewLineChartProps *>(pair.first);
+    if (lineProps) {
+      connect(lineProps, SIGNAL(lineNameChanged(const QString &)), this,
+              SLOT(handleLineNameChanged(const QString &)));
+    }
+  }
+}
+
+void lcChartWizard::handleLineNameChanged(const QString &name) {
+  // Handle the line name change here
+  QString tgtName = "";
+  if (name.isEmpty()) {
+    tgtName = "";
+  } else {
+    tgtName = name;
+  }
+
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  if (lps) {
+    lps->setTitle(tgtName); // Update the title of the ViewLineChartProps
+    // Find the corresponding ChartInfo based on the sender
+    for (const auto &pair : m_vWidChartInfo) {
+      if (pair.first == lps) {
+        ChartInfo *chartInfo = pair.second;
+        if (chartInfo) {
+          chartInfo->SetLegendName(tgtName);
+          // Update the legend name in the QCustomPlot
+          int graphIndex = chartInfo->GetGraphIndex();
+          m_qcp->graph(graphIndex)->setName(tgtName);
+          m_qcp->replot(); // Replot to reflect changes
+        }
+        break; // Exit loop after finding the first match
+      }
+    }
+  }
 }
 
 void lcChartWizard::handleLineChartSelection() {
@@ -113,11 +156,7 @@ void lcChartWizard::Widgets() {
 QWidget *lcChartWizard::CreateLineChartProps(ChartInfo *chartInfo) {
   ViewLineChartProps *section = new ViewLineChartProps(
       chartInfo ? chartInfo->GetLegendName() : "Default Title");
-  {
-    QVBoxLayout *vlyt = new QVBoxLayout;
-    vlyt->addWidget(new QLabel("Line Chart Properties", this));
-    section->setContentLayout(*vlyt);
-  }
+
   // Use chartInfo to draw line chart
   if (chartInfo) {
 
@@ -141,10 +180,11 @@ QWidget *lcChartWizard::CreateLineChartProps(ChartInfo *chartInfo) {
     // add scatter style to fill circle
     m_qcp->graph(graphIndx)->setScatterStyle(
         QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    // set legend name
+    m_qcp->graph(graphIndx)->setName(chartInfo->GetLegendName());
 
     QPen graphPen = chartInfo->GetPen();
     QColor graphColor = graphPen.color();
-    // 2. Calculate the complementary color
     QColor complementaryColor(255 - graphColor.red(), 255 - graphColor.green(),
                               255 - graphColor.blue());
     QCPSelectionDecorator *decorator = new QCPSelectionDecorator();

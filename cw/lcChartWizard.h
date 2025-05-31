@@ -74,6 +74,7 @@ private:
   void Widgets();
   void Layouts();
   void UI();
+  void ConnectLineChartProps();
 
   vector<pair<QWidget *, ChartInfo *>> m_vWidChartInfo;
 
@@ -81,6 +82,8 @@ private:
 
 private slots:
     void handleLineChartSelection();
+
+    void handleLineNameChanged(const QString &name);
 };
 
 #endif /* LC_CHARTWIZARD_H */
