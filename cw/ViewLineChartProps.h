@@ -26,8 +26,7 @@ signals:
     void showLineSegmentChanged(bool checked);
     void lineWidthChanged(double width);
     void lineColorChanged(const QString& color);
-
-
+    void showGraphChanged(bool checked);
 private:
     QLineEdit* leLineName;
     QComboBox* cbbDotStyle;
@@ -37,6 +36,7 @@ private:
     QDoubleSpinBox* dsbLineWidth;
 
     QLineEdit* leLineColor;
+    QCheckBox* chbShowGraph;
 };
 
 #endif /* VIEW_LINE_CHART_PROPS_H */

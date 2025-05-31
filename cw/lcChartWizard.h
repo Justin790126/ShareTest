@@ -88,6 +88,7 @@ private slots:
   void handleGeneralLegendVisibilityChanged(bool visible);
 
   void handleLineChartSelection();
+  void handleShowGraphChanged(bool checked);
   void handleLineNameChanged(const QString &name);
   void handleDotStyleChanged(int idx);
   void handleDotSizeChanged(double size);

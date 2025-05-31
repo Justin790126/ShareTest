@@ -10,6 +10,13 @@ void ViewLineChartProps::UI()
 {
     QVBoxLayout *vlyt = new QVBoxLayout;
     {
+        QHBoxLayout* hlytShowGraph = new QHBoxLayout;
+        {
+            chbShowGraph = new QCheckBox(tr("Show Graph"));
+            chbShowGraph->setChecked(true); // Default to checked
+            hlytShowGraph->addWidget(chbShowGraph);
+        }
+
         QHBoxLayout* hlytLineName = new QHBoxLayout;
         {
             QLabel* lblLineName = new QLabel(tr("Line Name:"));
@@ -85,7 +92,7 @@ void ViewLineChartProps::UI()
             hlytLineColor->addWidget(leLineColor);
         }
 
-
+        vlyt->addLayout(hlytShowGraph);
         vlyt->addLayout(hlytLineName);
         vlyt->addLayout(hlytDotStyle);
         vlyt->addLayout(hlytDotWidth);
@@ -93,6 +100,8 @@ void ViewLineChartProps::UI()
         vlyt->addLayout(hlytLineWidth);
         vlyt->addLayout(hlytLineColor);
 
+        connect(chbShowGraph, SIGNAL(toggled(bool)),
+                this, SIGNAL(showGraphChanged(bool)));
         connect(leLineName, SIGNAL(textChanged(const QString&)),
                 this, SIGNAL(lineNameChanged(const QString&)));
         connect(cbbDotStyle, SIGNAL(currentIndexChanged(int)),

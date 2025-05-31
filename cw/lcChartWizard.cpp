@@ -114,6 +114,8 @@ void lcChartWizard::ConnectLineChartProps() {
     ViewLineChartProps *lineProps =
         qobject_cast<ViewLineChartProps *>(pair.first);
     if (lineProps) {
+      connect(lineProps, SIGNAL(showGraphChanged(bool)), this,
+              SLOT(handleShowGraphChanged(bool)));
       connect(lineProps, SIGNAL(lineNameChanged(const QString &)), this,
               SLOT(handleLineNameChanged(const QString &)));
       connect(lineProps, SIGNAL(dotStyleChanged(int)), this,
@@ -248,6 +250,25 @@ void lcChartWizard::handleDotStyleChanged(int idx) {
     // set current style with new shape and current size
     qcp->graph(graphIndex)
         ->setScatterStyle(QCPScatterStyle(shape, currentStyle.size()));
+    qcp->replot(); // Replot to reflect changes
+  }
+}
+
+void lcChartWizard::handleShowGraphChanged(bool checked) {
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
+    }
+    int graphIndex = info->GetGraphIndex();
+    if (graphIndex < 0) {
+      return; // Exit if graph index is not found
+    }
+
+    // Show or hide the graph based on the checkbox state
+    qcp->graph(graphIndex)->setVisible(checked);
     qcp->replot(); // Replot to reflect changes
   }
 }
