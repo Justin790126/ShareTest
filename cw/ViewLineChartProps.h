@@ -2,7 +2,7 @@
 #define VIEW_LINE_CHART_PROPS_H
 
 #include "ViewChartProps.h"
-
+#include "qcustomplot.h"
 #include <QtGui>
 
 class ViewLineChartProps : public ViewChartProps
@@ -13,11 +13,15 @@ public:
 
     ~ViewLineChartProps();
 
+    QComboBox* getDotStyleComboBox() const { return cbbDotStyle; }
+
 signals:
     void lineNameChanged(const QString& name);
+    void dotStyleChanged(int index);
 
 private:
     QLineEdit* leLineName;
+    QComboBox* cbbDotStyle;
 
 };
 

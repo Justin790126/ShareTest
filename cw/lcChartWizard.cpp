@@ -67,8 +67,36 @@ void lcChartWizard::ConnectLineChartProps() {
     if (lineProps) {
       connect(lineProps, SIGNAL(lineNameChanged(const QString &)), this,
               SLOT(handleLineNameChanged(const QString &)));
+        connect(lineProps, SIGNAL(dotStyleChanged(int)), this,
+                SLOT(handleDotStyleChanged(int)));
     }
   }
+}
+
+void lcChartWizard::handleDotStyleChanged(int idx) {
+    ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+    QComboBox *cbb = lps->getDotStyleComboBox();
+    if (!cbb) {
+        return;
+    }
+    // get data that use addItem to add 
+    QCPScatterStyle::ScatterShape shape = static_cast<QCPScatterStyle::ScatterShape>(cbb->itemData(idx).toInt());
+    // QCPScatterStyle::ScatterShape shape = static_cast<QCPScatterStyle::ScatterShape>(idx);
+    
+    if (lps) {
+        // Find the corresponding ChartInfo based on the sender
+        for (const auto &pair : m_vWidChartInfo) {
+        if (pair.first == lps) {
+            ChartInfo *chartInfo = pair.second;
+            if (chartInfo) {
+            int graphIndex = chartInfo->GetGraphIndex();
+            m_qcp->graph(graphIndex)->setScatterStyle(QCPScatterStyle(shape, 10));
+            m_qcp->replot(); // Replot to reflect changes
+            }
+            break; // Exit loop after finding the first match
+        }
+        }
+    }
 }
 
 void lcChartWizard::handleLineNameChanged(const QString &name) {
@@ -179,7 +207,7 @@ QWidget *lcChartWizard::CreateLineChartProps(ChartInfo *chartInfo) {
                           chartInfo->GetY()->end()));
     // add scatter style to fill circle
     m_qcp->graph(graphIndx)->setScatterStyle(
-        QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+        QCPScatterStyle(QCPScatterStyle::ssCircle, 10));
     // set legend name
     m_qcp->graph(graphIndx)->setName(chartInfo->GetLegendName());
 

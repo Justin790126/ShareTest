@@ -84,6 +84,7 @@ private slots:
     void handleLineChartSelection();
 
     void handleLineNameChanged(const QString &name);
+    void handleDotStyleChanged(int idx);
 };
 
 #endif /* LC_CHARTWIZARD_H */
