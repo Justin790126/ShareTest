@@ -15,6 +15,7 @@ set(SOURCES
     ViewChartProps.cpp
     PropsSection.cpp
     ViewLineChartProps.cpp
+    ViewChartWizard.cpp
 )
 
 set(HEADERS
@@ -23,6 +24,7 @@ set(HEADERS
     ViewChartProps.h
     qcustomplot.h
     ViewLineChartProps.h
+    ViewChartWizard.h
 )
 
 qt4_wrap_cpp(SOURCES ${HEADERS})

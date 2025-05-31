@@ -22,7 +22,7 @@ ViewLineChartProps::ViewLineChartProps(const QString& title, const int animation
             cbbDotStyle = new QComboBox;
             // add scatter style that qcustomplot2.1 support in combobox
             cbbDotStyle->addItem(tr("None"), static_cast<int>(QCPScatterStyle::ssNone));
-            cbbDotStyle->addItem(tr("Dot"), static_cast<int>(QCPScatterStyle::ssDot));
+            // cbbDotStyle->addItem(tr("Dot"), static_cast<int>(QCPScatterStyle::ssDot));
             cbbDotStyle->addItem(tr("Cross"), static_cast<int>(QCPScatterStyle::ssCross));
             cbbDotStyle->addItem(tr("Plus"), static_cast<int>(QCPScatterStyle::ssPlus));
             cbbDotStyle->addItem(tr("Circle"), static_cast<int>(QCPScatterStyle::ssCircle));
@@ -40,17 +40,45 @@ ViewLineChartProps::ViewLineChartProps(const QString& title, const int animation
 
             
             cbbDotStyle->setCurrentIndex(0); // Set default to None
-            hlytDotStyle->addWidget(cbbDotStyle);
-            
+            hlytDotStyle->addWidget(cbbDotStyle);   
         }
+
+        QHBoxLayout* hlytDotWidth = new QHBoxLayout;
+        {
+            QLabel* lblDotSize = new QLabel(tr("Dot Size:"));
+            hlytDotWidth->addWidget(lblDotSize);
+            dsbDotSize = new QDoubleSpinBox;
+            dsbDotSize->setRange(1, 20.0);
+            dsbDotSize->setSingleStep(1);
+            dsbDotSize->setValue(5.0); // Default dot size
+            hlytDotWidth->addWidget(dsbDotSize);
+        }
+
+        QHBoxLayout* hlytLineWidth = new QHBoxLayout;
+        {
+            QLabel* lblLineWidth = new QLabel(tr("Line Width:"));
+            hlytLineWidth->addWidget(lblLineWidth);
+            dsbLineWidth = new QDoubleSpinBox;
+            dsbLineWidth->setRange(1, 20.0);
+            dsbLineWidth->setSingleStep(1);
+            dsbLineWidth->setValue(1.0); // Default line width
+            hlytLineWidth->addWidget(dsbLineWidth);
+        }
+
 
         vlyt->addLayout(hlytLineName);
         vlyt->addLayout(hlytDotStyle);
+        vlyt->addLayout(hlytDotWidth);
+        vlyt->addLayout(hlytLineWidth);
 
         connect(leLineName, SIGNAL(textChanged(const QString&)),
                 this, SIGNAL(lineNameChanged(const QString&)));
         connect(cbbDotStyle, SIGNAL(currentIndexChanged(int)),
                 this, SIGNAL(dotStyleChanged(int)));
+        connect(dsbDotSize, SIGNAL(valueChanged(double)),
+                this, SIGNAL(dotSizeChanged(double)));
+        connect(dsbLineWidth, SIGNAL(valueChanged(double)),
+                this, SIGNAL(lineWidthChanged(double)));
     }
     this->setContentLayout(*vlyt);
 }

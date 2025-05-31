@@ -1,6 +1,7 @@
 #ifndef LC_CHARTWIZARD_H
 #define LC_CHARTWIZARD_H
 
+#include "ViewChartWizard.h"
 #include "ViewLineChartProps.h"
 #include "qcustomplot.h"
 #include <QtGui>
@@ -13,14 +14,14 @@ using namespace std;
 const extern std::vector<double> SLICE_DATA;
 
 /*
- * ChartInfo
+ * ModelChartInfo
  * This class is responsible for storing information about a chart.
  * It includes methods to set the x and y data, pen, brush, and graph index.
  */
-class ChartInfo {
+class ModelChartInfo {
 public:
-  ChartInfo() = default;
-  ~ChartInfo() = default;
+  ModelChartInfo() = default;
+  ~ModelChartInfo() = default;
   void SetX(const QVector<double> &qvX) { m_qvX = qvX; }
   QVector<double> *GetX() { return &m_qvX; }
   void SetY(const QVector<double> &qvY) { m_qvY = qvY; }
@@ -38,7 +39,7 @@ public:
   }
   QString GetLegendName() const { return m_sLegendName; }
 
-  friend ofstream &operator<<(std::ofstream &ofs, const ChartInfo &info) {
+  friend ofstream &operator<<(std::ofstream &ofs, const ModelChartInfo &info) {
 
     return ofs;
   }
@@ -61,30 +62,30 @@ private:
  * It includes methods to create line chart properties and manage the layout.
  */
 
-class lcChartWizard : public QWidget {
+class lcChartWizard : public QObject {
   Q_OBJECT
 public:
   lcChartWizard(QWidget *parent = nullptr);
   ~lcChartWizard();
-  QWidget *CreateLineChartProps(ChartInfo *chartInfo);
-  QVBoxLayout *vlytLeft;
-  QVBoxLayout *vlytLeftProps;
+  QWidget *CreateLineChartProps(ModelChartInfo *ModelChartInfo);
 
 private:
-  void Widgets();
-  void Layouts();
-  void UI();
   void ConnectLineChartProps();
 
-  vector<pair<QWidget *, ChartInfo *>> m_vWidChartInfo;
+  vector<pair<QWidget *, ModelChartInfo *>> m_vWidModelChartInfo;
 
-  QCustomPlot *m_qcp;
+  ViewChartWizard *vcw = NULL;
+
+  ModelChartInfo *FindLineChartGraphIndex(
+      const ViewLineChartProps *lps,
+      const vector<pair<QWidget *, ModelChartInfo *>> &infos);
 
 private slots:
-    void handleLineChartSelection();
-
-    void handleLineNameChanged(const QString &name);
-    void handleDotStyleChanged(int idx);
+  void handleLineChartSelection();
+  void handleLineNameChanged(const QString &name);
+  void handleDotStyleChanged(int idx);
+  void handleDotSizeChanged(double size);
+  void handleLineWidthChanged(double width);
 };
 
 #endif /* LC_CHARTWIZARD_H */

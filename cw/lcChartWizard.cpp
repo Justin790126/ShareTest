@@ -1,9 +1,13 @@
 #include "lcChartWizard.h"
 
-lcChartWizard::lcChartWizard(QWidget *parent) : QWidget(parent) {
-  UI();
+lcChartWizard::lcChartWizard(QWidget *parent) {
+  // UI();
+  vcw = new ViewChartWizard(parent);
 
-  resize(800, 400);
+  vcw->show();
+
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  QVBoxLayout *vlytLeftProps = vcw->getVLayoutLeftProps();
 
   vector<double> x_nms(SLICE_DATA.size());
   double nmPerStep = 4;
@@ -17,43 +21,43 @@ lcChartWizard::lcChartWizard(QWidget *parent) : QWidget(parent) {
         SLICE_DATA[i] + ((rand() % 100) / 10000.0); // Adding small random noise
   }
 
-  m_qcp->setInteractions(QCP::iSelectPlottables | QCP::iSelectAxes |
-                         QCP::iRangeDrag | QCP::iRangeZoom);
-  m_qcp->xAxis->setLabel("X Axis (nm)");
-  m_qcp->yAxis->setLabel("Y Axis (Intensity)");
+  qcp->setInteractions(QCP::iSelectPlottables | QCP::iSelectAxes |
+                       QCP::iRangeDrag | QCP::iRangeZoom);
+  qcp->xAxis->setLabel("X Axis (nm)");
+  qcp->yAxis->setLabel("Y Axis (Intensity)");
 
-  m_qcp->legend->setVisible(true);
+  qcp->legend->setVisible(true);
 
-  ChartInfo *info = new ChartInfo();
+  ModelChartInfo *info = new ModelChartInfo();
   info->SetX(QVector<double>::fromStdVector(x_nms));
   info->SetY(QVector<double>::fromStdVector(y_noise));
   info->SetPen(QPen(Qt::blue, 2)); // Set line color to blue and width to 2
 
   info->SetLegendName("Line Chart noises");
-  info->SetQCustomPlot(m_qcp);
+  info->SetQCustomPlot(qcp);
 
   QWidget *lineProps = CreateLineChartProps(info);
-  m_vWidChartInfo.push_back(make_pair(lineProps, info));
+  m_vWidModelChartInfo.push_back(make_pair(lineProps, info));
   vlytLeftProps->addWidget(lineProps);
 
   // add another curve without noise
-  ChartInfo *info2 = new ChartInfo();
+  ModelChartInfo *info2 = new ModelChartInfo();
   info2->SetX(QVector<double>::fromStdVector(x_nms));
   info2->SetY(QVector<double>::fromStdVector(SLICE_DATA));
   info2->SetPen(QPen(Qt::red, 2)); // Set line color to red and width to 2
 
   info2->SetLegendName("Line Chart without noise");
-  info2->SetQCustomPlot(m_qcp);
+  info2->SetQCustomPlot(qcp);
   QWidget *lineProps2 = CreateLineChartProps(info2);
-  m_vWidChartInfo.push_back(make_pair(lineProps2, info2));
+  m_vWidModelChartInfo.push_back(make_pair(lineProps2, info2));
   vlytLeftProps->addWidget(lineProps2);
 
-  m_qcp->replot();
+  qcp->replot();
 
   // change graph selection color
 
   // signal / slot to handle user select the line chart
-  connect(m_qcp, SIGNAL(selectionChangedByUser()), this,
+  connect(qcp, SIGNAL(selectionChangedByUser()), this,
           SLOT(handleLineChartSelection()));
 
   ConnectLineChartProps();
@@ -61,42 +65,102 @@ lcChartWizard::lcChartWizard(QWidget *parent) : QWidget(parent) {
 
 void lcChartWizard::ConnectLineChartProps() {
   // Connect signals from ViewLineChartProps to lcChartWizard
-  for (const auto &pair : m_vWidChartInfo) {
+  for (const auto &pair : m_vWidModelChartInfo) {
     ViewLineChartProps *lineProps =
         qobject_cast<ViewLineChartProps *>(pair.first);
     if (lineProps) {
       connect(lineProps, SIGNAL(lineNameChanged(const QString &)), this,
               SLOT(handleLineNameChanged(const QString &)));
-        connect(lineProps, SIGNAL(dotStyleChanged(int)), this,
-                SLOT(handleDotStyleChanged(int)));
+      connect(lineProps, SIGNAL(dotStyleChanged(int)), this,
+              SLOT(handleDotStyleChanged(int)));
+      connect(lineProps, SIGNAL(dotSizeChanged(double)), this,
+              SLOT(handleDotSizeChanged(double)));
+      connect(lineProps, SIGNAL(lineWidthChanged(double)), this,
+              SLOT(handleLineWidthChanged(double)));
     }
   }
 }
 
+ModelChartInfo *lcChartWizard::FindLineChartGraphIndex(
+    const ViewLineChartProps *lps,
+    const vector<pair<QWidget *, ModelChartInfo *>> &infos) {
+  // Find the graph index for the given ViewLineChartProps object
+  for (const auto &pair : infos) {
+    if (pair.first == lps) {
+      ModelChartInfo *info = pair.second;
+      if (info) {
+        return info;
+        ;
+      }
+    }
+  }
+  return NULL; // Return -1 if not found
+}
+
+void lcChartWizard::handleDotSizeChanged(double size) {
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
+    }
+    int graphIndex = info->GetGraphIndex();
+    if (graphIndex < 0) {
+      return; // Exit if graph index is not found
+    }
+
+    QCPScatterStyle currentStyle = qcp->graph(graphIndex)->scatterStyle();
+    qcp->graph(graphIndex)
+        ->setScatterStyle(QCPScatterStyle(currentStyle.shape(), size));
+    qcp->replot(); // Replot to reflect changes
+  }
+}
+
+void lcChartWizard::handleLineWidthChanged(double width) {
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
+    }
+    int graphIndex = info->GetGraphIndex();
+    QPen pen = qcp->graph(graphIndex)->pen();
+    pen.setWidthF(width); // Set the new line width
+    qcp->graph(graphIndex)->setPen(pen);
+    qcp->replot(); // Replot to reflect changes
+  }
+}
+
 void lcChartWizard::handleDotStyleChanged(int idx) {
-    ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
-    QComboBox *cbb = lps->getDotStyleComboBox();
-    if (!cbb) {
-        return;
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  QComboBox *cbb = lps->getDotStyleComboBox();
+  if (!cbb) {
+    return;
+  }
+  // get data that use addItem to add
+  QCPScatterStyle::ScatterShape shape =
+      static_cast<QCPScatterStyle::ScatterShape>(cbb->itemData(idx).toInt());
+  // QCPScatterStyle::ScatterShape shape =
+  // static_cast<QCPScatterStyle::ScatterShape>(idx);
+
+  if (lps) {
+    // Find the corresponding ModelChartInfo based on the sender
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
     }
-    // get data that use addItem to add 
-    QCPScatterStyle::ScatterShape shape = static_cast<QCPScatterStyle::ScatterShape>(cbb->itemData(idx).toInt());
-    // QCPScatterStyle::ScatterShape shape = static_cast<QCPScatterStyle::ScatterShape>(idx);
-    
-    if (lps) {
-        // Find the corresponding ChartInfo based on the sender
-        for (const auto &pair : m_vWidChartInfo) {
-        if (pair.first == lps) {
-            ChartInfo *chartInfo = pair.second;
-            if (chartInfo) {
-            int graphIndex = chartInfo->GetGraphIndex();
-            m_qcp->graph(graphIndex)->setScatterStyle(QCPScatterStyle(shape, 10));
-            m_qcp->replot(); // Replot to reflect changes
-            }
-            break; // Exit loop after finding the first match
-        }
-        }
-    }
+    int graphIndex = info->GetGraphIndex();
+    // get current scatter style size
+    QCPScatterStyle currentStyle = qcp->graph(graphIndex)->scatterStyle();
+    // set current style with new shape and current size
+    qcp->graph(graphIndex)
+        ->setScatterStyle(QCPScatterStyle(shape, currentStyle.size()));
+    qcp->replot(); // Replot to reflect changes
+  }
 }
 
 void lcChartWizard::handleLineNameChanged(const QString &name) {
@@ -109,22 +173,18 @@ void lcChartWizard::handleLineNameChanged(const QString &name) {
   }
 
   ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
   if (lps) {
     lps->setTitle(tgtName); // Update the title of the ViewLineChartProps
-    // Find the corresponding ChartInfo based on the sender
-    for (const auto &pair : m_vWidChartInfo) {
-      if (pair.first == lps) {
-        ChartInfo *chartInfo = pair.second;
-        if (chartInfo) {
-          chartInfo->SetLegendName(tgtName);
-          // Update the legend name in the QCustomPlot
-          int graphIndex = chartInfo->GetGraphIndex();
-          m_qcp->graph(graphIndex)->setName(tgtName);
-          m_qcp->replot(); // Replot to reflect changes
-        }
-        break; // Exit loop after finding the first match
-      }
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
     }
+    info->SetLegendName(tgtName);
+    // Update the legend name in the QCustomPlot
+    int graphIndex = info->GetGraphIndex();
+    qcp->graph(graphIndex)->setName(tgtName);
+    qcp->replot(); // Replot to reflect changes
   }
 }
 
@@ -136,16 +196,16 @@ void lcChartWizard::handleLineChartSelection() {
   }
   QCPGraph *selectedGraph = qcp->selectedGraphs().first();
 
-  // find Props based on selectedGraph and m_vWidChartInfo
+  // find Props based on selectedGraph and m_vWidModelChartInfo
   QWidget *tgtWidget = NULL;
-  for (const auto &pair : m_vWidChartInfo) {
-    ChartInfo *chartInfo = pair.second;
-    int graphIdx = chartInfo->GetGraphIndex();
+  for (const auto &pair : m_vWidModelChartInfo) {
+    ModelChartInfo *ModelChartInfo = pair.second;
+    int graphIdx = ModelChartInfo->GetGraphIndex();
     if (qcp->graph(graphIdx) == selectedGraph) {
       // Found the matching chart info
-      // You can now use chartInfo to update the UI or perform actions
+      // You can now use ModelChartInfo to update the UI or perform actions
       qDebug() << "Selected graph index:" << graphIdx;
-      qDebug() << "Legend name:" << chartInfo->GetLegendName();
+      qDebug() << "Legend name:" << ModelChartInfo->GetLegendName();
       tgtWidget = pair.first; // Get the corresponding widget
       // Add more actions as needed
       break; // Exit loop after finding the first match
@@ -160,7 +220,7 @@ void lcChartWizard::handleLineChartSelection() {
       // Expand the selected line chart properties
       lineProps->setExpanded(true);
       // Optionally, fold other properties
-      for (const auto &pair : m_vWidChartInfo) {
+      for (const auto &pair : m_vWidModelChartInfo) {
         if (pair.first != tgtWidget) {
           ViewLineChartProps *otherProps =
               qobject_cast<ViewLineChartProps *>(pair.first);
@@ -177,86 +237,46 @@ lcChartWizard::~lcChartWizard() {
   // Destructor implementation
 }
 
-void lcChartWizard::Widgets() {
-  // Initialize widgets here
-}
-
-QWidget *lcChartWizard::CreateLineChartProps(ChartInfo *chartInfo) {
+QWidget *lcChartWizard::CreateLineChartProps(ModelChartInfo *ModelChartInfo) {
   ViewLineChartProps *section = new ViewLineChartProps(
-      chartInfo ? chartInfo->GetLegendName() : "Default Title");
+      ModelChartInfo ? ModelChartInfo->GetLegendName() : "Default Title");
 
-  // Use chartInfo to draw line chart
-  if (chartInfo) {
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  // Use ModelChartInfo to draw line chart
+  if (ModelChartInfo) {
 
-    chartInfo->SetQCustomPlot(m_qcp);
+    ModelChartInfo->SetQCustomPlot(qcp);
     // use graphcount to calculate graph index and set
 
-    m_qcp->addGraph();
-    int graphCount = m_qcp->graphCount();
+    qcp->addGraph();
+    int graphCount = qcp->graphCount();
     int graphIndx = graphCount - 1; // Use the last graph index
-    chartInfo->SetGraphIndex(graphIndx);
-    m_qcp->graph(graphIndx)->setData(*chartInfo->GetX(), *chartInfo->GetY());
+    ModelChartInfo->SetGraphIndex(graphIndx);
+    qcp->graph(graphIndx)->setData(*ModelChartInfo->GetX(),
+                                   *ModelChartInfo->GetY());
     // set pen
-    m_qcp->graph(graphIndx)->setPen(chartInfo->GetPen());
+    qcp->graph(graphIndx)->setPen(ModelChartInfo->GetPen());
     // set brush
-    m_qcp->graph(graphIndx)->setBrush(chartInfo->GetBrush());
-    m_qcp->xAxis->setRange(0, chartInfo->GetX()->back());
-    m_qcp->yAxis->setRange(
-        *std::min_element(chartInfo->GetY()->begin(), chartInfo->GetY()->end()),
-        *std::max_element(chartInfo->GetY()->begin(),
-                          chartInfo->GetY()->end()));
+    qcp->graph(graphIndx)->setBrush(ModelChartInfo->GetBrush());
+    qcp->xAxis->setRange(0, ModelChartInfo->GetX()->back());
+    qcp->yAxis->setRange(*std::min_element(ModelChartInfo->GetY()->begin(),
+                                           ModelChartInfo->GetY()->end()),
+                         *std::max_element(ModelChartInfo->GetY()->begin(),
+                                           ModelChartInfo->GetY()->end()));
     // add scatter style to fill circle
-    m_qcp->graph(graphIndx)->setScatterStyle(
-        QCPScatterStyle(QCPScatterStyle::ssCircle, 10));
+    qcp->graph(graphIndx)->setScatterStyle(
+        QCPScatterStyle(QCPScatterStyle::ssNone, 5));
     // set legend name
-    m_qcp->graph(graphIndx)->setName(chartInfo->GetLegendName());
+    qcp->graph(graphIndx)->setName(ModelChartInfo->GetLegendName());
 
-    QPen graphPen = chartInfo->GetPen();
+    QPen graphPen = ModelChartInfo->GetPen();
     QColor graphColor = graphPen.color();
     QColor complementaryColor(255 - graphColor.red(), 255 - graphColor.green(),
                               255 - graphColor.blue());
     QCPSelectionDecorator *decorator = new QCPSelectionDecorator();
     decorator->setPen(
         QPen(complementaryColor, 2)); // Set selection color to green
-    m_qcp->graph(graphIndx)->setSelectionDecorator(decorator);
+    qcp->graph(graphIndx)->setSelectionDecorator(decorator);
   }
   return section;
-}
-
-void lcChartWizard::Layouts() {
-  QSplitter *splt = new QSplitter(Qt::Horizontal, this);
-
-  vlytLeft = new QVBoxLayout;
-  vlytLeft->setContentsMargins(0, 0, 0, 0);
-  {
-    vlytLeftProps = new QVBoxLayout;
-    vlytLeft->addLayout(vlytLeftProps);
-    vlytLeft->addStretch(5);
-  }
-
-  QWidget *widLeft = new QWidget(this);
-  widLeft->setLayout(vlytLeft);
-
-  QVBoxLayout *vlytRight = new QVBoxLayout;
-  vlytRight->setContentsMargins(0, 0, 0, 0);
-  {
-    m_qcp = new QCustomPlot(this);
-    vlytRight->addWidget(m_qcp);
-  }
-  QWidget *widRight = new QWidget(this);
-  widRight->setLayout(vlytRight);
-
-  splt->addWidget(widLeft);
-  splt->addWidget(widRight);
-  splt->setSizes({200, 400}); // Set initial sizes for the splitter
-
-  QVBoxLayout *vlytMain = new QVBoxLayout(this);
-  vlytMain->setContentsMargins(0, 0, 0, 0);
-  vlytMain->addWidget(splt);
-  setLayout(vlytMain);
-}
-
-void lcChartWizard::UI() {
-  Widgets();
-  Layouts();
 }

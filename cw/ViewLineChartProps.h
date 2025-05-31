@@ -14,14 +14,20 @@ public:
     ~ViewLineChartProps();
 
     QComboBox* getDotStyleComboBox() const { return cbbDotStyle; }
+    QDoubleSpinBox* getDotSizeSpinBox() const { return dsbDotSize; }
+    QDoubleSpinBox* getLineWidthSpinBox() const { return dsbLineWidth; }
 
 signals:
     void lineNameChanged(const QString& name);
     void dotStyleChanged(int index);
+    void dotSizeChanged(double size);
+    void lineWidthChanged(double width);
 
 private:
     QLineEdit* leLineName;
     QComboBox* cbbDotStyle;
+    QDoubleSpinBox* dsbDotSize;
+    QDoubleSpinBox* dsbLineWidth;
 
 };
 
