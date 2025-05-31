@@ -39,7 +39,7 @@ ViewLineChartProps::ViewLineChartProps(const QString& title, const int animation
             cbbDotStyle->addItem(tr("Peace"), static_cast<int>(QCPScatterStyle::ssPeace));
 
             
-            cbbDotStyle->setCurrentIndex(0); // Set default to None
+            cbbDotStyle->setCurrentIndex(1); // Set default to None
             hlytDotStyle->addWidget(cbbDotStyle);   
         }
 
@@ -54,6 +54,13 @@ ViewLineChartProps::ViewLineChartProps(const QString& title, const int animation
             hlytDotWidth->addWidget(dsbDotSize);
         }
 
+        QHBoxLayout* hlytShowLineSegment = new QHBoxLayout;
+        {
+            chbShowLineSegment = new QCheckBox(tr("Show Line Segment"));
+            chbShowLineSegment->setChecked(true); // Default to checked
+            hlytShowLineSegment->addWidget(chbShowLineSegment);
+        }
+
         QHBoxLayout* hlytLineWidth = new QHBoxLayout;
         {
             QLabel* lblLineWidth = new QLabel(tr("Line Width:"));
@@ -65,11 +72,22 @@ ViewLineChartProps::ViewLineChartProps(const QString& title, const int animation
             hlytLineWidth->addWidget(dsbLineWidth);
         }
 
+        QHBoxLayout* hlytLineColor = new QHBoxLayout;
+        {
+            QLabel* lblLineColor = new QLabel(tr("Line Color:"));
+            hlytLineColor->addWidget(lblLineColor);
+            leLineColor = new QLineEdit;
+            leLineColor->setPlaceholderText(tr("Enter line color (e.g., #FF0000)"));
+            hlytLineColor->addWidget(leLineColor);
+        }
+
 
         vlyt->addLayout(hlytLineName);
         vlyt->addLayout(hlytDotStyle);
         vlyt->addLayout(hlytDotWidth);
+        vlyt->addLayout(hlytShowLineSegment);
         vlyt->addLayout(hlytLineWidth);
+        vlyt->addLayout(hlytLineColor);
 
         connect(leLineName, SIGNAL(textChanged(const QString&)),
                 this, SIGNAL(lineNameChanged(const QString&)));
@@ -79,6 +97,10 @@ ViewLineChartProps::ViewLineChartProps(const QString& title, const int animation
                 this, SIGNAL(dotSizeChanged(double)));
         connect(dsbLineWidth, SIGNAL(valueChanged(double)),
                 this, SIGNAL(lineWidthChanged(double)));
+        connect(leLineColor, SIGNAL(textChanged(const QString&)),
+                this, SIGNAL(lineColorChanged(const QString&)));
+        connect(chbShowLineSegment, SIGNAL(toggled(bool)),
+                this, SIGNAL(showLineSegmentChanged(bool)));
     }
     this->setContentLayout(*vlyt);
 }

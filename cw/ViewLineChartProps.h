@@ -21,14 +21,20 @@ signals:
     void lineNameChanged(const QString& name);
     void dotStyleChanged(int index);
     void dotSizeChanged(double size);
+    void showLineSegmentChanged(bool checked);
     void lineWidthChanged(double width);
+    void lineColorChanged(const QString& color);
+
 
 private:
     QLineEdit* leLineName;
     QComboBox* cbbDotStyle;
     QDoubleSpinBox* dsbDotSize;
+
+    QCheckBox* chbShowLineSegment;
     QDoubleSpinBox* dsbLineWidth;
 
+    QLineEdit* leLineColor;
 };
 
 #endif /* VIEW_LINE_CHART_PROPS_H */

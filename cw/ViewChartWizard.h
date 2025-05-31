@@ -1,6 +1,7 @@
 #ifndef VIEW_CHART_WIZARD_H
 #define VIEW_CHART_WIZARD_H
 
+#include "ViewChartProps.h"
 #include "ViewLineChartProps.h"
 #include "qcustomplot.h"
 #include <QtGui>
@@ -24,6 +25,8 @@ private:
   QCustomPlot *m_qcp;
   QVBoxLayout *vlytLeftProps;
   QVBoxLayout *vlytLeft;
+
+  ViewChartProps* vcpGeneral;
 };
 
 #endif /* VIEW_CHART_WIZARD_H */

@@ -3,7 +3,11 @@
 ViewChartProps::ViewChartProps(const QString& title, const int animationDuration, QWidget* parent)
     : PropsSection(title, animationDuration, parent)
 {
-    // Constructor implementation
+    QVBoxLayout *vlyt = new QVBoxLayout;
+    {
+
+    }
+    this->setContentLayout(*vlyt);
 }
 ViewChartProps::~ViewChartProps()
 {

@@ -21,12 +21,7 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
         SLICE_DATA[i] + ((rand() % 100) / 10000.0); // Adding small random noise
   }
 
-  qcp->setInteractions(QCP::iSelectPlottables | QCP::iSelectAxes |
-                       QCP::iRangeDrag | QCP::iRangeZoom);
-  qcp->xAxis->setLabel("X Axis (nm)");
-  qcp->yAxis->setLabel("Y Axis (Intensity)");
 
-  qcp->legend->setVisible(true);
 
   ModelChartInfo *info = new ModelChartInfo();
   info->SetX(QVector<double>::fromStdVector(x_nms));
@@ -77,6 +72,10 @@ void lcChartWizard::ConnectLineChartProps() {
               SLOT(handleDotSizeChanged(double)));
       connect(lineProps, SIGNAL(lineWidthChanged(double)), this,
               SLOT(handleLineWidthChanged(double)));
+      connect(lineProps, SIGNAL(lineColorChanged(const QString &)), this,
+              SLOT(handleLineColorChanged(const QString &)));
+      connect(lineProps, SIGNAL(showLineSegmentChanged(bool)), this,
+              SLOT(handleShowLineSegmentChanged(bool)));
     }
   }
 }
@@ -95,6 +94,46 @@ ModelChartInfo *lcChartWizard::FindLineChartGraphIndex(
     }
   }
   return NULL; // Return -1 if not found
+}
+
+void lcChartWizard::handleShowLineSegmentChanged(bool checked) {
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
+    }
+    int graphIndex = info->GetGraphIndex();
+    if (graphIndex < 0) {
+      return; // Exit if graph index is not found
+    }
+
+    // Show or hide the line segment based on the checkbox state
+    qcp->graph(graphIndex)->setLineStyle(
+        checked ? QCPGraph::lsLine : QCPGraph::lsNone);
+    qcp->replot(); // Replot to reflect changes
+  }
+}
+
+void lcChartWizard::handleLineColorChanged(const QString &color) {
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
+    }
+    int graphIndex = info->GetGraphIndex();
+    if (graphIndex < 0) {
+      return; // Exit if graph index is not found
+    }
+
+    QPen pen = qcp->graph(graphIndex)->pen();
+    pen.setColor(QColor(color)); // Set the new line color
+    qcp->graph(graphIndex)->setPen(pen);
+    qcp->replot(); // Replot to reflect changes
+  }
 }
 
 void lcChartWizard::handleDotSizeChanged(double size) {
@@ -202,10 +241,6 @@ void lcChartWizard::handleLineChartSelection() {
     ModelChartInfo *ModelChartInfo = pair.second;
     int graphIdx = ModelChartInfo->GetGraphIndex();
     if (qcp->graph(graphIdx) == selectedGraph) {
-      // Found the matching chart info
-      // You can now use ModelChartInfo to update the UI or perform actions
-      qDebug() << "Selected graph index:" << graphIdx;
-      qDebug() << "Legend name:" << ModelChartInfo->GetLegendName();
       tgtWidget = pair.first; // Get the corresponding widget
       // Add more actions as needed
       break; // Exit loop after finding the first match
@@ -239,7 +274,7 @@ lcChartWizard::~lcChartWizard() {
 
 QWidget *lcChartWizard::CreateLineChartProps(ModelChartInfo *ModelChartInfo) {
   ViewLineChartProps *section = new ViewLineChartProps(
-      ModelChartInfo ? ModelChartInfo->GetLegendName() : "Default Title");
+      ModelChartInfo ? ModelChartInfo->GetLegendName() : "Default Title", 33);
 
   QCustomPlot *qcp = vcw->getQCustomPlot();
   // Use ModelChartInfo to draw line chart
@@ -265,9 +300,11 @@ QWidget *lcChartWizard::CreateLineChartProps(ModelChartInfo *ModelChartInfo) {
                                            ModelChartInfo->GetY()->end()));
     // add scatter style to fill circle
     qcp->graph(graphIndx)->setScatterStyle(
-        QCPScatterStyle(QCPScatterStyle::ssNone, 5));
-    // set legend name
+        QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
+    // set line style
+    // qcp->graph(graphIndx)->setLineStyle(QCPGraph::lsNone);
     qcp->graph(graphIndx)->setName(ModelChartInfo->GetLegendName());
+    // set no line
 
     QPen graphPen = ModelChartInfo->GetPen();
     QColor graphColor = graphPen.color();

@@ -3,15 +3,27 @@
 
 ViewChartWizard::ViewChartWizard(QWidget *parent) : QWidget(parent) {
   UI();
-
+  setWindowTitle(tr("LithoViewer - Chart Wizard"));
   resize(800, 400);
 }
 ViewChartWizard::~ViewChartWizard() {
   // Destructor implementation
 }
 void ViewChartWizard::Widgets() {
-  // Create widgets for the chart wizard
-  // This method will create all necessary widgets for the wizard
+
+  m_qcp = new QCustomPlot(this);
+
+  m_qcp->setInteractions(QCP::iSelectPlottables | QCP::iSelectAxes |
+                         QCP::iRangeDrag | QCP::iRangeZoom);
+  m_qcp->xAxis->setLabel("X Axis (nm)");
+  m_qcp->yAxis->setLabel("Y Axis (Intensity)");
+  m_qcp->legend->setVisible(true);
+  // add chart title
+  m_qcp->plotLayout()->insertRow(0);
+  m_qcp->plotLayout()->addElement(
+      0, 0,
+      new QCPTextElement(m_qcp, tr("Chart Title"),
+                         QFont("sans", 12, QFont::Bold)));
 }
 void ViewChartWizard::Layouts() {
   QSplitter *splt = new QSplitter(Qt::Horizontal, this);
@@ -21,6 +33,10 @@ void ViewChartWizard::Layouts() {
   {
     vlytLeftProps = new QVBoxLayout;
     vlytLeft->addLayout(vlytLeftProps);
+    {
+      vcpGeneral = new ViewChartProps(tr("General"), 33, this);
+      vlytLeftProps->addWidget(vcpGeneral);
+    }
 
     vlytLeft->addStretch(5);
   }
@@ -30,10 +46,7 @@ void ViewChartWizard::Layouts() {
 
   QVBoxLayout *vlytRight = new QVBoxLayout;
   vlytRight->setContentsMargins(0, 0, 0, 0);
-  {
-    m_qcp = new QCustomPlot(this);
-    vlytRight->addWidget(m_qcp);
-  }
+  { vlytRight->addWidget(m_qcp); }
   QWidget *widRight = new QWidget(this);
   widRight->setLayout(vlytRight);
 

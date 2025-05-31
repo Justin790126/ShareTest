@@ -85,7 +85,9 @@ private slots:
   void handleLineNameChanged(const QString &name);
   void handleDotStyleChanged(int idx);
   void handleDotSizeChanged(double size);
+  void handleShowLineSegmentChanged(bool checked);
   void handleLineWidthChanged(double width);
+  void handleLineColorChanged(const QString &color);
 };
 
 #endif /* LC_CHARTWIZARD_H */
