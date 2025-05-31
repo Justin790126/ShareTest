@@ -71,6 +71,7 @@ public:
 
 private:
   void ConnectLineChartProps();
+  void ConnectGeneralProps();
 
   vector<pair<QWidget *, ModelChartInfo *>> m_vWidModelChartInfo;
 
@@ -81,6 +82,8 @@ private:
       const vector<pair<QWidget *, ModelChartInfo *>> &infos);
 
 private slots:
+  void handleGeneralTitleChanged(const QString &title);
+
   void handleLineChartSelection();
   void handleLineNameChanged(const QString &name);
   void handleDotStyleChanged(int idx);

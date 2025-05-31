@@ -2,6 +2,7 @@
 #define VIEW_CHART_PROPS_H
 
 #include "PropsSection.h"
+#include <QtGui>
 
 class ViewChartProps : public PropsSection
 {
@@ -11,8 +12,10 @@ public:
 
     ~ViewChartProps();
 
+signals:
+    void chartTitleChanged(const QString& title);
 private:
-    
+    QLineEdit* leChartTitle;
 };
 
 

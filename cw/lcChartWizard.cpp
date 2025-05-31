@@ -54,8 +54,28 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   // signal / slot to handle user select the line chart
   connect(qcp, SIGNAL(selectionChangedByUser()), this,
           SLOT(handleLineChartSelection()));
-
+  ConnectGeneralProps();
   ConnectLineChartProps();
+}
+
+void lcChartWizard::ConnectGeneralProps()
+{
+  ViewChartProps *vcpGeneral = vcw->getVCPGeneral();
+  if (vcpGeneral) {
+    connect(vcpGeneral, SIGNAL(chartTitleChanged(const QString &)), this,
+            SLOT(handleGeneralTitleChanged(const QString &)));
+  }
+}
+
+void lcChartWizard::handleGeneralTitleChanged(const QString &title) {
+  // get title element and settext
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  QCPTextElement *titleElement = vcw->getTitleElement();
+  if (titleElement) {
+    titleElement->setText(title);
+    qcp->replot(); // Replot to reflect changes
+  } else {
+  } 
 }
 
 void lcChartWizard::ConnectLineChartProps() {

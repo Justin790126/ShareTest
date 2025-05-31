@@ -20,6 +20,8 @@ public:
   QVBoxLayout *getVLayoutLeftProps() const { return vlytLeftProps; }
   QCustomPlot *getQCustomPlot() const { return m_qcp; }
   void setQCustomPlot(QCustomPlot *qcp) { m_qcp = qcp; }
+  ViewChartProps *getVCPGeneral() const { return vcpGeneral; }
+  QCPTextElement *getTitleElement() const { return m_pTitleElement; }
 
 private:
   QCustomPlot *m_qcp;
@@ -27,6 +29,7 @@ private:
   QVBoxLayout *vlytLeft;
 
   ViewChartProps* vcpGeneral;
+  QCPTextElement *m_pTitleElement;
 };
 
 #endif /* VIEW_CHART_WIZARD_H */

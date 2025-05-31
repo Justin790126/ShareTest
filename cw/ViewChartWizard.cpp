@@ -20,10 +20,10 @@ void ViewChartWizard::Widgets() {
   m_qcp->legend->setVisible(true);
   // add chart title
   m_qcp->plotLayout()->insertRow(0);
+  m_pTitleElement = new QCPTextElement(m_qcp, tr("Chart Title"),
+                                                  QFont("sans", 12, QFont::Bold));
   m_qcp->plotLayout()->addElement(
-      0, 0,
-      new QCPTextElement(m_qcp, tr("Chart Title"),
-                         QFont("sans", 12, QFont::Bold)));
+      0, 0, m_pTitleElement);
 }
 void ViewChartWizard::Layouts() {
   QSplitter *splt = new QSplitter(Qt::Horizontal, this);
