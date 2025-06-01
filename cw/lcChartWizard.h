@@ -55,6 +55,16 @@ public:
   void ShrinkMetrologyTextItems() {
     m_vMetrologyTextItems.shrink_to_fit();
   }
+  void ClearMetrologyTextItems() {
+    for (auto item : m_vMetrologyTextItems) {
+      // if (item == nullptr) continue;
+      if (m_pQCP) {
+        m_pQCP->removeItem(item);
+      }
+      // delete item;
+    }
+    m_vMetrologyTextItems.clear();
+  }
   vector<QCPItemText *> *GetMetrologyTextItems() {
     return &m_vMetrologyTextItems;
   }
@@ -105,6 +115,9 @@ private:
       const ViewLineChartProps *lps,
       const vector<pair<QWidget *, ModelChartInfo *>> &infos);
 
+  void AddMetrologyTextItem(
+      ModelChartInfo *modelChartInfo, QCustomPlot *qcp);
+
 private slots:
   void handleGeneralTitleChanged(const QString &title);
   void handleGeneralXLabelChanged(const QString &label);
@@ -120,6 +133,7 @@ private slots:
   void handleLineWidthChanged(double width);
   void handleLineColorChanged(const QString &color);
   void handleShowThresholdAndMetrologyChanged(bool checked);
+  void handleThresholdValueChanged(double value);
 };
 
 #endif /* LC_CHARTWIZARD_H */

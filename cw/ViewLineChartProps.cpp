@@ -96,7 +96,14 @@ void ViewLineChartProps::UI()
         {
             chbShowThresholdAndMetrology = new QCheckBox(tr("Show Threshold and Metrology"));
             chbShowThresholdAndMetrology->setChecked(true); // Default to unchecked
+
+            dsbThresholdValue = new QDoubleSpinBox;
+            dsbThresholdValue->setRange(-10.0, 10.0);
+            dsbThresholdValue->setSingleStep(0.01);
+            dsbThresholdValue->setValue(0.5); // Default threshold value
+
             hlytThresAndMetrology->addWidget(chbShowThresholdAndMetrology);
+            hlytThresAndMetrology->addWidget(dsbThresholdValue);
         }
 
         vlyt->addLayout(hlytShowGraph);
@@ -124,6 +131,8 @@ void ViewLineChartProps::UI()
                 this, SIGNAL(showLineSegmentChanged(bool)));
         connect(chbShowThresholdAndMetrology, SIGNAL(toggled(bool)),
                 this, SIGNAL(showThresholdAndMetrologyChanged(bool)));
+        connect(dsbThresholdValue, SIGNAL(valueChanged(double)),
+                this, SIGNAL(thresholdValueChanged(double)));
     }
     this->setContentLayout(*vlyt);
 }

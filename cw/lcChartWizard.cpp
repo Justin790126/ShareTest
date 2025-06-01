@@ -1,27 +1,29 @@
 #include "lcChartWizard.h"
 
-std::vector<double> find_all_x_by_linear_interp(const std::vector<double>& x_nm, const std::vector<double>& y, double threshold) {
-    if (x_nm.size() != y.size() || x_nm.empty())
-        return {}; // Return empty vector if sizes do not match or are empty
+inline std::vector<double>
+find_all_x_by_linear_interp(const std::vector<double> &x_nm,
+                            const std::vector<double> &y, double threshold) {
+  if (x_nm.size() != y.size() || x_nm.empty())
+    return {}; // Return empty vector if sizes do not match or are empty
 
-    std::vector<double> result;
-    result.reserve(x_nm.size()); // Reserve space for efficiency
-    result.emplace_back(x_nm[0]);
-    for (size_t i = 1; i < y.size(); ++i) {
-        bool crosses = ((y[i-1] < threshold && y[i] >= threshold) ||
-                        (y[i-1] > threshold && y[i] <= threshold));
-        if (crosses) {
-            double x1 = x_nm[i-1], x2 = x_nm[i];
-            double y1 = y[i-1],   y2 = y[i];
-            if (std::abs(y2 - y1) < 1e-12) // avoid division by zero
-                result.push_back(0.5 * (x1 + x2));
-            else
-                result.push_back(x1 + (threshold - y1) * (x2 - x1) / (y2 - y1));
-        }
+  std::vector<double> result;
+  result.reserve(x_nm.size()); // Reserve space for efficiency
+  result.emplace_back(x_nm[0]);
+  for (size_t i = 1; i < y.size(); ++i) {
+    bool crosses = ((y[i - 1] < threshold && y[i] >= threshold) ||
+                    (y[i - 1] > threshold && y[i] <= threshold));
+    if (crosses) {
+      double x1 = x_nm[i - 1], x2 = x_nm[i];
+      double y1 = y[i - 1], y2 = y[i];
+      if (std::abs(y2 - y1) < 1e-12) // avoid division by zero
+        result.push_back(0.5 * (x1 + x2));
+      else
+        result.push_back(x1 + (threshold - y1) * (x2 - x1) / (y2 - y1));
     }
-    result.push_back(x_nm.back()); // Add the last x value
-    result.shrink_to_fit(); // Optional: shrink to fit for memory efficiency
-    return result;
+  }
+  result.push_back(x_nm.back()); // Add the last x value
+  result.shrink_to_fit(); // Optional: shrink to fit for memory efficiency
+  return result;
 }
 
 lcChartWizard::lcChartWizard(QWidget *parent) {
@@ -41,7 +43,6 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
 
   vector<double> cross_x = find_all_x_by_linear_interp(
       x_nms, SLICE_DATA, 0.5); // Find all x where y crosses 0.001
-  
 
   vector<double> y_noise(SLICE_DATA.size());
   for (int i = 0; i < SLICE_DATA.size(); ++i) {
@@ -52,13 +53,11 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   vector<double> cross_x_noise = find_all_x_by_linear_interp(
       x_nms, y_noise, 0.5); // Find all x where noisy y crosses 0.001
 
-
-
   ModelChartInfo *info = new ModelChartInfo();
   info->SetX(QVector<double>::fromStdVector(x_nms));
   info->SetY(QVector<double>::fromStdVector(y_noise));
   info->SetIntersectionX(QVector<double>::fromStdVector(cross_x_noise));
-  info->SetThreshold(0.5); // Set the threshold for intersection
+  info->SetThreshold(0.5);         // Set the threshold for intersection
   info->SetPen(QPen(Qt::blue, 2)); // Set line color to blue and width to 2
 
   info->SetLegendName("Line Chart noises");
@@ -73,7 +72,7 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   info2->SetX(QVector<double>::fromStdVector(x_nms));
   info2->SetY(QVector<double>::fromStdVector(SLICE_DATA));
   info2->SetIntersectionX(QVector<double>::fromStdVector(cross_x));
-  info2->SetThreshold(0.5); // Set the threshold for intersection
+  info2->SetThreshold(0.5);        // Set the threshold for intersection
   info2->SetPen(QPen(Qt::red, 2)); // Set line color to red and width to 2
 
   info2->SetLegendName("Line Chart without noise");
@@ -93,8 +92,7 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   ConnectLineChartProps();
 }
 
-void lcChartWizard::ConnectGeneralProps()
-{
+void lcChartWizard::ConnectGeneralProps() {
   ViewChartProps *vcpGeneral = vcw->getVCPGeneral();
   if (vcpGeneral) {
     connect(vcpGeneral, SIGNAL(chartTitleChanged(const QString &)), this,
@@ -116,7 +114,7 @@ void lcChartWizard::handleGeneralTitleChanged(const QString &title) {
     titleElement->setText(title);
     qcp->replot(); // Replot to reflect changes
   } else {
-  } 
+  }
 }
 
 void lcChartWizard::handleGeneralXLabelChanged(const QString &label) {
@@ -165,6 +163,8 @@ void lcChartWizard::ConnectLineChartProps() {
               SLOT(handleShowLineSegmentChanged(bool)));
       connect(lineProps, SIGNAL(showThresholdAndMetrologyChanged(bool)), this,
               SLOT(handleShowThresholdAndMetrologyChanged(bool)));
+      connect(lineProps, SIGNAL(thresholdValueChanged(double)), this,
+              SLOT(handleThresholdValueChanged(double)));
     }
   }
 }
@@ -178,11 +178,48 @@ ModelChartInfo *lcChartWizard::FindLineChartGraphIndex(
       ModelChartInfo *info = pair.second;
       if (info) {
         return info;
-        ;
       }
     }
   }
   return NULL; // Return -1 if not found
+}
+
+void lcChartWizard::handleThresholdValueChanged(double value) {
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return;
+    }
+    int thresGraphIndex = info->GetThresholdGraphIndex();
+    if (thresGraphIndex < 0) {
+      return;
+    }
+
+    // Update the threshold line with the new value
+    qcp->graph(thresGraphIndex)->data()->clear();
+    qcp->graph(thresGraphIndex)->addData(0, value);
+    qcp->graph(thresGraphIndex)->addData(info->GetX()->back(), value);
+
+    info->SetThreshold(value); // Update the threshold in ModelChartInfo
+
+    // get current x,y
+    QVector<double> *x = info->GetX();
+    QVector<double> *y = info->GetY();
+    // recalculate intersection points
+    QVector<double> *intersectionX = info->GetIntersectionX();
+    intersectionX->clear();
+    // Find all x where y crosses the threshold
+    QVector<double> newIntersectionX = QVector<double>::fromStdVector(
+        find_all_x_by_linear_interp(x->toStdVector(), y->toStdVector(), value));
+    *intersectionX = newIntersectionX; // Update intersection points
+
+    // Recalculate metrology text items based on new intersection points
+    AddMetrologyTextItem(info, qcp);
+
+    qcp->replot(); // Replot to reflect changes
+  }
 }
 
 void lcChartWizard::handleShowThresholdAndMetrologyChanged(bool checked) {
@@ -198,12 +235,13 @@ void lcChartWizard::handleShowThresholdAndMetrologyChanged(bool checked) {
       qcp->graph(thresGraphIndex)->setVisible(checked);
     }
 
-    // Show or hide the threshold line and metrology text items based on the checkbox state
+    // Show or hide the threshold line and metrology text items based on the
+    // checkbox state
     for (int i = 0; i < info->GetMetrologyTextItems()->size(); ++i) {
       QCPItemText *textItem = (*info->GetMetrologyTextItems())[i];
       textItem->setVisible(checked);
     }
-    
+
     qcp->replot(); // Replot to reflect changes
   }
 }
@@ -222,8 +260,8 @@ void lcChartWizard::handleShowLineSegmentChanged(bool checked) {
     }
 
     // Show or hide the line segment based on the checkbox state
-    qcp->graph(graphIndex)->setLineStyle(
-        checked ? QCPGraph::lsLine : QCPGraph::lsNone);
+    qcp->graph(graphIndex)
+        ->setLineStyle(checked ? QCPGraph::lsLine : QCPGraph::lsNone);
     qcp->replot(); // Replot to reflect changes
   }
 }
@@ -403,6 +441,34 @@ lcChartWizard::~lcChartWizard() {
   // Destructor implementation
 }
 
+void lcChartWizard::AddMetrologyTextItem(ModelChartInfo *info,
+                                         QCustomPlot *qcp) {
+
+  info->ClearMetrologyTextItems();
+  info->ReserveMetrologyTextItems(info->GetIntersectionX()->size() - 1);
+  QVector<double> *intersectionX = info->GetIntersectionX();
+  for (int i = 0; i < (int)intersectionX->size() - 1; ++i) {
+    double x1 = (*intersectionX)[i];
+    double x2 = (*intersectionX)[i + 1];
+    double cd = fabs(x2 - x1);
+    double txtPos = x1 + cd / 2.0; // Position text in the middle of the segment
+    if (cd < 1e-6) {
+      continue; // Skip if the distance is too small
+    }
+    // draw text items with content of cd
+    QCPItemText *textItem = new QCPItemText(qcp);
+    textItem->setPositionAlignment(Qt::AlignCenter);
+    textItem->position->setCoords(txtPos, info->GetThreshold() + 0.01);
+    textItem->setText(QString().sprintf("CD=%.6fnm", cd));
+    textItem->setFont(QFont("Arial", 10));
+    textItem->setColor(Qt::black); // Set text color to black
+    textItem->setLayer("overlay"); // Set layer to overlay
+
+    info->AddMetrologyTextItem(textItem);
+  }
+  info->ShrinkMetrologyTextItems();
+}
+
 QWidget *lcChartWizard::CreateLineChartProps(ModelChartInfo *info) {
   ViewLineChartProps *section = new ViewLineChartProps(
       info ? info->GetLegendName() : "Default Title", 33);
@@ -412,25 +478,22 @@ QWidget *lcChartWizard::CreateLineChartProps(ModelChartInfo *info) {
   if (info) {
 
     info->SetQCustomPlot(qcp);
-    
+
     // draw signals
     qcp->addGraph();
     int graphCount = qcp->graphCount();
     int graphIndx = graphCount - 1;
     info->SetGraphIndex(graphIndx);
-    qcp->graph(graphIndx)->setData(*info->GetX(),
-                                   *info->GetY());
+    qcp->graph(graphIndx)->setData(*info->GetX(), *info->GetY());
     qcp->graph(graphIndx)->setPen(info->GetPen());
     qcp->graph(graphIndx)->setBrush(info->GetBrush());
     qcp->xAxis->setRange(0, info->GetX()->back());
-    qcp->yAxis->setRange(*std::min_element(info->GetY()->begin(),
-                                           info->GetY()->end()),
-                         *std::max_element(info->GetY()->begin(),
-                                           info->GetY()->end()));
+    qcp->yAxis->setRange(
+        *std::min_element(info->GetY()->begin(), info->GetY()->end()),
+        *std::max_element(info->GetY()->begin(), info->GetY()->end()));
     qcp->graph(graphIndx)->setScatterStyle(
         QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
     qcp->graph(graphIndx)->setName(info->GetLegendName());
-
 
     QPen graphPen = info->GetPen();
     QColor graphColor = graphPen.color();
@@ -438,42 +501,21 @@ QWidget *lcChartWizard::CreateLineChartProps(ModelChartInfo *info) {
                               255 - graphColor.blue());
 
     // draw threshold line
-    QCPGraph* gphIntersectThreshold = qcp->addGraph();
+    QCPGraph *gphIntersectThreshold = qcp->addGraph();
     graphCount = qcp->graphCount();
     int thresGraphIndx = graphCount - 1;
     info->SetThresholdGraphIndex(thresGraphIndx);
     gphIntersectThreshold->setPen(QPen(complementaryColor, 3));
     QString thresholdName;
     thresholdName.sprintf("%s Threshold",
-                            info ? info->GetLegendName().toStdString().c_str() : "Default");
+                          info ? info->GetLegendName().toStdString().c_str()
+                               : "Default");
     gphIntersectThreshold->setName(thresholdName);
     gphIntersectThreshold->addData(0, info->GetThreshold());
     gphIntersectThreshold->addData(info->GetX()->back(), info->GetThreshold());
 
     // draw CD metrology
-    info->ReserveMetrologyTextItems(
-        info->GetIntersectionX()->size() - 1);
-    QVector<double>* intersectionX = info->GetIntersectionX();
-    for (int i = 0; i < (int)intersectionX->size()-1; ++i) {
-      double x1 = (*intersectionX)[i];
-      double x2 = (*intersectionX)[i+1];
-      double cd = fabs(x2 - x1);
-      double txtPos = x1 + cd / 2.0; // Position text in the middle of the segment
-      if (cd < 1e-6) {
-        continue; // Skip if the distance is too small
-      }
-      // draw text items with content of cd
-      QCPItemText *textItem = new QCPItemText(qcp);
-      textItem->setPositionAlignment(Qt::AlignCenter);
-      textItem->position->setCoords(txtPos, info->GetThreshold());
-      textItem->setText(QString().sprintf("CD=%.6fnm", cd));
-      textItem->setFont(QFont("Arial", 10));
-      textItem->setColor(Qt::black); // Set text color to black
-      textItem->setLayer("overlay"); // Set layer to overlay
-
-      info->AddMetrologyTextItem(textItem);
-    }
-    info->ShrinkMetrologyTextItems();
+    AddMetrologyTextItem(info, qcp);
 
     QCPSelectionDecorator *decorator = new QCPSelectionDecorator();
     decorator->setPen(
