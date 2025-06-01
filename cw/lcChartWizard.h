@@ -38,6 +38,26 @@ public:
     m_sLegendName = sLegendName;
   }
   QString GetLegendName() const { return m_sLegendName; }
+  void SetIntersectionX(const QVector<double> &qvIntersectionX) {
+    m_qvIntersectionX = qvIntersectionX;
+  }
+  QVector<double> *GetIntersectionX() { return &m_qvIntersectionX; }
+  void SetThreshold(double dThreshold) { m_dThreshold = dThreshold; }
+  double GetThreshold() const { return m_dThreshold; }
+  void SetThresholdGraphIndex(int idx) { m_iThresGphIdx = idx; }
+  int GetThresholdGraphIndex() const { return m_iThresGphIdx; }
+  void ReserveMetrologyTextItems(int size) {
+    m_vMetrologyTextItems.reserve(size);
+  }
+  void AddMetrologyTextItem(QCPItemText *item) {
+    m_vMetrologyTextItems.push_back(item);
+  }
+  void ShrinkMetrologyTextItems() {
+    m_vMetrologyTextItems.shrink_to_fit();
+  }
+  vector<QCPItemText *> *GetMetrologyTextItems() {
+    return &m_vMetrologyTextItems;
+  }
 
   friend ofstream &operator<<(std::ofstream &ofs, const ModelChartInfo &info) {
 
@@ -47,12 +67,16 @@ public:
 private:
   QVector<double> m_qvX;
   QVector<double> m_qvY;
+  QVector<double> m_qvIntersectionX;
+  double m_dThreshold = 0.5;
 
   QString m_sLegendName;
 
   QPen m_pen;
   QBrush m_brush;
-  int m_iGphIdx;
+  int m_iGphIdx = -1; // signal
+  int m_iThresGphIdx = -1; // threshold line
+  vector<QCPItemText*> m_vMetrologyTextItems;
   QCustomPlot *m_pQCP = NULL;
 };
 
@@ -95,6 +119,7 @@ private slots:
   void handleShowLineSegmentChanged(bool checked);
   void handleLineWidthChanged(double width);
   void handleLineColorChanged(const QString &color);
+  void handleShowThresholdAndMetrologyChanged(bool checked);
 };
 
 #endif /* LC_CHARTWIZARD_H */

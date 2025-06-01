@@ -92,6 +92,13 @@ void ViewLineChartProps::UI()
             hlytLineColor->addWidget(leLineColor);
         }
 
+        QHBoxLayout* hlytThresAndMetrology = new QHBoxLayout;
+        {
+            chbShowThresholdAndMetrology = new QCheckBox(tr("Show Threshold and Metrology"));
+            chbShowThresholdAndMetrology->setChecked(true); // Default to unchecked
+            hlytThresAndMetrology->addWidget(chbShowThresholdAndMetrology);
+        }
+
         vlyt->addLayout(hlytShowGraph);
         vlyt->addLayout(hlytLineName);
         vlyt->addLayout(hlytDotStyle);
@@ -99,6 +106,7 @@ void ViewLineChartProps::UI()
         vlyt->addLayout(hlytShowLineSegment);
         vlyt->addLayout(hlytLineWidth);
         vlyt->addLayout(hlytLineColor);
+        vlyt->addLayout(hlytThresAndMetrology);
 
         connect(chbShowGraph, SIGNAL(toggled(bool)),
                 this, SIGNAL(showGraphChanged(bool)));
@@ -114,6 +122,8 @@ void ViewLineChartProps::UI()
                 this, SIGNAL(lineColorChanged(const QString&)));
         connect(chbShowLineSegment, SIGNAL(toggled(bool)),
                 this, SIGNAL(showLineSegmentChanged(bool)));
+        connect(chbShowThresholdAndMetrology, SIGNAL(toggled(bool)),
+                this, SIGNAL(showThresholdAndMetrologyChanged(bool)));
     }
     this->setContentLayout(*vlyt);
 }

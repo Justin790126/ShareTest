@@ -27,6 +27,7 @@ signals:
     void lineWidthChanged(double width);
     void lineColorChanged(const QString& color);
     void showGraphChanged(bool checked);
+    void showThresholdAndMetrologyChanged(bool checked);
 private:
     QLineEdit* leLineName;
     QComboBox* cbbDotStyle;
@@ -37,6 +38,8 @@ private:
 
     QLineEdit* leLineColor;
     QCheckBox* chbShowGraph;
+
+    QCheckBox* chbShowThresholdAndMetrology;
 };
 
 #endif /* VIEW_LINE_CHART_PROPS_H */
