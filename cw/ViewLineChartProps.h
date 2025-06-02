@@ -2,8 +2,11 @@
 #define VIEW_LINE_CHART_PROPS_H
 
 #include "ViewChartProps.h"
+#include "ViewScatterStyleCombobox.h"
 #include "qcustomplot.h"
 #include <QtGui>
+
+
 
 class ViewLineChartProps : public PropsSection
 {
@@ -26,7 +29,9 @@ signals:
     void showLineSegmentChanged(bool checked);
     void lineWidthChanged(double width);
     void lineColorChanged(const QString& color);
+    void lineColorButtonClicked();
     void showGraphChanged(bool checked);
+    void thresholdColorButtonClicked();
     void showThresholdAndMetrologyChanged(bool checked);
     void thresholdValueChanged(double value);
 private:
@@ -38,10 +43,12 @@ private:
     QDoubleSpinBox* dsbLineWidth;
 
     QLineEdit* leLineColor;
+    QPushButton* btnLineColor;
     QCheckBox* chbShowGraph;
 
     QCheckBox* chbShowThresholdAndMetrology;
     QDoubleSpinBox* dsbThresholdValue;
+    QPushButton* btnThresholdColor;
 };
 
 #endif /* VIEW_LINE_CHART_PROPS_H */

@@ -3,8 +3,8 @@
 
 ViewChartWizard::ViewChartWizard(QWidget *parent) : QWidget(parent) {
   UI();
-  setWindowTitle(tr("LithoViewer - Chart Wizard"));
-  resize(800, 400);
+  setWindowTitle(tr("Chart Wizard"));
+  resize(1200, 400);
 }
 ViewChartWizard::~ViewChartWizard() {
   // Destructor implementation

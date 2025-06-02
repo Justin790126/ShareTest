@@ -3,6 +3,7 @@
 
 #include "ViewChartWizard.h"
 #include "ViewLineChartProps.h"
+#include "ViewScalableItemText.h"
 #include "qcustomplot.h"
 #include <QtGui>
 #include <iostream>
@@ -132,8 +133,10 @@ private slots:
   void handleShowLineSegmentChanged(bool checked);
   void handleLineWidthChanged(double width);
   void handleLineColorChanged(const QString &color);
+  void handleLineColorButtonClicked();
   void handleShowThresholdAndMetrologyChanged(bool checked);
   void handleThresholdValueChanged(double value);
+  void handleThresholdColorButtonClicked();
 };
 
 #endif /* LC_CHARTWIZARD_H */

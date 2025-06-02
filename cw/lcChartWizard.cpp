@@ -165,7 +165,72 @@ void lcChartWizard::ConnectLineChartProps() {
               SLOT(handleShowThresholdAndMetrologyChanged(bool)));
       connect(lineProps, SIGNAL(thresholdValueChanged(double)), this,
               SLOT(handleThresholdValueChanged(double)));
+      connect(lineProps, SIGNAL(thresholdColorButtonClicked()), this,
+              SLOT(handleThresholdColorButtonClicked()));
+      connect(lineProps, SIGNAL(lineColorButtonClicked()), this,
+              SLOT(handleLineColorButtonClicked()));
     }
+  }
+}
+
+void lcChartWizard::handleThresholdColorButtonClicked() {
+  // Handle the threshold color button click event
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  cout << "Threshold color button clicked" << endl;
+
+  // init random QPen, QBrush and set to line
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
+    }
+    int thresGraphIndex = info->GetThresholdGraphIndex();
+    if (thresGraphIndex < 0) {
+      return; // Exit if threshold graph index is not found
+    }
+
+    // Set a random color for the threshold line
+    QPen pen = qcp->graph(thresGraphIndex)->pen();
+    QColor newColor(rand() % 256, rand() % 256, rand() % 256);
+    pen.setColor(newColor);
+    qcp->graph(thresGraphIndex)->setPen(pen);
+    // set random brush with random pattern
+    QBrush brush = qcp->graph(thresGraphIndex)->brush();
+    brush.setColor(newColor);
+    brush.setStyle(static_cast<Qt::BrushStyle>(rand() % 6 + 1)); // Random style
+    qcp->graph(thresGraphIndex)->setBrush(brush);
+    qcp->replot(); // Replot to reflect changes
+  }
+}
+
+void lcChartWizard::handleLineColorButtonClicked() {
+  // Handle the line color button click event
+  ViewLineChartProps *lps = qobject_cast<ViewLineChartProps *>(sender());
+  cout << "Line color button clicked" << endl;
+  // init random QPen, QBrush and set to line
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  if (lps) {
+    ModelChartInfo *info = FindLineChartGraphIndex(lps, m_vWidModelChartInfo);
+    if (!info) {
+      return; // Exit if ModelChartInfo is not found
+    }
+    int graphIndex = info->GetGraphIndex();
+    if (graphIndex < 0) {
+      return; // Exit if graph index is not found
+    }
+
+    // Set a random color for the line
+    QPen pen = qcp->graph(graphIndex)->pen();
+    QColor newColor(rand() % 256, rand() % 256, rand() % 256);
+    pen.setColor(newColor);
+    qcp->graph(graphIndex)->setPen(pen);
+    // set random brush with random pattern
+    QBrush brush = qcp->graph(graphIndex)->brush();
+    brush.setColor(newColor);
+    brush.setStyle(static_cast<Qt::BrushStyle>(rand() % 6 + 1)); // Random style
+    qcp->graph(graphIndex)->setBrush(brush);
+    qcp->replot(); // Replot to reflect changes
   }
 }
 
@@ -456,13 +521,16 @@ void lcChartWizard::AddMetrologyTextItem(ModelChartInfo *info,
       continue; // Skip if the distance is too small
     }
     // draw text items with content of cd
-    QCPItemText *textItem = new QCPItemText(qcp);
+
+    ViewScalableItemText *textItem = new ViewScalableItemText(qcp);
     textItem->setPositionAlignment(Qt::AlignCenter);
     textItem->position->setCoords(txtPos, info->GetThreshold() + 0.01);
     textItem->setText(QString().sprintf("CD=%.6fnm", cd));
     textItem->setFont(QFont("Arial", 10));
     textItem->setColor(Qt::black); // Set text color to black
     textItem->setLayer("overlay"); // Set layer to overlay
+    textItem->setScalingAxis(qcp->xAxis, qcp->xAxis->range().size());
+    textItem->setVisible(false);
 
     info->AddMetrologyTextItem(textItem);
   }
@@ -513,6 +581,7 @@ QWidget *lcChartWizard::CreateLineChartProps(ModelChartInfo *info) {
     gphIntersectThreshold->setName(thresholdName);
     gphIntersectThreshold->addData(0, info->GetThreshold());
     gphIntersectThreshold->addData(info->GetX()->back(), info->GetThreshold());
+    gphIntersectThreshold->setVisible(false);
 
     // draw CD metrology
     AddMetrologyTextItem(info, qcp);

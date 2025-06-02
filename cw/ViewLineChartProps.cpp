@@ -31,27 +31,29 @@ void ViewLineChartProps::UI()
             QLabel* lblDotStyle = new QLabel(tr("Dot Style:"));
             hlytDotStyle->addWidget(lblDotStyle);
             cbbDotStyle = new QComboBox;
-            // add scatter style that qcustomplot2.1 support in combobox
-            cbbDotStyle->addItem(tr("None"), static_cast<int>(QCPScatterStyle::ssNone));
-            // cbbDotStyle->addItem(tr("Dot"), static_cast<int>(QCPScatterStyle::ssDot));
-            cbbDotStyle->addItem(tr("Cross"), static_cast<int>(QCPScatterStyle::ssCross));
-            cbbDotStyle->addItem(tr("Plus"), static_cast<int>(QCPScatterStyle::ssPlus));
-            cbbDotStyle->addItem(tr("Circle"), static_cast<int>(QCPScatterStyle::ssCircle));
-            cbbDotStyle->addItem(tr("Disc"), static_cast<int>(QCPScatterStyle::ssDisc));
-            cbbDotStyle->addItem(tr("Square"), static_cast<int>(QCPScatterStyle::ssSquare));
-            cbbDotStyle->addItem(tr("Diamond"), static_cast<int>(QCPScatterStyle::ssDiamond));
-            cbbDotStyle->addItem(tr("Star"), static_cast<int>(QCPScatterStyle::ssStar));
-            cbbDotStyle->addItem(tr("Triangle"), static_cast<int>(QCPScatterStyle::ssTriangle));
-            cbbDotStyle->addItem(tr("TriangleInverted"), static_cast<int>(QCPScatterStyle::ssTriangleInverted));
-            cbbDotStyle->addItem(tr("CrossSquare"), static_cast<int>(QCPScatterStyle::ssCrossSquare));
-            cbbDotStyle->addItem(tr("PlusSquare"), static_cast<int>(QCPScatterStyle::ssPlusSquare));
-            cbbDotStyle->addItem(tr("CrossCircle"), static_cast<int>(QCPScatterStyle::ssCrossCircle));
-            cbbDotStyle->addItem(tr("PlusCircle"), static_cast<int>(QCPScatterStyle::ssPlusCircle));
-            cbbDotStyle->addItem(tr("Peace"), static_cast<int>(QCPScatterStyle::ssPeace));
+            // // add scatter style that qcustomplot2.1 support in combobox
+            // cbbDotStyle->addItem(tr("None"), static_cast<int>(QCPScatterStyle::ssNone));
+            // // cbbDotStyle->addItem(tr("Dot"), static_cast<int>(QCPScatterStyle::ssDot));
+            // cbbDotStyle->addItem(tr("Cross"), static_cast<int>(QCPScatterStyle::ssCross));
+            // cbbDotStyle->addItem(tr("Plus"), static_cast<int>(QCPScatterStyle::ssPlus));
+            // cbbDotStyle->addItem(tr("Circle"), static_cast<int>(QCPScatterStyle::ssCircle));
+            // cbbDotStyle->addItem(tr("Disc"), static_cast<int>(QCPScatterStyle::ssDisc));
+            // cbbDotStyle->addItem(tr("Square"), static_cast<int>(QCPScatterStyle::ssSquare));
+            // cbbDotStyle->addItem(tr("Diamond"), static_cast<int>(QCPScatterStyle::ssDiamond));
+            // cbbDotStyle->addItem(tr("Star"), static_cast<int>(QCPScatterStyle::ssStar));
+            // cbbDotStyle->addItem(tr("Triangle"), static_cast<int>(QCPScatterStyle::ssTriangle));
+            // cbbDotStyle->addItem(tr("TriangleInverted"), static_cast<int>(QCPScatterStyle::ssTriangleInverted));
+            // cbbDotStyle->addItem(tr("CrossSquare"), static_cast<int>(QCPScatterStyle::ssCrossSquare));
+            // cbbDotStyle->addItem(tr("PlusSquare"), static_cast<int>(QCPScatterStyle::ssPlusSquare));
+            // cbbDotStyle->addItem(tr("CrossCircle"), static_cast<int>(QCPScatterStyle::ssCrossCircle));
+            // cbbDotStyle->addItem(tr("PlusCircle"), static_cast<int>(QCPScatterStyle::ssPlusCircle));
+            // cbbDotStyle->addItem(tr("Peace"), static_cast<int>(QCPScatterStyle::ssPeace));
 
+            ViewScatterStyleCombobox* cbb = new ViewScatterStyleCombobox;
+            cbbDotStyle = cbb;
             
             cbbDotStyle->setCurrentIndex(1); // Set default to None
-            hlytDotStyle->addWidget(cbbDotStyle);   
+            hlytDotStyle->addWidget(cbb);   
         }
 
         QHBoxLayout* hlytDotWidth = new QHBoxLayout;
@@ -92,10 +94,12 @@ void ViewLineChartProps::UI()
             hlytLineColor->addWidget(leLineColor);
         }
 
+        btnLineColor = new QPushButton(tr("Choose Color"));
+
         QHBoxLayout* hlytThresAndMetrology = new QHBoxLayout;
         {
             chbShowThresholdAndMetrology = new QCheckBox(tr("Show Threshold and Metrology"));
-            chbShowThresholdAndMetrology->setChecked(true); // Default to unchecked
+            chbShowThresholdAndMetrology->setChecked(false); // Default to unchecked
 
             dsbThresholdValue = new QDoubleSpinBox;
             dsbThresholdValue->setRange(-10.0, 10.0);
@@ -106,6 +110,8 @@ void ViewLineChartProps::UI()
             hlytThresAndMetrology->addWidget(dsbThresholdValue);
         }
 
+        btnThresholdColor = new QPushButton(tr("Choose Threshold Color"));
+
         vlyt->addLayout(hlytShowGraph);
         vlyt->addLayout(hlytLineName);
         vlyt->addLayout(hlytDotStyle);
@@ -113,8 +119,12 @@ void ViewLineChartProps::UI()
         vlyt->addLayout(hlytShowLineSegment);
         vlyt->addLayout(hlytLineWidth);
         vlyt->addLayout(hlytLineColor);
+        vlyt->addWidget(btnLineColor);
         vlyt->addLayout(hlytThresAndMetrology);
+        vlyt->addWidget(btnThresholdColor);
 
+        connect(btnThresholdColor, SIGNAL(clicked()),
+                this, SIGNAL(thresholdColorButtonClicked()));
         connect(chbShowGraph, SIGNAL(toggled(bool)),
                 this, SIGNAL(showGraphChanged(bool)));
         connect(leLineName, SIGNAL(textChanged(const QString&)),
@@ -127,12 +137,15 @@ void ViewLineChartProps::UI()
                 this, SIGNAL(lineWidthChanged(double)));
         connect(leLineColor, SIGNAL(textChanged(const QString&)),
                 this, SIGNAL(lineColorChanged(const QString&)));
+        connect(btnLineColor, SIGNAL(clicked()),
+                this, SIGNAL(lineColorButtonClicked()));
         connect(chbShowLineSegment, SIGNAL(toggled(bool)),
                 this, SIGNAL(showLineSegmentChanged(bool)));
         connect(chbShowThresholdAndMetrology, SIGNAL(toggled(bool)),
                 this, SIGNAL(showThresholdAndMetrologyChanged(bool)));
         connect(dsbThresholdValue, SIGNAL(valueChanged(double)),
                 this, SIGNAL(thresholdValueChanged(double)));
+        
     }
     this->setContentLayout(*vlyt);
 }

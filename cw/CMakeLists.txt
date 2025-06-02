@@ -18,6 +18,8 @@ set(SOURCES
     ViewChartWizard.cpp
     ViewColorPalette.cpp
     ViewColorCombobox.cpp
+    ViewScatterStyleCombobox.cpp
+    ViewScalableItemText.cpp
 )
 
 set(HEADERS
@@ -29,6 +31,8 @@ set(HEADERS
     ViewChartWizard.h
     ViewColorPalette.h
     ViewColorCombobox.h
+    ViewScatterStyleCombobox.h
+    ViewScalableItemText.h
 )
 
 qt4_wrap_cpp(SOURCES ${HEADERS})
