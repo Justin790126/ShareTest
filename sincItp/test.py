@@ -72,11 +72,16 @@ x_grid = np.arange(size[1])  # 0 to 71 (x-axis)
 y_grid = np.arange(size[0])  # 0 to 6 (y-axis)
 
 # Perform 2D sinc interpolation
-interpolated_signal = sinc_interp_2d(signal, x_grid, y_grid, x_pixels_interp, y_pixels_interp, window_size=8)
+interpolated_signal1 = sinc_interp_2d(signal, x_grid, y_grid, x_pixels_interp, y_pixels_interp, window_size=8)
+interpolated_signal2 = sinc_interp_2d(signal, x_grid, y_grid, x_pixels_interp, y_pixels_interp, window_size=4)
+interpolated_signal3 = sinc_interp_2d(signal, x_grid, y_grid, x_pixels_interp, y_pixels_interp, window_size=2)
+
 
 # Plotting
 plt.figure(figsize=(10, 6))
-plt.plot(x_nm, interpolated_signal, 'b-', label='Interpolated Signal')
+plt.plot(x_nm, interpolated_signal1, 'r-', label='Interpolated Signal w8')
+plt.plot(x_nm, interpolated_signal2, 'g-', label='Interpolated Signal w4')
+plt.plot(x_nm, interpolated_signal3, 'b-', label='Interpolated Signal w2')
 plt.title('2D Windowed Sinc Interpolation of Signal vs. X-Position (nm)')
 plt.xlabel('X-Position (nm)')
 plt.ylabel('Signal Value')
