@@ -12,6 +12,7 @@ set(SOURCES
     main.cpp
     mainwindow.cpp
     qcustomplot.cpp
+    precomputed_interpolator2d.cpp
 )
 
 set(HEADERS
