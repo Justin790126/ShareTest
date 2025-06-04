@@ -1,133 +1,120 @@
-#include <QApplication>
-#include <QMainWindow>
-#include <QVector>
-#include "qcustomplot.h"
-#include <cmath>
-#include <vector>
-#include <string>
 #include <iostream>
+#include <vector>
+#include <cmath>
+#include <stdexcept>
+#include <iomanip>
+#include <algorithm>
+
+#define PI 3.14159265358979323846
 
 using namespace std;
 
+#include "data.h"
+#include "qcustomplot.h"
+#include <QApplication> // Use QApplication, not QtGui
+
+extern vector<double> x_slice_point_nm;
+extern vector<double> y_slice_point_nm;
+extern vector<vector<double>> img;
+
+// Blackman window function
+double blackman_window(double x, int M) {
+    // Blackman window: w[n] = 0.42 - 0.5*cos(2*pi*n/M) + 0.08*cos(4*pi*n/M)
+    // x in [-M/2, M/2]
+    double n = x + M / 2.0;
+    if (n < 0 || n > M) return 0.0;
+    double w = 0.42 - 0.5 * cos(2 * PI * n / M) + 0.08 * cos(4 * PI * n / M);
+    return w;
+}
+
 double sinc(double x) {
-    if (std::abs(x) < 1e-10) return 1.0; // Avoid division by zero
-    return std::sin(M_PI * x) / (M_PI * x);
+    if (fabs(x) < 1e-8) return 1.0;
+    return sin(PI * x) / (PI * x);
 }
 
-double windowFunction(double t, double M, const std::string& type) {
-    if (std::abs(t) > M) return 0.0;
-    if (type == "rectangular") {
-        return 1.0;
-    } else if (type == "hamming") {
-        return 0.54 + 0.46 * std::cos(M_PI * t / M);
-    } else if (type == "blackman") {
-        return 0.42 + 0.5 * std::cos(M_PI * t / M) + 0.08 * std::cos(2 * M_PI * t / M);
-    }
-    throw std::invalid_argument("Unknown window type: " + type);
-}
+// 2D Blackman-windowed sinc interpolation
+double interpolate2D(const vector<vector<double>>& img,
+                     double x, double y, int window =4) {
+    int imgY = img.size();
+    int imgX = imgY ? img[0].size() : 0;
+    int x0 = floor(x);
+    int y0 = floor(y);
 
-QVector<double> sincInterp(const QVector<double>& x, const QVector<double>& t, const QVector<double>& t_new, int M, const std::string& windowType) {
-    double delta_x = t[1] - t[0]; // Spatial sampling interval (nm)
-    QVector<double> x_new(t_new.size());
-
-    for (int i = 0; i < t_new.size(); ++i) {
-        double xn = t_new[i]; // Position in nm
-        int n_start = std::floor(xn / delta_x - M);
-        int n_end = std::floor(xn / delta_x + M);
-        double sum_val = 0.0;
-
-        for (int n = std::max(0, n_start); n <= std::min(x.size() - 1, n_end); ++n) {
-            double tau = xn - n * delta_x;
-            double sinc_val = sinc(tau / delta_x);
-            double w = windowFunction(tau / delta_x, M, windowType);
-            double h = sinc_val * w;
-            sum_val += x[n] * h;
+    double result = 0.0;
+    double norm = 0.0;
+    for (int j = -window; j <= window; ++j) {
+        int yj = y0 + j;
+        if (yj < 0 || yj >= imgY) continue;
+        double wy = sinc(y - yj) * blackman_window(y - yj, 2 * window + 1);
+        for (int i = -window; i <= window; ++i) {
+            int xi = x0 + i;
+            if (xi < 0 || xi >= imgX) continue;
+            double wx = sinc(x - xi) * blackman_window(x - xi, 2 * window + 1);
+            double w = wx * wy;
+            result += img[yj][xi] * w;
+            norm += w;
         }
-        x_new[i] = sum_val;
     }
-    return x_new;
+    if (norm == 0.0) return 0.0;
+    return result / norm;
 }
 
 int main(int argc, char *argv[]) {
+
     QApplication app(argc, argv);
-    QMainWindow window;
 
-    // Generate sample intensity data for lithography (Gaussian-like profile)
-    const int N = 51; // 51 samples from 0 to 500 nm
-    QVector<double> t(N); // Sample positions (nm)
-    QVector<double> x(N); // Intensity values
-    double delta_x = 10.0; // Spatial sampling interval (nm)
-    for (int i = 0; i < N; ++i) {
-        t[i] = i * delta_x; // Positions: 0, 10, 20, ..., 500 nm
-        double pos = t[i] - 250.0; // Center at 250 nm
-        x[i] = 0.9 * std::exp(-pos * pos / (2 * 50.0 * 50.0)); // Gaussian intensity, sigma = 50 nm
+    // Image dimensions
+    int pixX = 70;
+    int pixY = 70;
+
+    // Use image data as is (assume extern is populated)
+    vector<vector<double>> img2 = img;
+
+    // Interpolation parameters
+    double bottomLeftX = 1418497.0;
+    double bottomLeftY = -3339036;
+    double simNmPerPix = 4.0;
+
+    // Interpolated values
+    vector<double> interpolated_values;
+
+    // Interpolate at each (x_nm, y_nm)
+    for (size_t i = 0; i < x_slice_point_nm.size() && i < y_slice_point_nm.size(); ++i) {
+        double x_nm = x_slice_point_nm[i];
+        double y_nm = y_slice_point_nm[i];
+        // Convert nanometers to pixel coordinates
+        double x_pix = (x_nm - bottomLeftX) / simNmPerPix;
+        double y_pix = (y_nm - bottomLeftY) / simNmPerPix;
+        double val = interpolate2D(img2, x_pix, y_pix);
+        printf("%f, ", val);
+        interpolated_values.push_back(val);
     }
+    printf("\n");
 
-    // Generate finer points for interpolation
-    const int N_new = 1001; // 0 to 500 nm with step 0.5 nm
-    QVector<double> t_new(N_new);
-    for (int i = 0; i < N_new; ++i) {
-        t_new[i] = i * 0.5;
+    // use qcustomplot to plot distance_nm in x, interpolated_values in y
+    QCustomPlot customPlot;
+    QVector<double> xData, yData;
+    for (size_t i = 0; i < x_slice_point_nm.size() && i < interpolated_values.size(); i++) {
+        xData.append(x_slice_point_nm[i]);
+        yData.append(interpolated_values[i]);
     }
+    customPlot.addGraph();
+    customPlot.graph(0)->setData(xData, yData);
+    // add scatter style to disk
+    customPlot.graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
+    customPlot.xAxis->setLabel("Distance (nm)");
+    customPlot.yAxis->setLabel("Interpolated Value");
+    if (!x_slice_point_nm.empty() && !interpolated_values.empty()) {
+        customPlot.xAxis->setRange(
+            *min_element(x_slice_point_nm.begin(), x_slice_point_nm.end()),
+            *max_element(x_slice_point_nm.begin(), x_slice_point_nm.end()));
+        customPlot.yAxis->setRange(
+            *min_element(interpolated_values.begin(), interpolated_values.end()),
+            *max_element(interpolated_values.begin(), interpolated_values.end()));
+    }
+    customPlot.replot();
+    customPlot.resize(800, 600);
+    customPlot.show();
 
-    // Perform interpolation for each window
-    int M = 4; // Half-window size
-    QVector<double> x_rect = sincInterp(x, t, t_new, M, "rectangular");
-    QVector<double> x_hamm = sincInterp(x, t, t_new, M, "hamming");
-    QVector<double> x_black = sincInterp(x, t, t_new, M, "blackman");
-
-    // Set up QCustomPlot
-    QCustomPlot *customPlot = new QCustomPlot(&window);
-    window.setCentralWidget(customPlot);
-    window.resize(1000, 600);
-
-    // Plot original intensity samples
-    customPlot->addGraph();
-    customPlot->graph(0)->setData(t, x);
-    customPlot->graph(0)->setPen(QPen(Qt::blue));
-    customPlot->graph(0)->setLineStyle(QCPGraph::lsNone);
-    customPlot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
-    customPlot->graph(0)->setName("Intensity Samples");
-
-    // Plot interpolated intensity (Rectangular)
-    customPlot->addGraph();
-    customPlot->graph(1)->setData(t_new, x_rect);
-    customPlot->graph(1)->setPen(QPen(Qt::red, 2));
-    customPlot->graph(1)->setName("Rectangular Window");
-
-    // Plot interpolated intensity (Hamming)
-    customPlot->addGraph();
-    customPlot->graph(2)->setData(t_new, x_hamm);
-    customPlot->graph(2)->setPen(QPen(Qt::green, 2));
-    customPlot->graph(2)->setName("Hamming Window");
-
-    // Plot interpolated intensity (Blackman)
-    customPlot->addGraph();
-    customPlot->graph(3)->setData(t_new, x_black);
-    customPlot->graph(3)->setPen(QPen(Qt::magenta, 2));
-    customPlot->graph(3)->setName("Blackman Window");
-
-    // Configure plot
-    customPlot->xAxis->setLabel("Position (nm)");
-    customPlot->yAxis->setLabel("Intensity");
-    customPlot->xAxis->setRange(0, 500);
-    customPlot->yAxis->setRange(0, 1.2); // Normalized intensity
-    customPlot->legend->setVisible(true);
-    customPlot->legend->setFont(QFont("Helvetica", 9));
-    customPlot->legend->setBrush(QBrush(QColor(255, 255, 255, 230)));
-    customPlot->legend->setBorderPen(QPen(Qt::black));
-    customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
-    customPlot->replot();
-
-    // Compute and print interpolation at x = 37 nm
-    QVector<double> single_point = {37.0};
-    double x_rect_37 = sincInterp(x, t, single_point, M, "rectangular")[0];
-    double x_hamm_37 = sincInterp(x, t, single_point, M, "hamming")[0];
-    double x_black_37 = sincInterp(x, t, single_point, M, "blackman")[0];
-    std::cout << "Interpolated intensity at x = 37 nm (Rectangular): " << x_rect_37 << std::endl;
-    std::cout << "Interpolated intensity at x = 37 nm (Hamming): " << x_hamm_37 << std::endl;
-    std::cout << "Interpolated intensity at x = 37 nm (Blackman): " << x_black_37 << std::endl;
-
-    window.show();
     return app.exec();
 }
