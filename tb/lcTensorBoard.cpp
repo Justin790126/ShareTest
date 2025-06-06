@@ -103,7 +103,6 @@ void LcTensorBoard::handleTfFileChanged()
 
         QVector<double>* epocshAcc = parser->GetEpochAcc();
         QVector<double>* epocshLoss = parser->GetEpochLoss();
-        
 
         ChartInfo* ciAcc = new ChartInfo;
         ChartInfo* ciLoss = new ChartInfo;
