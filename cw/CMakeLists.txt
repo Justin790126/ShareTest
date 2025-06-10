@@ -20,6 +20,7 @@ set(SOURCES
     ViewColorCombobox.cpp
     ViewScatterStyleCombobox.cpp
     ViewScalableItemText.cpp
+    ModelTimeSequenceParser.cpp
 )
 
 set(HEADERS
@@ -33,6 +34,7 @@ set(HEADERS
     ViewColorCombobox.h
     ViewScatterStyleCombobox.h
     ViewScalableItemText.h
+    ModelTimeSequenceParser.h
 )
 
 qt4_wrap_cpp(SOURCES ${HEADERS})

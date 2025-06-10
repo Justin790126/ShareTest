@@ -32,6 +32,7 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
 
   vcw->show();
 
+#if TEST_SLICE_FEATURES
   QCustomPlot *qcp = vcw->getQCustomPlot();
   QVBoxLayout *vlytLeftProps = vcw->getVLayoutLeftProps();
 
@@ -90,6 +91,12 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
           SLOT(handleLineChartSelection()));
   ConnectGeneralProps();
   ConnectLineChartProps();
+#endif
+
+  ModelTimeSequenceParser* tsp = new ModelTimeSequenceParser(this);
+  tsp->OpenFile("/home/justin126/workspace/ShareTest/cw/ts.txt");
+  tsp->start();
+  tsp->Wait(); // Wait for the thread to finish
 }
 
 void lcChartWizard::ConnectGeneralProps() {
