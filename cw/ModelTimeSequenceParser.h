@@ -84,11 +84,27 @@ public:
     void ParseSequencePairs();
 
     int Str2ActId(const string& in);
+    string ActId2Str(int iActId);
+    string ActId2JetHexColor(int iActId);
     int Str2ActType(const string& in);
+    string ActType2Str(int iActType);
     double string_to_timestamp(const std::string& a);
     string timestamp_to_string(double timestamp);
 
     void ClearSequencePairs();
+
+    // get pointer to m_vTimeSequencePairs
+    vector<pair<TimeSequencePair*, TimeSequencePair*>>* GetTimeSequencePairs() {
+        return &m_vTimeSequencePairs;
+    }
+    // get pointer to m_vdTimeStamps
+    vector<double>* GetTimeStamps() {
+        return &m_vdTimeStamps;
+    }
+    // get pointer to m_vdNormalizedTimeStamps
+    vector<double>* GetNormalizedTimeStamps() {
+        return &m_vdNormalizedTimeStamps;
+    }
 
 protected:
     virtual void run() override;
@@ -97,8 +113,10 @@ protected:
 
     string m_sFileName;
 
-    std::vector<string> m_vsHeader;
+    vector<string> m_vsHeader;
     vector<vector<string>> m_vvContent;
+    vector<double> m_vdTimeStamps;
+    vector<double> m_vdNormalizedTimeStamps;
 
     // sort by timestamp, with first element with tpye of SNED, second element with type of RECV
     vector<pair<TimeSequencePair*, TimeSequencePair*>> m_vTimeSequencePairs;

@@ -5,42 +5,43 @@ ModelTimeSequenceParser::ModelTimeSequenceParser(QObject *parent)
   // Constructor implementation
 }
 
-ModelTimeSequenceParser::~ModelTimeSequenceParser() {
-  ClearSequencePairs();
-}
+ModelTimeSequenceParser::~ModelTimeSequenceParser() { ClearSequencePairs(); }
 
-double ModelTimeSequenceParser::string_to_timestamp(const std::string& a) {
-    std::tm tm = {};
-    double milliseconds = 0.0;
+double ModelTimeSequenceParser::string_to_timestamp(const std::string &a) {
+  std::tm tm = {};
+  double milliseconds = 0.0;
 
-    // Parse the date and time
-    std::istringstream ss(a);
-    ss >> std::get_time(&tm, "%Y-%m-%d-%H:%M:%S");
-    if (ss.fail()) return -1;
+  // Parse the date and time
+  std::istringstream ss(a);
+  ss >> std::get_time(&tm, "%Y-%m-%d-%H:%M:%S");
+  if (ss.fail())
+    return -1;
 
-    // Read the milliseconds part
-    char dot;
-    ss >> dot >> milliseconds; // dot should be '.'
-    if (dot != '.') milliseconds = 0.0;
+  // Read the milliseconds part
+  char dot;
+  ss >> dot >> milliseconds; // dot should be '.'
+  if (dot != '.')
+    milliseconds = 0.0;
 
-    // Get time_t (seconds since epoch)
-    std::time_t t = timegm(&tm); // use timegm for UTC, or mktime for local time
+  // Get time_t (seconds since epoch)
+  std::time_t t = timegm(&tm); // use timegm for UTC, or mktime for local time
 
-    // Combine seconds and milliseconds
-    return static_cast<double>(t) + milliseconds / 1000.0;
+  // Combine seconds and milliseconds
+  return static_cast<double>(t) + milliseconds / 1000.0;
 }
 
 string ModelTimeSequenceParser::timestamp_to_string(double timestamp) {
-    std::time_t t = static_cast<std::time_t>(timestamp);
-    double milliseconds = (timestamp - t) * 1000.0;
+  std::time_t t = static_cast<std::time_t>(timestamp);
+  double milliseconds = (timestamp - t) * 1000.0;
 
-    std::tm tm = *std::gmtime(&t); // use gmtime for UTC, or localtime for local time
+  std::tm tm =
+      *std::gmtime(&t); // use gmtime for UTC, or localtime for local time
 
-    char buffer[30];
-    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H:%M:%S", &tm);
-    return std::string(buffer) + "." + std::to_string(static_cast<int>(milliseconds));
+  char buffer[30];
+  std::strftime(buffer, sizeof(buffer), "%Y-%m-%d-%H:%M:%S", &tm);
+  return std::string(buffer) + "." +
+         std::to_string(static_cast<int>(milliseconds));
 }
-
 
 void ModelTimeSequenceParser::SplitByDel(const string &in, vector<string> &out,
                                          const string &del) {
@@ -74,193 +75,278 @@ void ModelTimeSequenceParser::ParseHeader() {
   }
 }
 
-void ModelTimeSequenceParser::ClearSequencePairs()
-{
-    for (size_t i = 0; i < m_vTimeSequencePairs.size(); ++i) {
-        TimeSequencePair *recvPair = m_vTimeSequencePairs[i].first;
-        TimeSequencePair *sendPair = m_vTimeSequencePairs[i].second;
+void ModelTimeSequenceParser::ClearSequencePairs() {
+  for (size_t i = 0; i < m_vTimeSequencePairs.size(); ++i) {
+    TimeSequencePair *recvPair = m_vTimeSequencePairs[i].first;
+    TimeSequencePair *sendPair = m_vTimeSequencePairs[i].second;
 
-        if (recvPair) {
-            delete recvPair; // Delete the receive pair
-        }
-        if (sendPair) {
-            delete sendPair; // Delete the send pair
-        }
+    if (recvPair) {
+      delete recvPair; // Delete the receive pair
     }
-    m_vTimeSequencePairs.clear();
+    if (sendPair) {
+      delete sendPair; // Delete the send pair
+    }
+  }
+  m_vTimeSequencePairs.clear();
 }
 
 int ModelTimeSequenceParser::Str2ActType(const string &in) {
-    // Convert string to action type
-    if (in == "SEND") return (int)MTS_ACTION_TYPE_SEND;
-    if (in == "RECV") return (int)MTS_ACTION_TYPE_RECV;
-    return (int)MTS_ACTION_TYPE_UNKNOWN; // Default case
+  // Convert string to action type
+  if (in == "SEND")
+    return (int)MTS_ACTION_TYPE_SEND;
+  if (in == "RECV")
+    return (int)MTS_ACTION_TYPE_RECV;
+  return (int)MTS_ACTION_TYPE_UNKNOWN; // Default case
+}
+
+string ModelTimeSequenceParser::ActType2Str(int actType) {
+  // Convert action type to string
+  switch (actType) {
+  case MTS_ACTION_TYPE_SEND:
+    return "SEND";
+  case MTS_ACTION_TYPE_RECV:
+    return "RECV";
+  default:
+    return "UNKNOWN"; // Default case
+  }
 }
 
 int ModelTimeSequenceParser::Str2ActId(const string &in) {
-    // use in.find to determin enum
-    if (in.find("ENABLE_PROFILE") != string::npos) {
-        return (int)MTS_ACTION_ID_ENABLE_PROFILE;
-    } else if (in.find("LOAD_MODEL") != string::npos) {
-        return (int)MTS_ACTION_ID_LOAD_MODEL;
-    } else if (in.find("MODEL_SETTING") != string::npos) {
-        return (int)MTS_ACTION_ID_MODEL_SETTING;
-    } else if (in.find("DOMAIN_INFO") != string::npos) {
-        return (int)MTS_ACTION_ID_DOMAIN_INFO;
-    } else if (in.find("PRIV_ACT") != string::npos) {
-        return (int)MTS_ACTION_ID_PRIV_ACT;
-    } else if (in.find("SET_MASK") != string::npos) {
-        return (int)MTS_ACTION_ID_SET_MASK;
-    } else if (in.find("COMP_RESIST_IMAGE") != string::npos) {
-        return (int)MTS_ACTION_ID_COMP_RESIST_IMAGE;
-    } else if (in.find("COMP_OPTICAL_IMAGE") != string::npos) {
-        return (int)MTS_ACTION_ID_COMP_OPTICAL_IMAGE;
-    } else if (in.find("SET_NULL_MASK") != string::npos) {
-        return (int)MTS_ACTION_ID_SET_NULL_MASK;
-    } else if (in.find("UNLOAD_MODEL") != string::npos) {
-        return (int)MTS_ACTION_ID_UNLOAD_MODEL;
-    } else if (in.find("Unknown SimAct") != string::npos) {
-        return (int)MTS_ACTION_ID_UNKNOWN_SIM_ACT;
-    }
+  // use in.find to determin enum
+  if (in.find("UtilAct::ENABLE_PROFILE") != string::npos) {
+    return (int)MTS_ACTION_ID_ENABLE_PROFILE;
+  } else if (in.find("SimAct::LOAD_MODEL") != string::npos) {
+    return (int)MTS_ACTION_ID_LOAD_MODEL;
+  } else if (in.find("SimAct::MODEL_SETTING") != string::npos) {
+    return (int)MTS_ACTION_ID_MODEL_SETTING;
+  } else if (in.find("SimAct::DOMAIN_INFO") != string::npos) {
+    return (int)MTS_ACTION_ID_DOMAIN_INFO;
+  } else if (in.find("SimAct::PRIV_ACT") != string::npos) {
+    return (int)MTS_ACTION_ID_PRIV_ACT;
+  } else if (in.find("SimAct::SET_MASK") != string::npos) {
+    return (int)MTS_ACTION_ID_SET_MASK;
+  } else if (in.find("SimAct::COMP_RESIST_IMAGE") != string::npos) {
+    return (int)MTS_ACTION_ID_COMP_RESIST_IMAGE;
+  } else if (in.find("SimAct::COMP_OPTICAL_IMAGE") != string::npos) {
+    return (int)MTS_ACTION_ID_COMP_OPTICAL_IMAGE;
+  } else if (in.find("SimAct::SET_NULL_MASK") != string::npos) {
+    return (int)MTS_ACTION_ID_SET_NULL_MASK;
+  } else if (in.find("SimAct::UNLOAD_MODEL") != string::npos) {
+    return (int)MTS_ACTION_ID_UNLOAD_MODEL;
+  } else if (in.find("[Unknown SimAct]") != string::npos) {
+    return (int)MTS_ACTION_ID_UNKNOWN_SIM_ACT;
+  }
 }
 
-void ModelTimeSequenceParser::ParseSequencePairs()
-{
-    // iterate m_vvContent
-    vector<pair<int, size_t>> recvActIdAndRowIdx;
-    vector<pair<int, size_t>> sendActIdAndRowIdx;
+string ModelTimeSequenceParser::ActId2Str(int actId) {
+  // Convert action ID to string
+  switch (actId) {
+  case MTS_ACTION_ID_ENABLE_PROFILE:
+    return "UtilAct::ENABLE_PROFILE";
+  case MTS_ACTION_ID_LOAD_MODEL:
+    return "SimAct::LOAD_MODEL";
+  case MTS_ACTION_ID_MODEL_SETTING:
+    return "SimAct::MODEL_SETTING";
+  case MTS_ACTION_ID_DOMAIN_INFO:
+    return "SimAct::DOMAIN_INFO";
+  case MTS_ACTION_ID_PRIV_ACT:
+    return "SimAct::PRIV_ACT";
+  case MTS_ACTION_ID_SET_MASK:
+    return "SimAct::SET_MASK";
+  case MTS_ACTION_ID_COMP_RESIST_IMAGE:
+    return "SimAct::COMP_RESIST_IMAGE";
+  case MTS_ACTION_ID_COMP_OPTICAL_IMAGE:
+    return "SimAct::COMP_OPTICAL_IMAGE";
+  case MTS_ACTION_ID_SET_NULL_MASK:
+    return "SimAct::SET_NULL_MASK";
+  case MTS_ACTION_ID_UNLOAD_MODEL:
+    return "SimAct::UNLOAD_MODEL";
+  case MTS_ACTION_ID_UNKNOWN_SIM_ACT:
+    return "[Unknown SimAct]";
+  default:
+    return "[Unknown Action ID]"; // Default case
+  }
+}
 
-    recvActIdAndRowIdx.reserve(1000); // Reserve space for 1000 pairs
-    sendActIdAndRowIdx.reserve(1000); // Reserve space for 1000 pairs
-    for (size_t i = 0; i < m_vvContent.size(); ++i) {
-        const auto &row = m_vvContent[i];
-        if (row.size() < 3) continue; // Ensure there are enough columns
+string ModelTimeSequenceParser::ActId2JetHexColor(int actId) {
+  // use MTS_ACTION_ID_COUNT to create jet color map, and look up map
+  vector<string> jetColorHex;
+  jetColorHex.reserve(MTS_ACTION_ID_COUNT);
+  // create jet color map by MTS_ACTION_ID_COUNT through equation
+  for (int i = 0; i < MTS_ACTION_ID_COUNT; ++i) {
+    double ratio = static_cast<double>(i) / (MTS_ACTION_ID_COUNT - 1);
+    int r = static_cast<int>(255 * (1 - ratio));
+    int g = static_cast<int>(255 * ratio);
+    int b = 0; // Blue is always 0 in this case
+    char hexColor[8];
+    snprintf(hexColor, sizeof(hexColor), "#%02X%02X%02X", r, g, b);
+    jetColorHex.push_back(hexColor);
+  }
+  jetColorHex.shrink_to_fit(); // Shrink to fit the reserved space
 
-        double ts = string_to_timestamp(row[0]);
-        // printf("Row %zu: Timestamp = %f\n", i, ts);
-        int actType = Str2ActType(row[1]);
-        int actId = Str2ActId(row[2]);
+  // return the color by actId
+  if (actId >= 0 && actId < MTS_ACTION_ID_COUNT) {
+    return jetColorHex[actId];
+  } else {
+    return "#000000"; // Default color for unknown action ID
+  }
+}
 
-        if (actType == MTS_ACTION_TYPE_RECV) {
-            recvActIdAndRowIdx.emplace_back(actId, i);
-        } else if (actType == MTS_ACTION_TYPE_SEND) {
-            sendActIdAndRowIdx.emplace_back(actId, i);
-        }
+void ModelTimeSequenceParser::ParseSequencePairs() {
+  // iterate m_vvContent
+  vector<pair<int, size_t>> recvActIdAndRowIdx;
+  vector<pair<int, size_t>> sendActIdAndRowIdx;
+
+  recvActIdAndRowIdx.reserve(1000); // Reserve space for 1000 pairs
+  sendActIdAndRowIdx.reserve(1000); // Reserve space for 1000 pairs
+  for (size_t i = 0; i < m_vvContent.size(); ++i) {
+    const auto &row = m_vvContent[i];
+    if (row.size() < 3)
+      continue; // Ensure there are enough columns
+
+    double ts = string_to_timestamp(row[0]);
+    // printf("Row %zu: Timestamp = %f\n", i, ts);
+    int actType = Str2ActType(row[1]);
+    int actId = Str2ActId(row[2]);
+
+    if (actType == MTS_ACTION_TYPE_RECV) {
+      recvActIdAndRowIdx.emplace_back(actId, i);
+    } else if (actType == MTS_ACTION_TYPE_SEND) {
+      sendActIdAndRowIdx.emplace_back(actId, i);
     }
-    recvActIdAndRowIdx.shrink_to_fit(); // Shrink to fit the reserved space
-    sendActIdAndRowIdx.shrink_to_fit(); // Shrink to fit the reserved space
+  }
+  recvActIdAndRowIdx.shrink_to_fit(); // Shrink to fit the reserved space
+  sendActIdAndRowIdx.shrink_to_fit(); // Shrink to fit the reserved space
 
-    cout << recvActIdAndRowIdx.size() << endl;
-    cout << sendActIdAndRowIdx.size() << endl;
+  m_vdTimeStamps.clear();
+  m_vdTimeStamps.reserve(m_vvContent.size());
+  for (size_t i = 0; i < m_vvContent.size(); ++i) {
+    const auto &row = m_vvContent[i];
+    if (row.size() < 3)
+      continue; // Ensure there are enough columns
 
-    ClearSequencePairs();
+    double ts = string_to_timestamp(row[0]);
+    m_vdTimeStamps.push_back(ts);
+  }
+  m_vdTimeStamps.shrink_to_fit(); // Shrink to fit the reserved space
 
-    vector<size_t> pairRecvIdx;
-    vector<size_t> pairSendIdx;
-    size_t iterSize = std::min<size_t>(recvActIdAndRowIdx.size(), sendActIdAndRowIdx.size());
-    for (size_t i = 0; i < iterSize; i++) {
-        int recvActId = recvActIdAndRowIdx[i].first;
-        size_t recvRowIdx = recvActIdAndRowIdx[i].second;
+  // sort m_vdTimeStamps by timestamp from small to large
+  std::sort(m_vdTimeStamps.begin(), m_vdTimeStamps.end());
 
-        // explicit iterator to find the corresponding sendActId
-        // if recvActId is MTS_ACTION_ID_LOAD_MODEL, find the corresponding
-        // sendActId which is MTS_ACTION_ID_UNLOAD_MODEL
+  // calculate m_vdNormalizedTimeStamps by minus each timestamp with the first
+  // timestamp
+  m_vdNormalizedTimeStamps.clear();
+  m_vdNormalizedTimeStamps.reserve(m_vdTimeStamps.size());
+  if (!m_vdTimeStamps.empty()) {
+    double firstTimestamp = m_vdTimeStamps[0];
+    for (const auto &ts : m_vdTimeStamps) {
+      m_vdNormalizedTimeStamps.push_back(ts - firstTimestamp);
+    }
+  }
+  m_vdNormalizedTimeStamps.shrink_to_fit(); // Shrink to fit the reserved space
 
-        int pairSendIdx = -1;
-        if (recvActId == (int)MTS_ACTION_ID_LOAD_MODEL) {
-            // find index where sendActId == MTS_ACTION_ID_UNLOAD_MODEL
-            auto it = std::find_if(sendActIdAndRowIdx.begin(), sendActIdAndRowIdx.end(),
-                        [](const pair<int, size_t> &p) {
-                            return p.first == (int)MTS_ACTION_ID_UNLOAD_MODEL;
-                        });
-            if (it != sendActIdAndRowIdx.end()) {
-                pairSendIdx = it - sendActIdAndRowIdx.begin(); // get index
-            }
+  ClearSequencePairs();
 
-        }
+  vector<size_t> pairRecvIdxes;
+  vector<size_t> pairSendIdxes;
 
-        // find index where the same act id in sendActIdAndRowIdx
-        if (pairSendIdx == -1) {
-            auto it = std::find_if(sendActIdAndRowIdx.begin(), sendActIdAndRowIdx.end(),
-                        [recvActId](const pair<int, size_t> &p) {
-                            return p.first == recvActId;
-                        });
-            if (it != sendActIdAndRowIdx.end()) {
-                pairSendIdx = it - sendActIdAndRowIdx.begin(); // get index
-            }
-        }
-            
-        // if find, create a pair<TimeSequencePair*, TimeSequencePair*>
-        if (pairSendIdx != -1) {
-            TimeSequencePair *recvPair = new TimeSequencePair(
-                string_to_timestamp(m_vvContent[recvRowIdx][0]),
-                Str2ActType(m_vvContent[recvRowIdx][1]),
-                recvActId);
+  size_t iterSize =
+      std::min<size_t>(recvActIdAndRowIdx.size(), sendActIdAndRowIdx.size());
+  pairRecvIdxes.reserve(iterSize);
+  pairSendIdxes.reserve(iterSize);
+  for (size_t i = 0; i < iterSize; i++) {
+    int recvActId = recvActIdAndRowIdx[i].first;
+    size_t recvRowIdx = recvActIdAndRowIdx[i].second;
 
-            TimeSequencePair *sendPair = new TimeSequencePair(
-                string_to_timestamp(m_vvContent[sendActIdAndRowIdx[pairSendIdx].second][0]),
-                Str2ActType(m_vvContent[sendActIdAndRowIdx[pairSendIdx].second][1]),
-                sendActIdAndRowIdx[pairSendIdx].first);
+    // explicit iterator to find the corresponding sendActId
+    // if recvActId is MTS_ACTION_ID_LOAD_MODEL, find the corresponding
+    // sendActId which is MTS_ACTION_ID_UNLOAD_MODEL
 
-            m_vTimeSequencePairs.emplace_back(recvPair, sendPair);
-
-            // remove by pairSendIdx in sendActIdAndRowIdx
-            sendActIdAndRowIdx.erase(sendActIdAndRowIdx.begin() + pairSendIdx);
-        } else {
-            // not paired, only receive pair
-            TimeSequencePair *recvPair = new TimeSequencePair(
-                string_to_timestamp(m_vvContent[recvRowIdx][0]),
-                Str2ActType(m_vvContent[recvRowIdx][1]),
-                recvActId);
-            m_vTimeSequencePairs.emplace_back(recvPair, nullptr); // No send pair
-        }
+    int pairSendIdx = -1;
+    // find index where the same act id in sendActIdAndRowIdx
+    if (pairSendIdx == -1) {
+      auto it =
+          std::find_if(sendActIdAndRowIdx.begin(), sendActIdAndRowIdx.end(),
+                       [recvActId](const pair<int, size_t> &p) {
+                         return p.first == recvActId;
+                       });
+      if (it != sendActIdAndRowIdx.end()) {
+        pairSendIdx = it - sendActIdAndRowIdx.begin(); // get index
+      }
     }
 
-    // remain sendActIdAndRowIdx is not pair
-    cout << sendActIdAndRowIdx.size() << endl;
-
-    // use iterSize to check which one is not iterate
-    if (recvActIdAndRowIdx.size() > iterSize) {
-        // push into m_vTimeSequencePairs
-        for (size_t i = iterSize; i < recvActIdAndRowIdx.size(); i++) {
-            int recvActId = recvActIdAndRowIdx[i].first;
-            size_t recvRowIdx = recvActIdAndRowIdx[i].second;
-
-            TimeSequencePair *recvPair = new TimeSequencePair(
-                string_to_timestamp(m_vvContent[recvRowIdx][0]),
-                Str2ActType(m_vvContent[recvRowIdx][1]),
-                recvActId);
-
-            m_vTimeSequencePairs.emplace_back(recvPair, nullptr); // No send pair
-        }
+    if (pairSendIdx != -1) {
+      size_t sendRowIdx = sendActIdAndRowIdx[pairSendIdx].second;
+      pairRecvIdxes.push_back(recvRowIdx);
+      pairSendIdxes.push_back(sendRowIdx);
     }
-    if (sendActIdAndRowIdx.size() > iterSize) {
-        // push into m_vTimeSequencePairs
-        for (size_t i = iterSize; i < sendActIdAndRowIdx.size(); i++) {
-            int sendActId = sendActIdAndRowIdx[i].first;
-            size_t sendRowIdx = sendActIdAndRowIdx[i].second;
+  }
+  pairRecvIdxes.shrink_to_fit(); // Shrink to fit the reserved space
+  pairSendIdxes.shrink_to_fit(); // Shrink to fit the reserved space
 
-            TimeSequencePair *sendPair = new TimeSequencePair(
-                string_to_timestamp(m_vvContent[sendRowIdx][0]),
-                Str2ActType(m_vvContent[sendRowIdx][1]),
-                sendActId);
+  // remain sendActIdAndRowIdx is not pair
+  m_vTimeSequencePairs.clear();
+  m_vTimeSequencePairs.reserve(m_vvContent.size());
+  for (size_t i = 0; i < pairRecvIdxes.size(); i++) {
+    // print in m_vvContent
+    const auto &recvRow = m_vvContent[pairRecvIdxes[i]];
+    const auto &sendRow = m_vvContent[pairSendIdxes[i]];
+    double recvTs = string_to_timestamp(recvRow[0]);
+    double sendTs = string_to_timestamp(sendRow[0]);
+    int recvActType = Str2ActType(recvRow[1]);
+    int recvActId = Str2ActId(recvRow[2]);
+    int sendActType = Str2ActType(sendRow[1]);
+    int sendActId = Str2ActId(sendRow[2]);
+    TimeSequencePair *recvPair =
+        new TimeSequencePair(recvTs, recvActType, recvActId);
+    TimeSequencePair *sendPair =
+        new TimeSequencePair(sendTs, sendActType, sendActId);
+    m_vTimeSequencePairs.emplace_back(recvPair, sendPair);
+    // cout << recvRow[2] << ", " << sendRow[2] << endl;
+    // cout << "Recv Pair: " << *recvPair << ", Send Pair: " << *sendPair <<
+    // endl;
+  }
 
-            m_vTimeSequencePairs.emplace_back(nullptr, sendPair); // No receive pair
-        }
+  // find those are not paired by using pairRecvIdxes and m_vvContent
+  for (size_t i = 0; i < m_vvContent.size(); i++) {
+    // check i in pairRecvIdxes ?
+    if (std::find(pairRecvIdxes.begin(), pairRecvIdxes.end(), i) ==
+            pairRecvIdxes.end() &&
+        std::find(pairSendIdxes.begin(), pairSendIdxes.end(), i) ==
+            pairSendIdxes.end()) {
+      // this row is not paired
+      const auto &row = m_vvContent[i];
+      if (row.size() < 3)
+        continue; // Ensure there are enough columns
+      double ts = string_to_timestamp(row[0]);
+      int actType = Str2ActType(row[1]);
+      int actId = Str2ActId(row[2]);
+      TimeSequencePair *pair = new TimeSequencePair(ts, actType, actId);
+      m_vTimeSequencePairs.emplace_back(pair, nullptr); // Only recv pair
     }
+  }
+  m_vTimeSequencePairs.shrink_to_fit(); // Shrink to fit the reserved space
 
-    // iterate m_vTimeSequencePairs and print
-    for (const auto &pair : m_vTimeSequencePairs) {
-        if (pair.first && pair.second) {
-            cout << *pair.first << " : " << *pair.second << endl;
-        } else if (pair.first) {
-            cout << *pair.first << " : No send pair" << endl;
-        } else if (pair.second) {
-            cout << "No receive pair : " << *pair.second << endl;
-        } else {
-            cout << "No pairs" << endl;
-        }
-    }
+  // sort m_vTimeSequencePairs by timestamp from small to large
+  std::sort(m_vTimeSequencePairs.begin(), m_vTimeSequencePairs.end(),
+            [](const pair<TimeSequencePair *, TimeSequencePair *> &a,
+               const pair<TimeSequencePair *, TimeSequencePair *> &b) {
+              return a.first->GetTimeStamp() < b.first->GetTimeStamp();
+            });
+
+  // print the pairs
+  //   for (const auto &pair : m_vTimeSequencePairs) {
+  //     TimeSequencePair *recvPair = pair.first;
+  //     TimeSequencePair *sendPair = pair.second;
+  //     if (recvPair) {
+  //       cout << "Recv Pair: " << *recvPair << ", ";
+  //     }
+  //     if (sendPair) {
+  //       cout << "Send Pair: " << *sendPair << endl;
+  //     } else {
+  //       cout << "Send Pair: nullptr" << endl;
+  //     }
+  //   }
 }
 
 void ModelTimeSequenceParser::run() {
@@ -284,7 +370,7 @@ void ModelTimeSequenceParser::run() {
   }
   m_vvContent.shrink_to_fit(); // Shrink to fit the reserved space
 
-    ParseSequencePairs();
+  ParseSequencePairs();
 }
 
 bool ModelTimeSequenceParser::OpenFile(const QString &fileName) {

@@ -1,4 +1,7 @@
 #include "lcChartWizard.h"
+#include "algorithm"
+
+
 
 inline std::vector<double>
 find_all_x_by_linear_interp(const std::vector<double> &x_nm,
@@ -24,6 +27,29 @@ find_all_x_by_linear_interp(const std::vector<double> &x_nm,
   result.push_back(x_nm.back()); // Add the last x value
   result.shrink_to_fit(); // Optional: shrink to fit for memory efficiency
   return result;
+}
+
+std::vector<QColor> jetColor(int n) {
+    std::vector<QColor> colors;
+    colors.reserve(n);
+    for (int i = 0; i < n; ++i) {
+        double v = n == 1 ? 0.0 : double(i) / double(n - 1);
+
+        double r = 1.5 - std::abs(4.0 * v - 3.0);
+        if (r < 0.0) r = 0.0;
+        if (r > 1.0) r = 1.0;
+
+        double g = 1.5 - std::abs(4.0 * v - 2.0);
+        if (g < 0.0) g = 0.0;
+        if (g > 1.0) g = 1.0;
+
+        double b = 1.5 - std::abs(4.0 * v - 1.0);
+        if (b < 0.0) b = 0.0;
+        if (b > 1.0) b = 1.0;
+
+        colors.push_back(QColor(int(r * 255), int(g * 255), int(b * 255)));
+    }
+    return colors;
 }
 
 lcChartWizard::lcChartWizard(QWidget *parent) {
@@ -93,10 +119,84 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   ConnectLineChartProps();
 #endif
 
+  // create jet color lookup table in vector<QColor>
+
+  
+
+
   ModelTimeSequenceParser* tsp = new ModelTimeSequenceParser(this);
   tsp->OpenFile("/home/justin126/workspace/ShareTest/cw/ts.txt");
   tsp->start();
   tsp->Wait(); // Wait for the thread to finish
+
+  vector<pair<TimeSequencePair*, TimeSequencePair*>> *pairs =
+      tsp->GetTimeSequencePairs();
+  vector<double> *timeStamps = tsp->GetTimeStamps();
+
+
+  QCustomPlot *qcp = vcw->getQCustomPlot();
+  QVBoxLayout *vlytLeftProps = vcw->getVLayoutLeftProps();
+
+  double baseTime = (*timeStamps)[0];
+  double apiBarHeight = 1;
+  double apiSpacing = 1;
+  vector<QColor> jetColors = jetColor(pairs->size());
+  for (size_t i = 0; i < pairs->size(); i++) {
+    const auto &pair = (*pairs)[i];
+    TimeSequencePair *recvPair = pair.first;
+    TimeSequencePair *sendPair = pair.second;
+
+    bool pairedApi = recvPair && sendPair;
+    bool noPairedApi = recvPair && !sendPair;
+    QColor randomColor = QColor(tsp->ActId2JetHexColor(recvPair->GetActId()).c_str());
+    if (pairedApi) {
+      // rect x from recvPair timestamp to sendPair timestamp
+      double x1 = recvPair->GetTimeStamp() - baseTime;
+      double x2 = sendPair->GetTimeStamp() - baseTime;
+      double y1 = i * (apiBarHeight + apiSpacing); // y position based on index
+      double y2 = y1 + apiBarHeight; // height of the rectangle
+      // Create a rectangle item for the API call
+      
+      // check x1 < x2, if not swap
+      if (x1 > x2) {
+        std::swap(x1, x2);
+      }
+      if (y1 > y2) {
+        std::swap(y1, y2);
+      }
+      QCPItemRect *rect = new QCPItemRect(qcp);
+      
+      
+      rect->setPen(QPen(randomColor, 1)); // Set random color for the rectangle
+      rect->setBrush(QBrush(randomColor, Qt::SolidPattern)); // Fill with color
+      rect->topLeft->setCoords(x1, y2);
+      rect->bottomRight->setCoords(x2, y1);
+      rect->setSelectable(QCP::stWhole); // Make the rectangle selectable
+      
+      
+    } else if (noPairedApi) {
+      // No paired API, draw a rectangle with a different color
+      double x1 = recvPair->GetTimeStamp() - baseTime;
+      double y1 = i * (apiBarHeight + apiSpacing);
+      double y2 = y1 + apiBarHeight; // height of the rectangle
+      // draw rectangle randomColor and a cross on (y1+y2)/2
+      QCPItemRect *rect = new QCPItemRect(qcp);
+      rect->setPen(QPen(randomColor, 1)); // Set random color for the rectangle
+      rect->setBrush(QBrush(randomColor, Qt::DiagCrossPattern)); // Fill with color
+      rect->topLeft->setCoords(x1, y2);
+      rect->bottomRight->setCoords(x1 + 1e-6, y1); // Fixed width for no paired API
+      rect->setSelectable(QCP::stWhole); // Make the rectangle selectable
+    }
+  }
+
+  
+  // fit viewport to see all data
+  qcp->xAxis->setRange(0, (*timeStamps)[timeStamps->size() - 1] - baseTime);
+  qcp->yAxis->setRange(0, pairs->size() * (apiBarHeight + apiSpacing));
+  qcp->replot();
+  // x axis milisecond
+  qcp->xAxis->setLabel("Time (ms)");
+
 }
 
 void lcChartWizard::ConnectGeneralProps() {
