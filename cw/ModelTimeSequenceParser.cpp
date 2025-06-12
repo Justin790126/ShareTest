@@ -334,6 +334,8 @@ void ModelTimeSequenceParser::ParseSequencePairs() {
               return a.first->GetTimeStamp() < b.first->GetTimeStamp();
             });
 
+  m_vTimeSequencePairsByActId.clear();
+  m_vTimeSequencePairsByActId.reserve(1000);
   for (size_t i = 0; i < m_vTimeSequencePairs.size(); ++i) {
     TimeSequencePair *recvPair = m_vTimeSequencePairs[i].first;
     TimeSequencePair *sendPair = m_vTimeSequencePairs[i].second;
@@ -363,6 +365,10 @@ void ModelTimeSequenceParser::ParseSequencePairs() {
       }
     }
   }
+  m_vTimeSequencePairsByActId.shrink_to_fit(); // Shrink to fit the reserved space
+
+  // show all string in m_vTimeSequencePairsByActId
+  cout << "Parsed " << m_vTimeSequencePairsByActId.size() << endl;
 }
 
 void ModelTimeSequenceParser::run() {

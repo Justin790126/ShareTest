@@ -134,94 +134,106 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
       tsp->GetTimeSequencePairs();
   vector<double> *timeStamps = tsp->GetTimeStamps();
 
+  vector<pair<string, vector<pair<TimeSequencePair *, TimeSequencePair *>>>>
+      *pairsByActId = tsp->GetTimeSequencePairsByActId();
+
   QCustomPlot *qcp = vcw->getQCustomPlot();
   QVBoxLayout *vlytLeftProps = vcw->getVLayoutLeftProps();
 
   double baseTime = (*timeStamps)[0];
   double apiBarHeight = 1;
   double apiSpacing = 1;
-  vector<QColor> jetColors = jetColor(pairs->size());
+  vector<QColor> jetColors = jetColor(pairsByActId->size());
   QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
-  for (size_t i = 0; i < pairs->size(); i++) {
-    const auto &pair = (*pairs)[i];
-    TimeSequencePair *recvPair = pair.first;
-    TimeSequencePair *sendPair = pair.second;
 
-    // action id to string
-    string recvActIdStr = tsp->ActId2Str(recvPair->GetActId());
+  for (size_t j = 0; j < pairsByActId->size(); j++) {
+    const auto &pairs = (*pairsByActId)[j].second;
+    // cout << "ActId: " << pairs.first << " has "
+    //      << pairs.second.size() << " pairs." << endl;
+    for (size_t i = 0; i < pairs.size(); i++) {
+      const auto &pair = (pairs)[i];
+      TimeSequencePair *recvPair = pair.first;
+      TimeSequencePair *sendPair = pair.second;
 
-    bool pairedApi = recvPair && sendPair;
-    bool noPairedApi = recvPair && !sendPair;
-    QColor randomColor =
-        QColor(tsp->ActId2JetHexColor(recvPair->GetActId()).c_str());
-    if (pairedApi) {
-      // rect x from recvPair timestamp to sendPair timestamp
-      double x1 = recvPair->GetTimeStamp() - baseTime;
-      double x2 = sendPair->GetTimeStamp() - baseTime;
-      double y1 = i * (apiBarHeight + apiSpacing); // y position based on index
-      double yc = y1 + apiBarHeight / 2; // center y position for text
-      double y2 = y1 + apiBarHeight;               // height of the rectangle
-      // Create a rectangle item for the API call
-      
-    textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
+      // action id to string
+      string recvActIdStr = tsp->ActId2Str(recvPair->GetActId());
 
-      // check x1 < x2, if not swap
-      if (x1 > x2) {
-        std::swap(x1, x2);
+      bool pairedApi = recvPair && sendPair;
+      bool noPairedApi = recvPair && !sendPair;
+      QColor randomColor =
+          QColor(tsp->ActId2JetHexColor(recvPair->GetActId()).c_str());
+      if (pairedApi) {
+        // rect x from recvPair timestamp to sendPair timestamp
+        double x1 = recvPair->GetTimeStamp() - baseTime;
+        double x2 = sendPair->GetTimeStamp() - baseTime;
+        double y1 =
+            i * (apiBarHeight + apiSpacing); // y position based on index
+        double yc = y1 + apiBarHeight / 2;   // center y position for text
+        double y2 = y1 + apiBarHeight;       // height of the rectangle
+        // Create a rectangle item for the API call
+
+        // textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
+
+        // check x1 < x2, if not swap
+        if (x1 > x2) {
+          std::swap(x1, x2);
+        }
+        if (y1 > y2) {
+          std::swap(y1, y2);
+        }
+        QCPItemRect *rect = new QCPItemRect(qcp);
+
+        rect->setPen(
+            QPen(randomColor, 1)); // Set random color for the rectangle
+        rect->setBrush(
+            QBrush(randomColor, Qt::SolidPattern)); // Fill with color
+        rect->topLeft->setCoords(x1, y2);
+        rect->bottomRight->setCoords(x2, y1);
+        rect->setSelectable(QCP::stWhole); // Make the rectangle selectable
+        rect->setSelectedPen(
+            QPen(randomColor, 4,
+                 Qt::DashLine)); // Thicker, red, dashed outline when selected
+        rect->setSelectedBrush(QBrush(Qt::yellow)); // Yellow fill when selected
+
+      } else if (noPairedApi) {
+        // No paired API, draw a rectangle with a different color
+        double x1 = recvPair->GetTimeStamp() - baseTime;
+        double y1 = i * (apiBarHeight + apiSpacing);
+        double yc = y1 + apiBarHeight / 2; // center y position for text
+        double y2 = y1 + apiBarHeight;     // height of the rectangle
+        // textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
+
+        // draw vertical line
+        QCPItemLine *line = new QCPItemLine(qcp);
+        line->setPen(QPen(randomColor, 1)); // Set random color for the line
+        line->start->setCoords(x1, y1);
+        line->end->setCoords(x1, y2);
+
+        line->setSelectedPen(
+            QPen(randomColor, 4,
+                 Qt::DashLine)); // Thicker, red, dashed outline when selected
+        // line->setSelectedBrush(QBrush(Qt::yellow));
       }
-      if (y1 > y2) {
-        std::swap(y1, y2);
-      }
-      QCPItemRect *rect = new QCPItemRect(qcp);
-
-      rect->setPen(QPen(randomColor, 1)); // Set random color for the rectangle
-      rect->setBrush(QBrush(randomColor, Qt::SolidPattern)); // Fill with color
-      rect->topLeft->setCoords(x1, y2);
-      rect->bottomRight->setCoords(x2, y1);
-      rect->setSelectable(QCP::stWhole); // Make the rectangle selectable
-      rect->setSelectedPen(
-          QPen(randomColor, 4,
-               Qt::DashLine)); // Thicker, red, dashed outline when selected
-      rect->setSelectedBrush(QBrush(Qt::yellow)); // Yellow fill when selected
-
-    } else if (noPairedApi) {
-      // No paired API, draw a rectangle with a different color
-      double x1 = recvPair->GetTimeStamp() - baseTime;
-      double y1 = i * (apiBarHeight + apiSpacing);
-      double yc = y1 + apiBarHeight / 2; // center y position for text
-      double y2 = y1 + apiBarHeight; // height of the rectangle
-      textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
-
-      // draw vertical line
-      QCPItemLine *line = new QCPItemLine(qcp);
-      line->setPen(QPen(randomColor, 1)); // Set random color for the line
-      line->start->setCoords(x1, y1);
-      line->end->setCoords(x1, y2);
-
-      line->setSelectedPen(
-          QPen(randomColor, 4,
-               Qt::DashLine)); // Thicker, red, dashed outline when selected
-      // line->setSelectedBrush(QBrush(Qt::yellow));
     }
   }
-  qcp->setInteractions(QCP::iSelectItems | QCP::iRangeDrag | QCP::iRangeZoom);
-  connect(qcp, SIGNAL(itemClick(QCPAbstractItem *, QMouseEvent *)), this,
-          SLOT(handleTimeSeqItemClick(QCPAbstractItem *, QMouseEvent *)));
-  // connect mousePress with SIGNAL
-  connect(qcp, SIGNAL(mousePress(QMouseEvent *)), this,
-          SLOT(handleTimeSeqMousePressed(QMouseEvent *)));
 
-  // fit viewport to see all data
-  qcp->xAxis->setRange(0, (*timeStamps)[timeStamps->size() - 1] - baseTime);
-  qcp->yAxis->setRange(0, pairs->size() * (apiBarHeight + apiSpacing));
+  // qcp->setInteractions(QCP::iSelectItems | QCP::iRangeDrag | QCP::iRangeZoom);
+  // connect(qcp, SIGNAL(itemClick(QCPAbstractItem *, QMouseEvent *)), this,
+  //         SLOT(handleTimeSeqItemClick(QCPAbstractItem *, QMouseEvent *)));
+  // // connect mousePress with SIGNAL
+  // connect(qcp, SIGNAL(mousePress(QMouseEvent *)), this,
+  //         SLOT(handleTimeSeqMousePressed(QMouseEvent *)));
+
+  // // fit viewport to see all data
+  // qcp->xAxis->setRange(0, (*timeStamps)[timeStamps->size() - 1] - baseTime);
+  // qcp->yAxis->setRange(0, pairs->size() * (apiBarHeight + apiSpacing));
+  // qcp->xAxis->setLabel("Time (ms)");
+  // qcp->yAxis->setTicker(textTicker);
+  // qcp->xAxis->setTickLabelFont(QFont(QFont().family(), 8));
+  // qcp->yAxis->setTickLabelFont(QFont(QFont().family(), 8));
+  // qcp->yAxis->setLabel("API");
   qcp->replot();
   // x axis milisecond
-  qcp->xAxis->setLabel("Time (ms)");
-
-  qcp->yAxis->setTicker(textTicker);
-  qcp->xAxis->setTickLabelFont(QFont(QFont().family(), 8));
-  qcp->yAxis->setTickLabelFont(QFont(QFont().family(), 8));
-  qcp->yAxis->setLabel("API");
 }
 
 void lcChartWizard::handleTimeSeqMousePressed(QMouseEvent *event) {
