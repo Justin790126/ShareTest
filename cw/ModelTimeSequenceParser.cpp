@@ -334,19 +334,35 @@ void ModelTimeSequenceParser::ParseSequencePairs() {
               return a.first->GetTimeStamp() < b.first->GetTimeStamp();
             });
 
-  // print the pairs
-  //   for (const auto &pair : m_vTimeSequencePairs) {
-  //     TimeSequencePair *recvPair = pair.first;
-  //     TimeSequencePair *sendPair = pair.second;
-  //     if (recvPair) {
-  //       cout << "Recv Pair: " << *recvPair << ", ";
-  //     }
-  //     if (sendPair) {
-  //       cout << "Send Pair: " << *sendPair << endl;
-  //     } else {
-  //       cout << "Send Pair: nullptr" << endl;
-  //     }
-  //   }
+  for (size_t i = 0; i < m_vTimeSequencePairs.size(); ++i) {
+    TimeSequencePair *recvPair = m_vTimeSequencePairs[i].first;
+    TimeSequencePair *sendPair = m_vTimeSequencePairs[i].second;
+
+    // recvPair id
+    int recvActId = recvPair ? recvPair->GetActId() : -1;
+    string recvActIdStr =
+        recvPair ? ActId2Str(recvActId) : "[Unknown Recv Act ID]";
+    if ((recvPair && sendPair) || (recvPair && !sendPair)) {
+      // check recvActIdStr in m_vTimeSequencePairsByActId first
+      auto it = std::find_if(
+          m_vTimeSequencePairsByActId.begin(),
+          m_vTimeSequencePairsByActId.end(),
+          [recvActIdStr](
+              const pair<string,
+                         vector<pair<TimeSequencePair *, TimeSequencePair *>>>
+                  &p) { return p.first == recvActIdStr; });
+      if (it != m_vTimeSequencePairsByActId.end()) {
+        // found, emplace_back the pair
+        it->second.emplace_back(recvPair, sendPair ? sendPair : nullptr);
+      } else {
+        // not found, create a new pair and emplace_back
+        vector<pair<TimeSequencePair *, TimeSequencePair *>> newPairs;
+        newPairs.emplace_back(recvPair, sendPair ? sendPair : nullptr);
+        m_vTimeSequencePairsByActId.emplace_back(recvActIdStr,
+                                                 std::move(newPairs));
+      }
+    }
+  }
 }
 
 void ModelTimeSequenceParser::run() {

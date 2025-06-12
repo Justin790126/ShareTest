@@ -120,6 +120,7 @@ private:
   void AddMetrologyTextItem(
       ModelChartInfo *modelChartInfo, QCustomPlot *qcp);
 
+  QCPItemText* m_ToolTip = NULL;
 private slots:
   void handleGeneralTitleChanged(const QString &title);
   void handleGeneralXLabelChanged(const QString &label);
@@ -138,6 +139,9 @@ private slots:
   void handleShowThresholdAndMetrologyChanged(bool checked);
   void handleThresholdValueChanged(double value);
   void handleThresholdColorButtonClicked();
+
+  void handleTimeSeqItemClick(QCPAbstractItem*, QMouseEvent*);
+  void handleTimeSeqMousePressed(QMouseEvent *event);
 };
 
 #endif /* LC_CHARTWIZARD_H */

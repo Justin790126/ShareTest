@@ -105,6 +105,10 @@ public:
     vector<double>* GetNormalizedTimeStamps() {
         return &m_vdNormalizedTimeStamps;
     }
+    // get pointer to m_vTimeSequencePairsByActId
+    vector<pair<string, vector<pair<TimeSequencePair*, TimeSequencePair*>>>>* GetTimeSequencePairsByActId() {
+        return &m_vTimeSequencePairsByActId;
+    }
 
 protected:
     virtual void run() override;
@@ -120,6 +124,8 @@ protected:
 
     // sort by timestamp, with first element with tpye of SNED, second element with type of RECV
     vector<pair<TimeSequencePair*, TimeSequencePair*>> m_vTimeSequencePairs;
+
+    vector<pair<string, vector<pair<TimeSequencePair*, TimeSequencePair*>>>> m_vTimeSequencePairsByActId;
 
 };
 
