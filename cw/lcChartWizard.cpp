@@ -179,13 +179,30 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
       double x1 = recvPair->GetTimeStamp() - baseTime;
       double y1 = i * (apiBarHeight + apiSpacing);
       double y2 = y1 + apiBarHeight; // height of the rectangle
-      // draw rectangle randomColor and a cross on (y1+y2)/2
-      QCPItemRect *rect = new QCPItemRect(qcp);
-      rect->setPen(QPen(randomColor, 1)); // Set random color for the rectangle
-      rect->setBrush(QBrush(randomColor, Qt::DiagCrossPattern)); // Fill with color
-      rect->topLeft->setCoords(x1, y2);
-      rect->bottomRight->setCoords(x1 + 1e-6, y1); // Fixed width for no paired API
-      rect->setSelectable(QCP::stWhole); // Make the rectangle selectable
+      double centerY = (y1 + y2) / 2.0; // center of the rectangle
+      double crossLen = 0.05;
+
+      double crossLeftBottomX = x1 - crossLen * std::cos(M_PI / 3);
+      double crossLeftBottomY = centerY - crossLen * std::sin(M_PI / 3);
+      double crossRightTopX = x1 + crossLen * std::cos(M_PI / 3);
+      double crossRightTopY = centerY + crossLen * std::sin(M_PI / 3);
+
+      // draw vertical line
+      QCPItemLine *line = new QCPItemLine(qcp);
+      line->setPen(QPen(randomColor, 1)); // Set random color for the line
+      line->start->setCoords(x1, y1);
+      line->end->setCoords(x1, y2);
+
+      QCPItemLine *crossLeft = new QCPItemLine(qcp);
+      crossLeft->setPen(QPen(randomColor, 1)); // Set random color for the line
+      crossLeft->start->setCoords(crossLeftBottomX, crossLeftBottomY);
+      crossLeft->end->setCoords(crossRightTopX, crossRightTopY);
+
+      QCPItemLine *crossRight = new QCPItemLine(qcp);
+      crossRight->setPen(QPen(randomColor, 1)); // Set random color for the line
+      crossRight->start->setCoords(crossRightTopX, crossLeftBottomY);
+      crossRight->end->setCoords(crossLeftBottomX, crossRightTopY);
+
     }
   }
 
