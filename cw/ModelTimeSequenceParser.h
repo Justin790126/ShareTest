@@ -45,10 +45,12 @@ public:
     ~TimeSequencePair() = default;
 
     double GetTimeStamp() const { return m_dTimeStamp; }
+    string GetTimeStampStr() const { return m_sTime; }
     int GetActType() const { return m_iActType; }
     int GetActId() const { return m_iActId; }
 
     void SetTimeStamp(double dTimeStamp) { m_dTimeStamp = dTimeStamp; }
+    void SetTimeStampStr(const string& sTime) { m_sTime = sTime; }
     void SetActType(int iActType) { m_iActType = iActType; }
     void SetActId(int iActId) { m_iActId = iActId; }
 
@@ -62,6 +64,7 @@ public:
     }
 private:
     double m_dTimeStamp;
+    string m_sTime;
     int m_iActType;
     int m_iActId;
 };
@@ -93,10 +96,6 @@ public:
 
     void ClearSequencePairs();
 
-    // get pointer to m_vTimeSequencePairs
-    vector<pair<TimeSequencePair*, TimeSequencePair*>>* GetTimeSequencePairs() {
-        return &m_vTimeSequencePairs;
-    }
     // get pointer to m_vdTimeStamps
     vector<double>* GetTimeStamps() {
         return &m_vdTimeStamps;
@@ -122,11 +121,12 @@ protected:
     vector<double> m_vdTimeStamps;
     vector<double> m_vdNormalizedTimeStamps;
 
-    // sort by timestamp, with first element with tpye of SNED, second element with type of RECV
-    vector<pair<TimeSequencePair*, TimeSequencePair*>> m_vTimeSequencePairs;
 
     vector<pair<string, vector<pair<TimeSequencePair*, TimeSequencePair*>>>> m_vTimeSequencePairsByActId;
-
+    int actIdStrInVec(const string& actIdStr, 
+                        vector<pair<string, vector<pair<TimeSequencePair*, TimeSequencePair*>>>>& vec);
+    int actIdStrInVec(const string& actIdStr, 
+                        vector<pair<string, vector<TimeSequencePair*>>>& vec);
 };
 
 #endif /* MODEL_TIME_SEQUENCE_PARSER_H */

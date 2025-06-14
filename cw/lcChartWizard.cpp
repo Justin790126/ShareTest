@@ -27,32 +27,18 @@ find_all_x_by_linear_interp(const std::vector<double> &x_nm,
   return result;
 }
 
-std::vector<QColor> jetColor(int n) {
+
+std::vector<QColor> jetColor(int numOfColorStepInJetColor) {
   std::vector<QColor> colors;
-  colors.reserve(n);
-  for (int i = 0; i < n; ++i) {
-    double v = n == 1 ? 0.0 : double(i) / double(n - 1);
-
-    double r = 1.5 - std::abs(4.0 * v - 3.0);
-    if (r < 0.0)
-      r = 0.0;
-    if (r > 1.0)
-      r = 1.0;
-
-    double g = 1.5 - std::abs(4.0 * v - 2.0);
-    if (g < 0.0)
-      g = 0.0;
-    if (g > 1.0)
-      g = 1.0;
-
-    double b = 1.5 - std::abs(4.0 * v - 1.0);
-    if (b < 0.0)
-      b = 0.0;
-    if (b > 1.0)
-      b = 1.0;
-
-    colors.push_back(QColor(int(r * 255), int(g * 255), int(b * 255)));
+  colors.reserve(numOfColorStepInJetColor);
+  for (int i = 0; i < numOfColorStepInJetColor; ++i) {
+    double ratio = static_cast<double>(i) / (numOfColorStepInJetColor - 1);
+    int r = static_cast<int>(255 * std::max(0.0, std::min(1.0, ratio * 4 - 1)));
+    int g = static_cast<int>(255 * std::max(0.0, std::min(1.0, 2 - std::abs(ratio * 4 - 2))));
+    int b = static_cast<int>(255 * std::max(0.0, std::min(1.0, 3 - ratio * 4)));
+    colors.emplace_back(r, g, b);
   }
+  colors.shrink_to_fit(); // Optional: shrink to fit for memory efficiency
   return colors;
 }
 
@@ -130,8 +116,6 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   tsp->start();
   tsp->Wait(); // Wait for the thread to finish
 
-  vector<pair<TimeSequencePair *, TimeSequencePair *>> *pairs =
-      tsp->GetTimeSequencePairs();
   vector<double> *timeStamps = tsp->GetTimeStamps();
 
   vector<pair<string, vector<pair<TimeSequencePair *, TimeSequencePair *>>>>
@@ -145,9 +129,24 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   double apiSpacing = 1;
   vector<QColor> jetColors = jetColor(pairsByActId->size());
   QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
-
+  QColor randomColor;
+  double y1, yc, y2;
   for (size_t j = 0; j < pairsByActId->size(); j++) {
     const auto &pairs = (*pairsByActId)[j].second;
+
+    // cout << (*pairsByActId)[j].first << ": ";
+
+    if (pairs.size() > 0 && 1 <= pairs.size()) {
+      const auto &pair = (pairs)[0];
+      TimeSequencePair *recvPair = pair.first;
+      string recvActIdStr = tsp->ActId2Str(recvPair->GetActId());
+      randomColor =
+          QColor(tsp->ActId2JetHexColor(recvPair->GetActId()).c_str());
+      y1 = j * (apiBarHeight + apiSpacing); // y position based on index
+      yc = y1 + apiBarHeight / 2;           // center y position for text
+      y2 = y1 + apiBarHeight;               // height of the rectangle
+      textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
+    }
     // cout << "ActId: " << pairs.first << " has "
     //      << pairs.second.size() << " pairs." << endl;
     for (size_t i = 0; i < pairs.size(); i++) {
@@ -156,24 +155,21 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
       TimeSequencePair *sendPair = pair.second;
 
       // action id to string
-      string recvActIdStr = tsp->ActId2Str(recvPair->GetActId());
+      
 
       bool pairedApi = recvPair && sendPair;
       bool noPairedApi = recvPair && !sendPair;
-      QColor randomColor =
-          QColor(tsp->ActId2JetHexColor(recvPair->GetActId()).c_str());
+      
       if (pairedApi) {
         // rect x from recvPair timestamp to sendPair timestamp
+        // printf("%s ~ %s \n", recvPair->GetTimeStampStr().c_str(),
+        //        sendPair->GetTimeStampStr().c_str());
         double x1 = recvPair->GetTimeStamp() - baseTime;
         double x2 = sendPair->GetTimeStamp() - baseTime;
-        double y1 =
-            i * (apiBarHeight + apiSpacing); // y position based on index
-        double yc = y1 + apiBarHeight / 2;   // center y position for text
-        double y2 = y1 + apiBarHeight;       // height of the rectangle
+        
+        // printf("%f ~ %f, ", x1, x2);
         // Create a rectangle item for the API call
-
-        // textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
-
+        // 
         // check x1 < x2, if not swap
         if (x1 > x2) {
           std::swap(x1, x2);
@@ -198,11 +194,8 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
       } else if (noPairedApi) {
         // No paired API, draw a rectangle with a different color
         double x1 = recvPair->GetTimeStamp() - baseTime;
-        double y1 = i * (apiBarHeight + apiSpacing);
-        double yc = y1 + apiBarHeight / 2; // center y position for text
-        double y2 = y1 + apiBarHeight;     // height of the rectangle
+        // printf("%f , ", x1);
         // textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
-
         // draw vertical line
         QCPItemLine *line = new QCPItemLine(qcp);
         line->setPen(QPen(randomColor, 1)); // Set random color for the line
@@ -214,24 +207,25 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
                  Qt::DashLine)); // Thicker, red, dashed outline when selected
         // line->setSelectedBrush(QBrush(Qt::yellow));
       }
+      // printf("\n");
     }
   }
 
-  // qcp->setInteractions(QCP::iSelectItems | QCP::iRangeDrag | QCP::iRangeZoom);
-  // connect(qcp, SIGNAL(itemClick(QCPAbstractItem *, QMouseEvent *)), this,
-  //         SLOT(handleTimeSeqItemClick(QCPAbstractItem *, QMouseEvent *)));
-  // // connect mousePress with SIGNAL
-  // connect(qcp, SIGNAL(mousePress(QMouseEvent *)), this,
-  //         SLOT(handleTimeSeqMousePressed(QMouseEvent *)));
+  qcp->setInteractions(QCP::iSelectItems | QCP::iRangeDrag | QCP::iRangeZoom);
+  connect(qcp, SIGNAL(itemClick(QCPAbstractItem *, QMouseEvent *)), this,
+          SLOT(handleTimeSeqItemClick(QCPAbstractItem *, QMouseEvent *)));
+  // connect mousePress with SIGNAL
+  connect(qcp, SIGNAL(mousePress(QMouseEvent *)), this,
+          SLOT(handleTimeSeqMousePressed(QMouseEvent *)));
 
   // // fit viewport to see all data
-  // qcp->xAxis->setRange(0, (*timeStamps)[timeStamps->size() - 1] - baseTime);
-  // qcp->yAxis->setRange(0, pairs->size() * (apiBarHeight + apiSpacing));
-  // qcp->xAxis->setLabel("Time (ms)");
-  // qcp->yAxis->setTicker(textTicker);
+  qcp->xAxis->setRange(0, (*timeStamps)[timeStamps->size() - 1] - baseTime);
+  qcp->yAxis->setRange(0, pairsByActId->size() * (apiBarHeight + apiSpacing));
+  qcp->xAxis->setLabel("Time (ms)");
+  qcp->yAxis->setTicker(textTicker);
   // qcp->xAxis->setTickLabelFont(QFont(QFont().family(), 8));
   // qcp->yAxis->setTickLabelFont(QFont(QFont().family(), 8));
-  // qcp->yAxis->setLabel("API");
+  qcp->yAxis->setLabel("API");
   qcp->replot();
   // x axis milisecond
 }

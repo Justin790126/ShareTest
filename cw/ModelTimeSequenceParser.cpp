@@ -75,20 +75,7 @@ void ModelTimeSequenceParser::ParseHeader() {
   }
 }
 
-void ModelTimeSequenceParser::ClearSequencePairs() {
-  for (size_t i = 0; i < m_vTimeSequencePairs.size(); ++i) {
-    TimeSequencePair *recvPair = m_vTimeSequencePairs[i].first;
-    TimeSequencePair *sendPair = m_vTimeSequencePairs[i].second;
-
-    if (recvPair) {
-      delete recvPair; // Delete the receive pair
-    }
-    if (sendPair) {
-      delete sendPair; // Delete the send pair
-    }
-  }
-  m_vTimeSequencePairs.clear();
-}
+void ModelTimeSequenceParser::ClearSequencePairs() {}
 
 int ModelTimeSequenceParser::Str2ActType(const string &in) {
   // Convert string to action type
@@ -192,183 +179,148 @@ string ModelTimeSequenceParser::ActId2JetHexColor(int actId) {
   }
 }
 
+int ModelTimeSequenceParser::actIdStrInVec(
+    const string &actIdStr,
+    vector<pair<string, vector<pair<TimeSequencePair *, TimeSequencePair *>>>>
+        &vec) {
+
+  int res = -1;
+  for (size_t i = 0; i < vec.size(); ++i) {
+    if (vec[i].first == actIdStr) {
+      res = static_cast<int>(i);
+      break; // Found the actIdStr, exit the loop
+    }
+  }
+  return res; // Return the index or -1 if not found
+}
+
 void ModelTimeSequenceParser::ParseSequencePairs() {
-  // iterate m_vvContent
-  vector<pair<int, size_t>> recvActIdAndRowIdx;
-  vector<pair<int, size_t>> sendActIdAndRowIdx;
 
-  recvActIdAndRowIdx.reserve(1000); // Reserve space for 1000 pairs
-  sendActIdAndRowIdx.reserve(1000); // Reserve space for 1000 pairs
+  /*
+    Collect m_vdTimeStamps
+  */
+  m_vdTimeStamps.clear(); // Clear previous timestamps
+  m_vdTimeStamps.reserve(m_vvContent.size()); // Reserve space for timestamps
   for (size_t i = 0; i < m_vvContent.size(); ++i) {
-    const auto &row = m_vvContent[i];
-    if (row.size() < 3)
-      continue; // Ensure there are enough columns
-
-    double ts = string_to_timestamp(row[0]);
-    // printf("Row %zu: Timestamp = %f\n", i, ts);
-    int actType = Str2ActType(row[1]);
-    int actId = Str2ActId(row[2]);
-
-    if (actType == MTS_ACTION_TYPE_RECV) {
-      recvActIdAndRowIdx.emplace_back(actId, i);
-    } else if (actType == MTS_ACTION_TYPE_SEND) {
-      sendActIdAndRowIdx.emplace_back(actId, i);
+    double ts = string_to_timestamp(m_vvContent[i][0]);
+    if (ts >= 0) { // Only add valid timestamps
+      m_vdTimeStamps.push_back(ts);
     }
   }
-  recvActIdAndRowIdx.shrink_to_fit(); // Shrink to fit the reserved space
-  sendActIdAndRowIdx.shrink_to_fit(); // Shrink to fit the reserved space
-
-  m_vdTimeStamps.clear();
-  m_vdTimeStamps.reserve(m_vvContent.size());
+  /*
+    Collect actIds from m_vvContent and store them in a vector.
+  */
+  vector<string> actIdStrVec;
+  actIdStrVec.reserve(MTS_ACTION_ID_COUNT);
+  
   for (size_t i = 0; i < m_vvContent.size(); ++i) {
-    const auto &row = m_vvContent[i];
-    if (row.size() < 3)
-      continue; // Ensure there are enough columns
-
-    double ts = string_to_timestamp(row[0]);
-    m_vdTimeStamps.push_back(ts);
-  }
-  m_vdTimeStamps.shrink_to_fit(); // Shrink to fit the reserved space
-
-  // sort m_vdTimeStamps by timestamp from small to large
-  std::sort(m_vdTimeStamps.begin(), m_vdTimeStamps.end());
-
-  // calculate m_vdNormalizedTimeStamps by minus each timestamp with the first
-  // timestamp
-  m_vdNormalizedTimeStamps.clear();
-  m_vdNormalizedTimeStamps.reserve(m_vdTimeStamps.size());
-  if (!m_vdTimeStamps.empty()) {
-    double firstTimestamp = m_vdTimeStamps[0];
-    for (const auto &ts : m_vdTimeStamps) {
-      m_vdNormalizedTimeStamps.push_back(ts - firstTimestamp);
+    string actIdStr = m_vvContent[i][2];
+    // check if actIdStr is in actIdStrVec
+    if (std::find(actIdStrVec.begin(), actIdStrVec.end(), actIdStr) ==
+        actIdStrVec.end()) {
+      // not found, add to actIdStrVec
+      actIdStrVec.push_back(actIdStr);
+      // cout << actIdStr << endl;
     }
   }
-  m_vdNormalizedTimeStamps.shrink_to_fit(); // Shrink to fit the reserved space
+  actIdStrVec.shrink_to_fit(); // Shrink to fit the reserved space
+  cout << "Num of api : " << actIdStrVec.size() << endl;
+  /*
+    Collect TimeSquencePair pointers by actIdStr
+  */
+  vector<pair<string, vector<TimeSequencePair*>>> timeSequencePairsByActId;
+  timeSequencePairsByActId.resize(actIdStrVec.size());
+  // reserve
+  for (size_t i = 0; i < actIdStrVec.size(); ++i) {
+    timeSequencePairsByActId[i].first = actIdStrVec[i];
+    timeSequencePairsByActId[i].second.reserve(100); // Reserve space for 100 pairs
+  }
+  for (size_t i = 0; i < m_vvContent.size(); ++i) {
+    string actIdStr = m_vvContent[i][2];
+    int idx = actIdStrInVec(actIdStr, timeSequencePairsByActId);
+    if (idx != -1) {
+      double ts = string_to_timestamp(m_vvContent[i][0]);
+      int actType = Str2ActType(m_vvContent[i][1]);
+      int actId = Str2ActId(m_vvContent[i][2]);
+      TimeSequencePair* pair = new TimeSequencePair(ts, actType, actId);
+      pair->SetTimeStampStr(m_vvContent[i][0]);
 
-  ClearSequencePairs();
-
-  vector<size_t> pairRecvIdxes;
-  vector<size_t> pairSendIdxes;
-
-  size_t iterSize =
-      std::min<size_t>(recvActIdAndRowIdx.size(), sendActIdAndRowIdx.size());
-  pairRecvIdxes.reserve(iterSize);
-  pairSendIdxes.reserve(iterSize);
-  for (size_t i = 0; i < iterSize; i++) {
-    int recvActId = recvActIdAndRowIdx[i].first;
-    size_t recvRowIdx = recvActIdAndRowIdx[i].second;
-
-    // explicit iterator to find the corresponding sendActId
-    // if recvActId is MTS_ACTION_ID_LOAD_MODEL, find the corresponding
-    // sendActId which is MTS_ACTION_ID_UNLOAD_MODEL
-
-    int pairSendIdx = -1;
-    // find index where the same act id in sendActIdAndRowIdx
-    if (pairSendIdx == -1) {
-      auto it =
-          std::find_if(sendActIdAndRowIdx.begin(), sendActIdAndRowIdx.end(),
-                       [recvActId](const pair<int, size_t> &p) {
-                         return p.first == recvActId;
-                       });
-      if (it != sendActIdAndRowIdx.end()) {
-        pairSendIdx = it - sendActIdAndRowIdx.begin(); // get index
-      }
-    }
-
-    if (pairSendIdx != -1) {
-      size_t sendRowIdx = sendActIdAndRowIdx[pairSendIdx].second;
-      pairRecvIdxes.push_back(recvRowIdx);
-      pairSendIdxes.push_back(sendRowIdx);
+      // Add the pair to the vector at the found index
+      timeSequencePairsByActId[idx].second.push_back(pair);
     }
   }
-  pairRecvIdxes.shrink_to_fit(); // Shrink to fit the reserved space
-  pairSendIdxes.shrink_to_fit(); // Shrink to fit the reserved space
-
-  // remain sendActIdAndRowIdx is not pair
-  m_vTimeSequencePairs.clear();
-  m_vTimeSequencePairs.reserve(m_vvContent.size());
-  for (size_t i = 0; i < pairRecvIdxes.size(); i++) {
-    // print in m_vvContent
-    const auto &recvRow = m_vvContent[pairRecvIdxes[i]];
-    const auto &sendRow = m_vvContent[pairSendIdxes[i]];
-    double recvTs = string_to_timestamp(recvRow[0]);
-    double sendTs = string_to_timestamp(sendRow[0]);
-    int recvActType = Str2ActType(recvRow[1]);
-    int recvActId = Str2ActId(recvRow[2]);
-    int sendActType = Str2ActType(sendRow[1]);
-    int sendActId = Str2ActId(sendRow[2]);
-    TimeSequencePair *recvPair =
-        new TimeSequencePair(recvTs, recvActType, recvActId);
-    TimeSequencePair *sendPair =
-        new TimeSequencePair(sendTs, sendActType, sendActId);
-    m_vTimeSequencePairs.emplace_back(recvPair, sendPair);
-    // cout << recvRow[2] << ", " << sendRow[2] << endl;
-    // cout << "Recv Pair: " << *recvPair << ", Send Pair: " << *sendPair <<
-    // endl;
+  /*
+    iterate timeSequencePairsByActId and pair consecutive RECV/SEND pairs
+  */
+  for (size_t i = 0; i < timeSequencePairsByActId.size(); ++i) {
+    timeSequencePairsByActId[i].second.shrink_to_fit();
   }
-
-  // find those are not paired by using pairRecvIdxes and m_vvContent
-  for (size_t i = 0; i < m_vvContent.size(); i++) {
-    // check i in pairRecvIdxes ?
-    if (std::find(pairRecvIdxes.begin(), pairRecvIdxes.end(), i) ==
-            pairRecvIdxes.end() &&
-        std::find(pairSendIdxes.begin(), pairSendIdxes.end(), i) ==
-            pairSendIdxes.end()) {
-      // this row is not paired
-      const auto &row = m_vvContent[i];
-      if (row.size() < 3)
-        continue; // Ensure there are enough columns
-      double ts = string_to_timestamp(row[0]);
-      int actType = Str2ActType(row[1]);
-      int actId = Str2ActId(row[2]);
-      TimeSequencePair *pair = new TimeSequencePair(ts, actType, actId);
-      m_vTimeSequencePairs.emplace_back(pair, nullptr); // Only recv pair
-    }
-  }
-  m_vTimeSequencePairs.shrink_to_fit(); // Shrink to fit the reserved space
-
-  // sort m_vTimeSequencePairs by timestamp from small to large
-  std::sort(m_vTimeSequencePairs.begin(), m_vTimeSequencePairs.end(),
-            [](const pair<TimeSequencePair *, TimeSequencePair *> &a,
-               const pair<TimeSequencePair *, TimeSequencePair *> &b) {
-              return a.first->GetTimeStamp() < b.first->GetTimeStamp();
-            });
 
   m_vTimeSequencePairsByActId.clear();
-  m_vTimeSequencePairsByActId.reserve(1000);
-  for (size_t i = 0; i < m_vTimeSequencePairs.size(); ++i) {
-    TimeSequencePair *recvPair = m_vTimeSequencePairs[i].first;
-    TimeSequencePair *sendPair = m_vTimeSequencePairs[i].second;
-
-    // recvPair id
-    int recvActId = recvPair ? recvPair->GetActId() : -1;
-    string recvActIdStr =
-        recvPair ? ActId2Str(recvActId) : "[Unknown Recv Act ID]";
-    if ((recvPair && sendPair) || (recvPair && !sendPair)) {
-      // check recvActIdStr in m_vTimeSequencePairsByActId first
-      auto it = std::find_if(
-          m_vTimeSequencePairsByActId.begin(),
-          m_vTimeSequencePairsByActId.end(),
-          [recvActIdStr](
-              const pair<string,
-                         vector<pair<TimeSequencePair *, TimeSequencePair *>>>
-                  &p) { return p.first == recvActIdStr; });
-      if (it != m_vTimeSequencePairsByActId.end()) {
-        // found, emplace_back the pair
-        it->second.emplace_back(recvPair, sendPair ? sendPair : nullptr);
-      } else {
-        // not found, create a new pair and emplace_back
-        vector<pair<TimeSequencePair *, TimeSequencePair *>> newPairs;
-        newPairs.emplace_back(recvPair, sendPair ? sendPair : nullptr);
-        m_vTimeSequencePairsByActId.emplace_back(recvActIdStr,
-                                                 std::move(newPairs));
+  m_vTimeSequencePairsByActId.resize(actIdStrVec.size());
+  for (size_t i = 0; i < actIdStrVec.size(); ++i) {
+    m_vTimeSequencePairsByActId[i].first = actIdStrVec[i];
+    m_vTimeSequencePairsByActId[i].second.reserve(
+        timeSequencePairsByActId[i].second.size()); // Reserve space for pairs
+  }
+  
+  for (size_t i = 0; i < timeSequencePairsByActId.size(); ++i) {
+    // iterate through the pairs and pair consecutive RECV/SEND pairs
+    vector<TimeSequencePair*>& pairs = timeSequencePairsByActId[i].second;
+    for (size_t j = 0; j < pairs.size(); ++j) {
+      if (pairs[j]->GetActType() == MTS_ACTION_TYPE_RECV) {
+        // find the next send
+        for (size_t k = j + 1; k < pairs.size(); ++k) {
+          if (pairs[k]->GetActType() == MTS_ACTION_TYPE_SEND) {
+            // Found a SEND after RECV, create a pair
+            m_vTimeSequencePairsByActId[i].second.emplace_back(
+                make_pair(pairs[j], pairs[k]));
+            j = k; // Move j to k to skip the SEND we just paired
+            break; // Exit the inner loop
+          }
+        }
+        // if next is not SEND, create a pair with nullptr
+        if (j < pairs.size() && pairs[j]->GetActType() == MTS_ACTION_TYPE_RECV) {
+          m_vTimeSequencePairsByActId[i].second.emplace_back(
+              make_pair(pairs[j], nullptr)); // Pair with nullptr for SEND
+        }
+      }
+      // if the pair is SEND, and no received found
+      else if (pairs[j]->GetActType() == MTS_ACTION_TYPE_SEND) {
+        m_vTimeSequencePairsByActId[i].second.emplace_back(
+            make_pair(pairs[j], nullptr)); // Pair with nullptr for RECV
       }
     }
   }
-  m_vTimeSequencePairsByActId.shrink_to_fit(); // Shrink to fit the reserved space
+  for (size_t i = 0; i < actIdStrVec.size(); ++i) {
+    m_vTimeSequencePairsByActId[i].second.shrink_to_fit();
+  }
+  /*
+    Iterate and show m_vTimeSequencePairsByActId
+  */
+  // for (const auto& actIdPairs : m_vTimeSequencePairsByActId) {
+  //   cout << "Action ID: " << actIdPairs.first << endl;
+  //   for (const auto& pair : actIdPairs.second) {
+  //     cout << "  RECV: " << pair.first->GetTimeStampStr()
+  //          << ", SEND: " << (pair.second ? pair.second->GetTimeStampStr() : "N/A")
+  //          << endl;
+  //   }
+  // }
 
-  // show all string in m_vTimeSequencePairsByActId
-  cout << "Parsed " << m_vTimeSequencePairsByActId.size() << endl;
+}
+
+int ModelTimeSequenceParser::actIdStrInVec(const string& actIdStr, 
+                        vector<pair<string, vector<TimeSequencePair*>>>& vec)
+{
+  int res = -1;
+  for (size_t i = 0; i < vec.size(); ++i) {
+    if (vec[i].first == actIdStr) {
+      res = static_cast<int>(i);
+      break; // Found the actIdStr, exit the loop
+    }
+  }
+  return res; // Return the index or -1 if not found
+
 }
 
 void ModelTimeSequenceParser::run() {
