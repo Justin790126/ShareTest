@@ -4,6 +4,7 @@
 #include "ViewChartWizard.h"
 #include "ViewLineChartProps.h"
 #include "ViewScalableItemText.h"
+#include "ViewTimeSeqItems.h"
 #include "ModelTimeSequenceParser.h"
 #include "qcustomplot.h"
 #include <QtGui>

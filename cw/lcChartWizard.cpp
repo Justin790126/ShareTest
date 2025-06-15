@@ -27,14 +27,14 @@ find_all_x_by_linear_interp(const std::vector<double> &x_nm,
   return result;
 }
 
-
 std::vector<QColor> jetColor(int numOfColorStepInJetColor) {
   std::vector<QColor> colors;
   colors.reserve(numOfColorStepInJetColor);
   for (int i = 0; i < numOfColorStepInJetColor; ++i) {
     double ratio = static_cast<double>(i) / (numOfColorStepInJetColor - 1);
     int r = static_cast<int>(255 * std::max(0.0, std::min(1.0, ratio * 4 - 1)));
-    int g = static_cast<int>(255 * std::max(0.0, std::min(1.0, 2 - std::abs(ratio * 4 - 2))));
+    int g = static_cast<int>(
+        255 * std::max(0.0, std::min(1.0, 2 - std::abs(ratio * 4 - 2))));
     int b = static_cast<int>(255 * std::max(0.0, std::min(1.0, 3 - ratio * 4)));
     colors.emplace_back(r, g, b);
   }
@@ -155,21 +155,20 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
       TimeSequencePair *sendPair = pair.second;
 
       // action id to string
-      
 
       bool pairedApi = recvPair && sendPair;
       bool noPairedApi = recvPair && !sendPair;
-      
+
       if (pairedApi) {
         // rect x from recvPair timestamp to sendPair timestamp
         // printf("%s ~ %s \n", recvPair->GetTimeStampStr().c_str(),
         //        sendPair->GetTimeStampStr().c_str());
         double x1 = recvPair->GetTimeStamp() - baseTime;
         double x2 = sendPair->GetTimeStamp() - baseTime;
-        
+
         // printf("%f ~ %f, ", x1, x2);
         // Create a rectangle item for the API call
-        // 
+        //
         // check x1 < x2, if not swap
         if (x1 > x2) {
           std::swap(x1, x2);
@@ -177,14 +176,15 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
         if (y1 > y2) {
           std::swap(y1, y2);
         }
-        QCPItemRect *rect = new QCPItemRect(qcp);
+        ViewTimeSeqBar *rect = new ViewTimeSeqBar(qcp, recvPair->GetActType(),
+                                                  recvPair->GetActId());
 
         rect->setPen(
             QPen(randomColor, 1)); // Set random color for the rectangle
         rect->setBrush(
             QBrush(randomColor, Qt::SolidPattern)); // Fill with color
-        rect->topLeft->setCoords(x1, y2);
-        rect->bottomRight->setCoords(x2, y1);
+
+        rect->setBarPosition(x1, y1, x2, y2);
         rect->setSelectable(QCP::stWhole); // Make the rectangle selectable
         rect->setSelectedPen(
             QPen(randomColor, 4,
@@ -197,15 +197,19 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
         // printf("%f , ", x1);
         // textTicker->addTick(yc, QString::fromStdString(recvActIdStr));
         // draw vertical line
-        QCPItemLine *line = new QCPItemLine(qcp);
-        line->setPen(QPen(randomColor, 1)); // Set random color for the line
-        line->start->setCoords(x1, y1);
-        line->end->setCoords(x1, y2);
+        ViewTimeSeqBar *rect = new ViewTimeSeqBar(qcp, recvPair->GetActType(),
+                                                  recvPair->GetActId());
+        rect->setPen(
+            QPen(randomColor, 1)); // Set random color for the rectangle
+        rect->setBrush(
+            QBrush(randomColor, Qt::SolidPattern)); // Fill with color
 
-        line->setSelectedPen(
+        rect->setBarPosition(x1, y1, x1 + 1e-6, y2);
+        rect->setSelectable(QCP::stWhole); // Make the rectangle selectable
+        rect->setSelectedPen(
             QPen(randomColor, 4,
                  Qt::DashLine)); // Thicker, red, dashed outline when selected
-        // line->setSelectedBrush(QBrush(Qt::yellow));
+        rect->setSelectedBrush(QBrush(Qt::yellow)); // Yellow fill when selected
       }
       // printf("\n");
     }
@@ -226,6 +230,7 @@ lcChartWizard::lcChartWizard(QWidget *parent) {
   // qcp->xAxis->setTickLabelFont(QFont(QFont().family(), 8));
   // qcp->yAxis->setTickLabelFont(QFont(QFont().family(), 8));
   qcp->yAxis->setLabel("API");
+  qcp->legend->setVisible(false);
   qcp->replot();
   // x axis milisecond
 }
@@ -253,25 +258,20 @@ void lcChartWizard::handleTimeSeqItemClick(QCPAbstractItem *item,
   m_ToolTip->setVisible(false);
   m_ToolTip->position->setCoords(x, y - 1);
 
-  if (QCPItemRect *rect = qobject_cast<QCPItemRect *>(item)) {
+  if (ViewTimeSeqBar *rect = qobject_cast<ViewTimeSeqBar *>(item)) {
 
     double x1 = rect->topLeft->key();
     double y1 = rect->topLeft->value();
     double x2 = rect->bottomRight->key();
     double y2 = rect->bottomRight->value();
 
-    QString info = QString("%1 ~ %2 ms").arg(x1).arg(x2);
+    QString info;
+    if (fabs(y2 - y1) <= 1e-6) {
+      info.sprintf("%.6f ms", x1);
+    } else {
+      info.sprintf("%.6f ms ~ %.6f ms", x1, x2);
+    }
 
-    m_ToolTip->setText(info);
-
-  } else if (QCPItemLine *line = qobject_cast<QCPItemLine *>(item)) {
-
-    double x1 = line->start->key();
-    double y1 = line->start->value();
-    double x2 = line->end->key();
-    double y2 = line->end->value();
-
-    QString info = QString("%1 ms").arg(x1);
     m_ToolTip->setText(info);
   }
   if (!item) {

@@ -20,6 +20,7 @@ set(SOURCES
     ViewColorCombobox.cpp
     ViewScatterStyleCombobox.cpp
     ViewScalableItemText.cpp
+    ViewTimeSeqItems.cpp
     ModelTimeSequenceParser.cpp
 )
 
@@ -34,6 +35,7 @@ set(HEADERS
     ViewColorCombobox.h
     ViewScatterStyleCombobox.h
     ViewScalableItemText.h
+    ViewTimeSeqItems.h
     ModelTimeSequenceParser.h
 )
 
