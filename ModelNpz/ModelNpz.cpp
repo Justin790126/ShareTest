@@ -140,19 +140,65 @@ void ModelNpz::run()
         cerr << "Shape key not found in parameter tuple." << endl;
     }
 
+    /* Parse shape string to width, height, depth */
+    if (m_NpzHeader.count(m_sShapeKey) != 0) {
+        string shapeStr = m_NpzHeader[m_sShapeKey];
+        size_t pos1 = shapeStr.find(',');
+        size_t pos2 = shapeStr.rfind(',');
 
+        if (pos1 != string::npos && pos2 != string::npos && pos1 != pos2) {
+            m_iWidth = stoi(shapeStr.substr(0, pos1));
+            m_iHeight = stoi(shapeStr.substr(pos1 + 1, pos2 - pos1 - 1));
+            m_iChannels = stoi(shapeStr.substr(pos2 + 1));
+            cout << "Width: " << m_iWidth << ", Height: " << m_iHeight << ", Depth: " << m_iChannels << endl;
+        } else {
+            cerr << "Error parsing shape string." << endl;
+        }
+    } else {
+        cerr << "Shape key not found in header." << endl;
+    }
 
     if (m_NpzHeader.count(m_sDescKey) != 0) {
         if (m_NpzHeader[m_sDescKey].find("u1") != string::npos) {
+            m_iBufType = 0; // unsigned 8-bit integer
             cout << "Data type: unsigned 8-bit integer (u1)" << endl;
         } else if (m_NpzHeader[m_sDescKey].find("f4") != string::npos) {
+            m_iBufType = 1; // 32-bit float
             cout << "Data type: 32-bit float (f4)" << endl;
         } else if (m_NpzHeader[m_sDescKey].find("f8") != string::npos) {
+            m_iBufType = 2; // 64-bit float
             cout << "Data type: 64-bit float (f8)" << endl;
         } else {
+            m_iBufType = -1; // unknown type
             cout << "Data type: " << m_NpzHeader[m_sDescKey] << endl;
         }
     } else {
         cerr << "No description found in header." << endl;
     }
+
+    uchar* ucharBuffer = NULL;
+    if (m_iBufType== 0) {
+        ucharBuffer = new uchar[m_iWidth * m_iHeight * m_iChannels];
+        m_fp->read(reinterpret_cast<char*>(ucharBuffer), m_iWidth * m_iHeight * m_iChannels * sizeof(uchar));
+
+        if (ucharBuffer) {
+            for (int j = 0; j < m_iWidth; j++) {
+                for (int i = 0; i < m_iHeight; i++) {
+                    for (int k = 0; k < m_iChannels; k++) {
+                        int idx = m_iChannels*(i*m_iWidth + j) + k;
+                    }
+                }
+            }
+        }
+        for (int j = 0; j < m_iWidth; j++) {
+            for (int i = 0; i < m_iHeight; i++) {
+                for (int k = 0; k < m_iChannels; k++) {
+                    int idx = m_iChannels*(i*m_iWidth + j) + k;
+                }
+            }
+        }
+        
+    }
+
+
 }

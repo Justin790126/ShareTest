@@ -21,6 +21,8 @@ public:
     void SetFileName(const string &sFname) { m_sFname = sFname; }
     const string &GetFileName() const { return m_sFname; }
 
+    int GetBufferType() const { return m_iBufType; }
+
 protected:
     virtual void run() override;
 
@@ -32,6 +34,12 @@ private:
     string m_sNpVer;
     std::map<string, string> m_NpzHeader;
 
+    int m_iWidth;
+    int m_iHeight;
+    int m_iChannels;
+
+    int m_iBufType = -1; // 0: uint8, 1: float32, 2: float64, etc.
+    double* m_pImg = NULL;
 
     const string m_sMagic = "NUMPY";
     const unsigned char m_ucMagicByte = 0x93;
