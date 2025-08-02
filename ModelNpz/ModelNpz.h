@@ -21,7 +21,12 @@ public:
     void SetFileName(const string &sFname) { m_sFname = sFname; }
     const string &GetFileName() const { return m_sFname; }
 
-    int GetBufferType() const { return m_iBufType; }
+    int GetBufferType()  { return m_iBufType; }
+    int GetWidth()  { return m_iWidth; }
+    int GetHeight()  { return m_iHeight; }
+    int GetChannels()  { return m_iChannels; }
+
+    double* GetImage() const { return m_pImg; }
 
 protected:
     virtual void run() override;

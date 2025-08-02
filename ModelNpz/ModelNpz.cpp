@@ -182,23 +182,39 @@ void ModelNpz::run()
         m_fp->read(reinterpret_cast<char*>(ucharBuffer), m_iWidth * m_iHeight * m_iChannels * sizeof(uchar));
 
         if (ucharBuffer) {
+            m_pImg = new double[m_iWidth * m_iHeight * m_iChannels];
+
+            #pragma omp parallel for
             for (int j = 0; j < m_iWidth; j++) {
                 for (int i = 0; i < m_iHeight; i++) {
                     for (int k = 0; k < m_iChannels; k++) {
                         int idx = m_iChannels*(i*m_iWidth + j) + k;
+                        float val = (float)ucharBuffer[idx];
+                        m_pImg[idx] = (double)val; // Normalize to [0, 1]
                     }
                 }
             }
         }
-        for (int j = 0; j < m_iWidth; j++) {
-            for (int i = 0; i < m_iHeight; i++) {
-                for (int k = 0; k < m_iChannels; k++) {
-                    int idx = m_iChannels*(i*m_iWidth + j) + k;
+
+        if (m_pImg) {
+            // calculate min/max in m_pImg
+            double minVal = m_pImg[0];
+            double maxVal = m_pImg[0];
+            #pragma omp parallel for
+            for (int i = 1; i < m_iWidth * m_iHeight * m_iChannels; i++) {
+                if (m_pImg[i] < minVal) {
+                    minVal = m_pImg[i];
+                }
+                if (m_pImg[i] > maxVal) {
+                    maxVal = m_pImg[i];
                 }
             }
+
+            // normalize m_pImg
+            #pragma omp parallel for
+            for (int i = 0; i < m_iWidth * m_iHeight * m_iChannels; i++) {
+                m_pImg[i] = (m_pImg[i] - minVal) / (maxVal - minVal);
+            }
         }
-        
     }
-
-
 }
