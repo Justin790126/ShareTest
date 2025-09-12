@@ -20,4 +20,5 @@ add_library(${PROJECT_NAME}lib
     Intersection.cpp
     Angle.cpp
     Polygon.h
-    Triangulation.cpp)
+    Triangulation.cpp
+    )
