@@ -59,4 +59,37 @@ while (util only three vertices are left) {
 * if start vertex of the line is a convex vertex, then two neighbors of the start vertex should lie on different sides to the line
 * if the start vertex of the line is a reflex vertex, then it should not be an exterior line
 
+----
 
+# Monotone polygon
+
+orthogonal line of one line intersect the polygon with at most 2 points
+
+To split complex polygon to monotone polygon
+
+## Vertices
+
+### Start vertices
+
+two vertices lie bellow the vertex and the interior angle at v should be convex
+
+### End vertices
+two vertices lie above the vertex and the interior angle at v should be convex
+
+### Regular vertices
+
+Vertices whose one neighbouring vertex is above it and one is bellow it
+
+### Split vertices
+
+two neighbours bellow a vertex and interior angle is a reflex one
+
+### End vertices
+
+two neighbots lie above a vertex and interior angle is a reflex one (also called merge vertex)
+
+## Conclusion
+ 
+Line up Split vertice and Merge vertice can split a polygon to monotone polygons
+
+----
