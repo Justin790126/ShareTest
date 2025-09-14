@@ -21,4 +21,5 @@ add_library(${PROJECT_NAME}lib
     Angle.cpp
     Polygon.h
     Triangulation.cpp
+    MonotonePartition.cpp
     )

@@ -3,6 +3,7 @@
 
 #include "Vector.h"
 #include <iostream>
+#include <algorithm>
 #include <vector>
 
 using namespace std;
@@ -283,7 +284,7 @@ inline bool PolygonDCEL<type, dim>::split(VertexDCEL<type, dim> *_v1,
 
   FaceDCEL<type, dim> *new_face1 = new FaceDCEL<type, dim>();
   new_face1->outer = half_edge1;
-  half_edge1->incident_edge = new_face1;
+  half_edge1->incident_face = new_face1;
   auto temp_edge = half_edge1->next;
   while (temp_edge != half_edge1) {
     temp_edge->incident_face = new_face1;
@@ -292,7 +293,7 @@ inline bool PolygonDCEL<type, dim>::split(VertexDCEL<type, dim> *_v1,
 
   FaceDCEL<type, dim> *new_face2 = new FaceDCEL<type, dim>();
   new_face2->outer = half_edge2;
-  half_edge2->incident_edge = new_face2;
+  half_edge2->incident_face = new_face2;
   temp_edge = half_edge2->next;
   while (temp_edge != half_edge2) {
     temp_edge->incident_face = new_face2;
