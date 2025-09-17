@@ -22,4 +22,5 @@ add_library(${PROJECT_NAME}lib
     Polygon.h
     Triangulation.cpp
     MonotonePartition.cpp
+    Convexhull.cpp
     )
