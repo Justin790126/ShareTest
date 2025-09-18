@@ -1,7 +1,10 @@
 #include "Angle.h"
 #include "Point.h"
+#include "GeoUtils.h"
 #include <list>
 #include <vector>
+#include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -79,6 +82,65 @@ void convexhull2DGiftwrapping(vector<Point2d> &_points,
       ref_point = min_polar_point;
     }
   }
+}
+
+void convexhull2DModifiedGrahams(vector<Point2d>& _points, vector<Point2d>& _convex)
+{
+  if (_points.size() <= 3) {
+      return;
+  }
+  // is convex push in stack
+  // is  reflect pop stack, check angle
+
+  // sort by x coordinate
+  std::sort(_points.begin(), _points.end(), [](const Point2d& a, const Point2d& b) {
+      return a[X] < b[X] || (a[X] == b[X] && a[Y] < b[Y]);
+  });
+
+  std::vector<Point2d> l_upper;
+  std::vector<Point2d> l_lower;
+
+  l_upper.push_back(*_points.begin());
+  l_upper.push_back(*(std::next(_points.begin())));
+
+  int index = 0;
+  for (size_t i = 2; i < _points.size(); i++) {
+    index = l_upper.size();
+    const auto& next_point = _points[i];
+    while (l_upper.size() > 1 && left(l_upper[index-2], l_upper[index-1], next_point)) {
+      /*
+        A     C (next_point)  > 180 degree ---> pop back
+         |   /
+         |  /
+         | /
+         B *
+      
+      */
+      l_upper.pop_back();
+      index = l_upper.size();
+    }
+    l_upper.push_back(next_point);
+  }
+
+  std::reverse(_points.begin(), _points.end());
+
+  l_lower.push_back(*_points.begin());
+  l_lower.push_back(*(std::next(_points.begin())));
+
+  index = 0;
+  for (size_t i = 2; i < _points.size(); i++) {
+    index = l_lower.size();
+    const auto& next_point = _points[i];
+    while (l_lower.size() > 1 && left(l_lower[index-2], l_lower[index-1], next_point)) {
+      l_lower.pop_back();
+      index = l_lower.size();
+    }
+    l_lower.push_back(next_point);
+  }
+  l_lower.pop_back();
+
+  _convex.insert(_convex.end(), l_upper.begin(), l_upper.end());
+  _convex.insert(_convex.end(), l_lower.begin(), l_lower.end());
 }
 
 } // namespace jmk
