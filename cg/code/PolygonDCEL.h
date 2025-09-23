@@ -114,6 +114,7 @@ public:
 
 typedef VertexDCEL<float, 2U> Vertex2dDCEL;
 typedef EdgeDCEL<float, 2U> Edge2dDCEL;
+typedef FaceDCEL<float, 2U> Face2dDCEL;
 typedef PolygonDCEL<float, 2U> Polygon2dDCEL;
 
 template <class type, size_t dim>

@@ -25,6 +25,13 @@ struct Vertex {
       : point(_point), next(_next), prev(_prev) {}
 };
 
+template <class T, size_t dim>
+struct Face {
+    std::array<Vertex<T, dim>*, 3> vertices; // Array of 3 vertex pointers for a triangle
+};
+
+typedef Face<float, DIM3> Face3d;
+typedef Face<float, DIM2> Face2d;
 typedef Vertex<float, DIM2> Vertex2d;
 typedef Vertex<float, DIM3> Vertex3d;
 
