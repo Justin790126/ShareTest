@@ -23,4 +23,5 @@ add_library(${PROJECT_NAME}lib
     Triangulation.cpp
     MonotonePartition.cpp
     Convexhull.cpp
+    BST.cpp
     )
