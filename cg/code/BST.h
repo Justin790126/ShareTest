@@ -42,8 +42,11 @@ public:
 
   void insert(float _value);
   bool find(float _value);
+  bool remove(float _value);
   float minimum(BSTNode* _node = nullptr);
   float maximum(BSTNode* _node = nullptr);
+  void transplant(BSTNode* u, BSTNode* v);
+  bool isAleaf(BSTNode* _node) { return !_node->left && !_node->right; }
 
   bool successor(float _value, float& _successor);
   bool predecessor(float _value, float& _predecessor);
@@ -91,6 +94,47 @@ BST::BSTNode* BST::find(BSTNode* _node, float _value) {
     }
   }
   return current;
+}
+
+void BST::transplant(BSTNode* u, BSTNode* v) {
+  if (!u->parent) {
+    root = v;
+  } else if (u == u->parent->left) {
+    u->parent->left = v;
+  } else {
+    u->parent->right = v;
+  }
+  if (v) {
+    v->parent = u->parent;
+  }
+}
+
+bool BST::remove(float _value) {
+  BSTNode* current_node = find(root, _value);
+  if (current_node) {
+    BSTNode* current_left = current_node->left;
+    BSTNode* current_right = current_node->right;
+
+    if (isAleaf(current_node)) {
+      transplant(current_node, nullptr);
+    }
+    else if (!current_left) {
+      transplant(current_node, current_right);
+    } else if (!current_right) {
+      transplant(current_node, current_left);
+    } else {
+      BSTNode* right_min = minimumNode(current_right);
+
+      if (right_min->parent != current_node) {
+        transplant(right_min, right_min->right);
+        right_min->right = current_node->right;
+        right_min->right->parent = right_min;
+      }
+      transplant(current_node, right_min);
+      right_min->left = current_node->left;
+      right_min->left->parent = right_min;
+    }
+  }
 }
 
 bool BST::find(float _value) {
