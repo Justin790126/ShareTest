@@ -24,4 +24,5 @@ add_library(${PROJECT_NAME}lib
     MonotonePartition.cpp
     Convexhull.cpp
     BST.cpp
+    KDTree.cpp
     )

@@ -12,20 +12,21 @@ class BST {
     BSTNode *left;
     BSTNode *right;
     float value;
-    BSTNode* parent;
+    BSTNode *parent;
 
     BSTNode(float _value, BSTNode *_left = nullptr, BSTNode *_right = nullptr,
-            BSTNode* _parent = nullptr)
+            BSTNode *_parent = nullptr)
         : value(_value), left(_left), right(_right), parent(_parent) {}
   };
 
   BSTNode *root = nullptr;
 
-  BSTNode* find(BSTNode* _node, float _value);
-  BSTNode* minimumNode(BSTNode* _node);
-  BSTNode* maximumNode(BSTNode* _node);
-  BSTNode* successorNode(BSTNode* _node);
-  BSTNode* predecessorNode(BSTNode* _node);
+  BSTNode *find(BSTNode *_node, float _value);
+  BSTNode *minimumNode(BSTNode *_node);
+  BSTNode *maximumNode(BSTNode *_node);
+  BSTNode *successorNode(BSTNode *_node);
+  BSTNode *predecessorNode(BSTNode *_node);
+  BSTNode *splitNode(float _min, float _max);
 
 public:
   BST() {}
@@ -43,17 +44,19 @@ public:
   void insert(float _value);
   bool find(float _value);
   bool remove(float _value);
-  float minimum(BSTNode* _node = nullptr);
-  float maximum(BSTNode* _node = nullptr);
-  void transplant(BSTNode* u, BSTNode* v);
-  bool isAleaf(BSTNode* _node) { return !_node->left && !_node->right; }
+  float minimum(BSTNode *_node = nullptr);
+  float maximum(BSTNode *_node = nullptr);
+  void transplant(BSTNode *u, BSTNode *v);
+  bool isAleaf(BSTNode *_node) { return !_node->left && !_node->right; }
 
-  bool successor(float _value, float& _successor);
-  bool predecessor(float _value, float& _predecessor);
+  bool successor(float _value, float &_successor);
+  bool predecessor(float _value, float &_predecessor);
 
   void inOrderTravers(BSTNode *, vector<float> &);
   void preOrderTravers(BSTNode *, vector<float> &);
   void postOrderTravers(BSTNode *, vector<float> &);
+
+  void find(const float _min, const float _max, std::vector<float> &_list);
 };
 
 void BST::insert(float _value) {
@@ -84,7 +87,59 @@ void BST::insert(float _value) {
   }
 }
 
-BST::BSTNode* BST::find(BSTNode* _node, float _value) {
+BST::BSTNode *BST::splitNode(float _min, float _max) {
+  auto v = root;
+  while (!isAleaf(v) && (_max <= v->value || _min > v->value)) {
+    if (_max <= v->value) {
+      v = v->left;
+    } else {
+      v = v->right;
+    }
+  }
+  return v;
+}
+
+void BST::find(const float _min, const float _max, std::vector<float> &_list) {
+  auto v_split = splitNode(_min, _max);
+
+  if (isAleaf(v_split)) {
+    if (v_split->value >= _min && v_split->value < _max) {
+      _list.push_back(v_split->value);
+    }
+  } else {
+    auto v = v_split->left;
+    while (!isAleaf(v)) {
+      if (_min <= v->value) {
+        inOrderTravers(v->right, _list);
+        _list.push_back(v->value);
+        v = v->left;
+      } else {
+        v = v->right;
+      }
+    }
+
+    if (v->value >= _min) {
+      _list.push_back(v->value);
+    }
+
+    v = v_split->right;
+    while (!isAleaf(v)) {
+      if (_max >= v->value) {
+        inOrderTravers(v->left, _list);
+        _list.push_back(v->value);
+        v = v->right;
+      } else {
+        v = v->left;
+      }
+    }
+
+    if (v->value <= _max) {
+      _list.push_back(v->value);
+    }
+  }
+}
+
+BST::BSTNode *BST::find(BSTNode *_node, float _value) {
   auto current = _node;
   while (current && current->value != _value) {
     if (current->value < _value) {
@@ -96,7 +151,7 @@ BST::BSTNode* BST::find(BSTNode* _node, float _value) {
   return current;
 }
 
-void BST::transplant(BSTNode* u, BSTNode* v) {
+void BST::transplant(BSTNode *u, BSTNode *v) {
   if (!u->parent) {
     root = v;
   } else if (u == u->parent->left) {
@@ -110,20 +165,19 @@ void BST::transplant(BSTNode* u, BSTNode* v) {
 }
 
 bool BST::remove(float _value) {
-  BSTNode* current_node = find(root, _value);
+  BSTNode *current_node = find(root, _value);
   if (current_node) {
-    BSTNode* current_left = current_node->left;
-    BSTNode* current_right = current_node->right;
+    BSTNode *current_left = current_node->left;
+    BSTNode *current_right = current_node->right;
 
     if (isAleaf(current_node)) {
       transplant(current_node, nullptr);
-    }
-    else if (!current_left) {
+    } else if (!current_left) {
       transplant(current_node, current_right);
     } else if (!current_right) {
       transplant(current_node, current_left);
     } else {
-      BSTNode* right_min = minimumNode(current_right);
+      BSTNode *right_min = minimumNode(current_right);
 
       if (right_min->parent != current_node) {
         transplant(right_min, right_min->right);
@@ -145,7 +199,7 @@ bool BST::find(float _value) {
   return true;
 }
 
-BST::BSTNode* BST::minimumNode(BSTNode* _node) {
+BST::BSTNode *BST::minimumNode(BSTNode *_node) {
   if (!_node) {
     _node = root;
   }
@@ -157,11 +211,9 @@ BST::BSTNode* BST::minimumNode(BSTNode* _node) {
   return temp;
 }
 
-float BST::minimum(BSTNode* _node) {
-  return minimumNode(_node)->value;
-}
+float BST::minimum(BSTNode *_node) { return minimumNode(_node)->value; }
 
-BST::BSTNode* BST::maximumNode(BSTNode* _node) {
+BST::BSTNode *BST::maximumNode(BSTNode *_node) {
   if (!_node) {
     _node = root;
   }
@@ -173,11 +225,9 @@ BST::BSTNode* BST::maximumNode(BSTNode* _node) {
   return temp;
 }
 
-float BST::maximum(BSTNode* _node) {
-  return maximumNode(_node)->value;
-}
+float BST::maximum(BSTNode *_node) { return maximumNode(_node)->value; }
 
-BST::BSTNode* BST::successorNode(BSTNode* _node) {
+BST::BSTNode *BST::successorNode(BSTNode *_node) {
   if (_node->right) {
     return minimumNode(_node->right);
   } else {
@@ -189,17 +239,18 @@ BST::BSTNode* BST::successorNode(BSTNode* _node) {
   }
 };
 
-bool BST::successor(float _value, float& _successor) 
-{
+bool BST::successor(float _value, float &_successor) {
   auto val_ptr = find(root, _value);
-  if (!val_ptr) return false;
+  if (!val_ptr)
+    return false;
   auto ret = successorNode(val_ptr);
-  if (!ret) return false;
+  if (!ret)
+    return false;
   _successor = ret->value;
   return true;
 }
 
-BST::BSTNode* BST::predecessorNode(BSTNode* _node) {
+BST::BSTNode *BST::predecessorNode(BSTNode *_node) {
   if (_node->left) {
     return maximumNode(_node->left);
   } else {
