@@ -93,3 +93,26 @@ two neighbots lie above a vertex and interior angle is a reflex one (also called
 Line up Split vertice and Merge vertice can split a polygon to monotone polygons
 
 ----
+
+## Plane sweep line algorithm
+
+sweep line comes down from top to bottom and perform operation based on each vertice type poped from queue.
+
+while face different vertex do some operations
+
+### Helper vertex
+
+a vertex which could be a possible end point of aa diagonal which starts from either split vertex or merge vertex. And its for an edge.
+
+### Start vertex
+
+face Vi, insert ei in T and set helper(ei) to vi
+
+### End vertex
+
+### Split vertex
+
+### Merge vertex
+
+### Regular vertex
+
