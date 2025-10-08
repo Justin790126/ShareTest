@@ -38,6 +38,7 @@ namespace jmk
         bool isInRange(const Vector2f& p, const KDRegion2D& r);
         bool isIntersect(const KDRegion2D&, const KDRegion2D&);
         void searchKDTree(KDNode* _node, KDRegion2D _range, std::list<Vector2f>& _list);
+        void nearestNeighbor(KDNode* _node, const Vector2f& _search_value, float& _current_distance, bool _even_depth, Vector2f& _current_nn);
         public:
             KDTree() {}
 
@@ -163,6 +164,36 @@ namespace jmk
             traverse(_node->right, _list);
           } else if (isIntersect(_node->right->boundary, _range)) {
             searchKDTree(_node->right, _range, _list);
+          }
+        }
+      }
+    }
+
+    static double sqrd_distance(const Vector2f& a, const Vector2f& b) {
+      return (a[X]-b[X])*(a[X]-b[X]) + (a[Y]-b[Y])*(a[Y]-b[Y]);
+    }
+
+    void KDTree::nearestNeighbor(KDNode* _node, const Vector2f& _search_value, float& _current_distance, bool _even_depth, Vector2f& _current_nn)
+    {
+      if (isALeaf(_node)) {
+         auto distance = sqrd_distance(_search_value, _node->data);
+         if (distance < _current_distance) {
+          _current_distance = distance;
+          _current_nn = _node->data;
+          return;
+         }
+      } else {
+        auto index = _even_depth ? X : Y;
+        auto squre_dis = (_search_value[index] - _node->value) * (_search_value[index] - _node->value);
+        if (_search_value[index] < _node->value) {
+          nearestNeighbor(_node->left, _search_value, _current_distance, !_even_depth, _current_nn);
+          if (squre_dis < _current_distance) {
+            nearestNeighbor(_node->right, _search_value, _current_distance, !_even_depth, _current_nn);
+          }
+        } else {
+          nearestNeighbor(_node->right, _search_value, _current_distance, !_even_depth, _current_nn);
+          if (squre_dis < _current_distance) {
+            nearestNeighbor(_node->left, _search_value, _current_distance, !_even_depth, _current_nn);
           }
         }
       }
