@@ -1,13 +1,13 @@
 #include "ViewMainWindow.h"
 
 ViewMainWindow::ViewMainWindow(QWidget *parent) : QMainWindow(parent) {
-    QSplitter *split = new QSplitter(Qt::Horizontal, this);
-    treeView = new QTreeView(split);
-    graphicsView = new QGraphicsView(split);
+    QSplitter *s = new QSplitter(Qt::Horizontal, this);
+    treeView = new QTreeView(s);
+    graphicsView = new QGraphicsView(s);
     scene = new QGraphicsScene(this);
     graphicsView->setScene(scene);
     graphicsView->setBackgroundBrush(Qt::black);
-    setCentralWidget(split);
-    setWindowTitle("cpw - Threaded MVC Viewer");
-    resize(1000, 600);
+    s->setStretchFactor(1, 4);
+    setCentralWidget(s);
+    resize(1100, 700);
 }

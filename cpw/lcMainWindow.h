@@ -10,11 +10,9 @@ class lcMainWindow : public QObject {
 public:
     lcMainWindow();
     void loadProfile(const QString &fileName);
-
 private slots:
     void onCellClicked(const QModelIndex &index);
     void onLoadingFinished();
-
 private:
     ViewMainWindow *m_view;
     ModelCellProfile *m_model;

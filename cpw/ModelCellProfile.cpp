@@ -3,13 +3,21 @@
 #include <QDataStream>
 
 ModelCellProfile::ModelCellProfile(QObject *parent) : QAbstractItemModel(parent) {
-    m_rootItem = new CellEntry("InternalRoot", QRectF());
+    m_rootItem = new CellEntry("Root", QRectF());
+    m_groupTop = new CellEntry("Top Cells", QRectF(), m_rootItem);
+    m_groupAll = new CellEntry("All Cells", QRectF(), m_rootItem);
+    m_rootItem->addChild(m_groupTop);
+    m_rootItem->addChild(m_groupAll);
 }
 
 ModelCellProfile::~ModelCellProfile() { delete m_rootItem; }
 
 void ModelCellProfile::startLoading(const QString &fileName) {
-    ParseWorker *worker = new ParseWorker(fileName, m_rootItem);
+    // 清理舊數據
+    qDeleteAll(m_groupTop->children()); m_groupTop->children().clear();
+    qDeleteAll(m_groupAll->children()); m_groupAll->children().clear();
+    
+    ParseWorker *worker = new ParseWorker(fileName, m_groupTop, m_groupAll);
     connect(worker, SIGNAL(finished()), this, SLOT(handleWorkerFinished()));
     connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
     worker->start();
@@ -17,10 +25,10 @@ void ModelCellProfile::startLoading(const QString &fileName) {
 
 void ModelCellProfile::handleWorkerFinished() {
     beginResetModel();
-    // 這裡不需要額外邏輯，因為 Worker 已經把數據填入 m_rootItem
     endResetModel();
     emit loadingFinished();
 }
+
 void ParseWorker::run() {
     QFile file(m_file);
     if (!file.open(QIODevice::ReadOnly)) return;
@@ -28,14 +36,10 @@ void ParseWorker::run() {
     QDataStream in(&file);
     in.setByteOrder(QDataStream::LittleEndian);
 
-    // 1. 讀取 Header
-    unsigned int vlen; in >> vlen;
-    file.read(vlen); 
-    unsigned int pid; in >> pid;
+    unsigned int vlen, pid;
+    in >> vlen; file.read(vlen);
+    in >> pid;
 
-    CellEntry* topCell = NULL;
-
-    // 2. 讀取所有 Cells
     while (!file.atEnd()) {
         unsigned int ref, nlen;
         in >> ref >> nlen;
@@ -44,25 +48,23 @@ void ParseWorker::run() {
         QString name = QString::fromUtf8(file.read(nlen));
         double l, b, r, t;
         in >> l >> b >> r >> t;
-        
-        // Skip 25 bytes (pos, findex, count, flag)
+        QRectF rect(l, -t, r - l, t - b);
+
         unsigned long long d64; unsigned char d8;
         in >> d64 >> d64 >> d64 >> d8;
 
-        if (!topCell) {
-            // 將檔案中的第一筆資料作為頂層物件，掛在 m_root 之下
-            topCell = new CellEntry(name, QRectF(l, -t, r-l, t-b), m_root);
-            m_root->addChild(topCell);
-        } else {
-            // 後續所有資料都掛在剛才建立的 topCell 之下
-            topCell->addChild(new CellEntry(name, QRectF(l, -t, r-l, t-b), topCell));
+        // 建立 All Cells 的項
+        m_allGrp->addChild(new CellEntry(name, rect, m_allGrp));
+
+        // 自動判定：如果是第一筆，或者是名稱中包含 "TOP" (不分大小寫)
+        if (m_topGrp->children().isEmpty() || name.toUpper().contains("TOP")) {
+            m_topGrp->addChild(new CellEntry(name, rect, m_topGrp));
         }
     }
-    
     file.close();
     emit finished();
 }
-// ... 保持原本的 index, parent, rowCount, data 實作 ...
+
 QModelIndex ModelCellProfile::index(int row, int column, const QModelIndex &parent) const {
     CellEntry *p = itemFromIndex(parent);
     CellEntry *c = p->children().value(row);

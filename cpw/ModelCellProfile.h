@@ -5,17 +5,18 @@
 #include <QThread>
 #include "CellEntry.h"
 
-// 建立一個獨立的 Worker 處理解析
 class ParseWorker : public QThread {
     Q_OBJECT
 public:
-    ParseWorker(const QString &file, CellEntry* root) : m_file(file), m_root(root) {}
+    ParseWorker(const QString &file, CellEntry* topGrp, CellEntry* allGrp) 
+        : m_file(file), m_topGrp(topGrp), m_allGrp(allGrp) {}
     void run();
 signals:
     void finished();
 private:
     QString m_file;
-    CellEntry* m_root;
+    CellEntry* m_topGrp;
+    CellEntry* m_allGrp;
 };
 
 class ModelCellProfile : public QAbstractItemModel {
@@ -41,5 +42,7 @@ signals:
 
 private:
     CellEntry* m_rootItem;
+    CellEntry* m_groupTop;
+    CellEntry* m_groupAll;
 };
 #endif

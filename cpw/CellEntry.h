@@ -1,5 +1,6 @@
 #ifndef CELLENTRY_H
 #define CELLENTRY_H
+
 #include <QString>
 #include <QRectF>
 #include <QVector>
@@ -8,6 +9,7 @@ class CellEntry {
 public:
     CellEntry(QString name, QRectF rect, CellEntry* parent = NULL)
         : m_name(name), m_rect(rect), m_parent(parent) {}
+    
     ~CellEntry() { qDeleteAll(m_children); }
 
     QString name() const { return m_name; }
@@ -27,4 +29,5 @@ private:
     CellEntry* m_parent;
     QVector<CellEntry*> m_children;
 };
+
 #endif
