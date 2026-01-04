@@ -1,15 +1,13 @@
 #ifndef CELLENTRY_H
 #define CELLENTRY_H
-
 #include <QString>
 #include <QRectF>
 #include <QVector>
 
 class CellEntry {
 public:
-    CellEntry(QString name, QRectF rect, CellEntry* parent = NULL)
+    CellEntry(QString name, QRectF rect, CellEntry* parent = 0)
         : m_name(name), m_rect(rect), m_parent(parent) {}
-    
     ~CellEntry() { qDeleteAll(m_children); }
 
     QString name() const { return m_name; }
@@ -17,11 +15,7 @@ public:
     CellEntry* parent() const { return m_parent; }
     QVector<CellEntry*>& children() { return m_children; }
     void addChild(CellEntry* child) { m_children.append(child); }
-
-    int row() const {
-        if (m_parent) return m_parent->m_children.indexOf(const_cast<CellEntry*>(this));
-        return 0;
-    }
+    int row() const { return m_parent ? m_parent->m_children.indexOf(const_cast<CellEntry*>(this)) : 0; }
 
 private:
     QString m_name;
@@ -29,5 +23,4 @@ private:
     CellEntry* m_parent;
     QVector<CellEntry*> m_children;
 };
-
 #endif

@@ -1,50 +1,31 @@
 #include "lcMainWindow.h"
 #include <QPen>
 
-lcMainWindow::lcMainWindow() {
+lcMainWindow::lcMainWindow(QObject *parent) : QObject(parent) {
     m_view = new ViewMainWindow();
     m_model = new ModelCellProfile();
-    
-    m_proxy = new RecursiveFilterProxy();
+    m_proxy = new RecursiveProxy();
     m_proxy->setSourceModel(m_model);
     m_proxy->setDynamicSortFilter(true);
-
     m_view->treeView->setModel(m_proxy);
-    
-    connect(m_view->searchEdit, SIGNAL(textChanged(QString)), this, SLOT(onSearchTextChanged(QString)));
-    connect(m_view->treeView, SIGNAL(clicked(QModelIndex)), this, SLOT(onCellClicked(QModelIndex)));
-    connect(m_model, SIGNAL(loadingFinished()), this, SLOT(onLoadingFinished()));
-    
+
+    connect(m_view->searchEdit, SIGNAL(textChanged(QString)), this, SLOT(onSearch(QString)));
+    connect(m_view->treeView, SIGNAL(clicked(QModelIndex)), this, SLOT(onClick(QModelIndex)));
+    connect(m_model, SIGNAL(loadingFinished()), this, SLOT(onDone()));
     m_view->show();
 }
 
-void lcMainWindow::onSearchTextChanged(const QString &text) {
-    m_proxy->setFilterFixedString(text);
-    if (!text.isEmpty()) {
-        m_view->treeView->expandAll(); // 搜尋時全部展開
-    } else {
-        onLoadingFinished(); // 清空時恢復預設展開
-    }
+void lcMainWindow::loadProfile(const QString &f) { m_model->startLoading(f); }
+void lcMainWindow::onSearch(const QString &t) { 
+    m_proxy->setFilterFixedString(t); 
+    if(!t.isEmpty()) m_view->treeView->expandAll(); 
 }
-
-void lcMainWindow::onCellClicked(const QModelIndex &proxyIdx) {
+void lcMainWindow::onClick(const QModelIndex &idx) {
     m_view->scene->clear();
-    QModelIndex sourceIdx = m_proxy->mapToSource(proxyIdx);
-    CellEntry* item = m_model->itemFromIndex(sourceIdx);
-    
-    // 只有真正的 Cell (非分類標題) 才畫
-    if (item && item->parent() != NULL && item->parent()->parent() != NULL) {
-        m_view->scene->addRect(item->rect(), QPen(Qt::red, 0), QBrush(QColor(255,0,0,50)));
-        m_view->graphicsView->fitInView(item->rect(), Qt::KeepAspectRatio);
+    CellEntry *e = m_model->itemFromIndex(m_proxy->mapToSource(idx));
+    if(e && e->parent() && e->parent()->parent()) {
+        m_view->scene->addRect(e->rect(), QPen(Qt::red, 0));
+        m_view->graphicsView->fitInView(e->rect(), Qt::KeepAspectRatio);
     }
 }
-
-void lcMainWindow::loadProfile(const QString &fileName) {
-    m_model->startLoading(fileName);
-}
-
-void lcMainWindow::onLoadingFinished() {
-    // 預設展開 Top Cells
-    m_view->treeView->collapseAll();
-    m_view->treeView->expand(m_proxy->index(0, 0, QModelIndex()));
-}
+void lcMainWindow::onDone() { m_view->treeView->expand(m_proxy->index(0, 0)); }

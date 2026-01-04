@@ -1,6 +1,5 @@
 #ifndef MODELCELLPROFILE_H
 #define MODELCELLPROFILE_H
-
 #include <QAbstractItemModel>
 #include <QThread>
 #include "CellEntry.h"
@@ -9,14 +8,16 @@ class ParseWorker : public QThread {
     Q_OBJECT
 public:
     ParseWorker(const QString &file, CellEntry* topGrp, CellEntry* allGrp) 
-        : m_file(file), m_topGrp(topGrp), m_allGrp(allGrp) {}
+        : m_file(file), m_groupTop(topGrp), m_groupAll(allGrp) {}
     void run();
+
 signals:
     void finished();
-private:
+
+public: // 確保變數在此公開，供 run() 存取
     QString m_file;
-    CellEntry* m_topGrp; 
-    CellEntry* m_allGrp;
+    CellEntry* m_groupTop;
+    CellEntry* m_groupAll;
 };
 
 class ModelCellProfile : public QAbstractItemModel {
@@ -31,13 +32,16 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     void startLoading(const QString &fileName);
     CellEntry* itemFromIndex(const QModelIndex &index) const;
+
 private slots:
-    void handleWorkerFinished();
+    void onWorkerFinished();
+
 signals:
     void loadingFinished();
+
 private:
-    CellEntry* m_rootItem; 
-    CellEntry* m_groupTop; 
+    CellEntry* m_rootItem;
+    CellEntry* m_groupTop;
     CellEntry* m_groupAll;
 };
 #endif
