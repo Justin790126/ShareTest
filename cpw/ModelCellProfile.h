@@ -1,5 +1,6 @@
 #ifndef MODELCELLPROFILE_H
 #define MODELCELLPROFILE_H
+
 #include <QAbstractItemModel>
 #include <QThread>
 #include "CellEntry.h"
@@ -14,7 +15,8 @@ signals:
     void finished();
 private:
     QString m_file;
-    CellEntry* m_topGrp; CellEntry* m_allGrp;
+    CellEntry* m_topGrp; 
+    CellEntry* m_allGrp;
 };
 
 class ModelCellProfile : public QAbstractItemModel {
@@ -34,6 +36,8 @@ private slots:
 signals:
     void loadingFinished();
 private:
-    CellEntry* m_rootItem; CellEntry* m_groupTop; CellEntry* m_groupAll;
+    CellEntry* m_rootItem; 
+    CellEntry* m_groupTop; 
+    CellEntry* m_groupAll;
 };
 #endif
