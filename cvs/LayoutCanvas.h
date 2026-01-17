@@ -4,34 +4,54 @@
 #include <QWidget>
 #include <QPoint>
 #include <QRect>
+#include <QMouseEvent>
+
+struct MouseState
+{
+    enum Flow {
+        Flow_None = 0,
+        Flow_ClickClick,   // click / move / click (L or R)
+        Flow_Drag,         // drag preview/release (Left)
+        Flow_Middle,       // middle release
+        Flow_Other
+    };
+
+    Flow flow;
+    Qt::MouseButton button;
+
+    // current cursor position (for debug/hud if needed)
+    QPoint cursorPos;
+
+    // preview info (valid on mouseUpdate, and may also be valid on mouseRelease)
+    bool  hasPreview;
+    QRect previewRect;
+
+    // commit info (valid on mouseRelease if committed == true)
+    bool  committed;
+    QRect committedRect;
+
+    MouseState()
+        : flow(Flow_None),
+          button(Qt::NoButton),
+          cursorPos(),
+          hasPreview(false),
+          previewRect(),
+          committed(false),
+          committedRect()
+    {}
+};
 
 class LayoutCanvas : public QWidget
 {
     Q_OBJECT
 public:
-    enum Mode {
-        Mode_None = 0,
-        Mode_Select = 1,
-        Mode_Pan = 2,
-        Mode_Simulation = 3
-    };
-
     explicit LayoutCanvas(QWidget* parent = 0);
 
-    int  mode() const { return m_iMode; }
-    void setMode(int m);
-
     void setDragThreshold(int px) { m_dragThreshold = px; }
-    int  dragThreshold() const { return m_dragThreshold; }
 
 signals:
-    void modeChanged(int newMode);
-
-    // BBox gesture outputs (view coords)
-    void bboxPreview(const QRect& viewRect);    // during dragging
-    void bboxCommitted(const QRect& viewRect);  // on release if dragged
-
-    void clicked(const QPoint& pos, Qt::MouseButton button, Qt::KeyboardModifiers mods);
+    void mouseUpdate(const MouseState& state);   // during move/preview
+    void mouseRelease(const MouseState& state);  // on release
 
 protected:
     virtual void mousePressEvent(QMouseEvent* e);
@@ -44,18 +64,18 @@ private:
     QRect normalizedRect(const QPoint& a, const QPoint& b) const;
 
 private:
-    int m_iMode;
-
-    // gesture flags/state (kept inside LayoutCanvas)
     bool m_pressed;
     bool m_dragging;
     int  m_dragThreshold;
 
     QPoint m_pressPos;
-    QPoint m_origin;
     Qt::MouseButton m_pressButton;
 
-    QRect m_lastPreviewRect; // avoid spamming same rect
+    bool   m_haveAnchor;
+    QPoint m_anchor;
+    Qt::MouseButton m_anchorButton;
+
+    QRect m_lastPreviewRect;
 };
 
 #endif // LAYOUTCANVAS_H

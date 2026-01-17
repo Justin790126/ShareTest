@@ -2,8 +2,6 @@
 #include "LayoutCanvas.h"
 
 #include <QRubberBand>
-#include <QToolBar>
-#include <QAction>
 #include <QStatusBar>
 #include <QDebug>
 
@@ -15,7 +13,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_canvas = new LayoutCanvas(this);
     setCentralWidget(m_canvas);
 
-    // Rubber band owned/managed by MainWindow, but parented to canvas so it draws on top.
+    // Rubber band overlay
     m_band = new QRubberBand(QRubberBand::Rectangle, m_canvas);
     m_band->setStyleSheet(
         "QRubberBand {"
@@ -25,57 +23,24 @@ MainWindow::MainWindow(QWidget* parent)
     );
     m_band->hide();
 
-    // Connect canvas signals
-    connect(m_canvas, SIGNAL(bboxPreview(QRect)), this, SLOT(onBboxPreview(QRect)));
-    connect(m_canvas, SIGNAL(bboxCommitted(QRect)), this, SLOT(onBboxCommitted(QRect)));
-    connect(m_canvas, SIGNAL(clicked(QPoint, Qt::MouseButton, Qt::KeyboardModifiers)),
-            this, SLOT(onClicked(QPoint, Qt::MouseButton, Qt::KeyboardModifiers)));
-    connect(m_canvas, SIGNAL(modeChanged(int)), this, SLOT(onModeChanged(int)));
+    connect(m_canvas, SIGNAL(mouseUpdate(MouseState)),
+            this, SLOT(onMouseUpdate(MouseState)));
+    connect(m_canvas, SIGNAL(mouseRelease(MouseState)),
+            this, SLOT(onMouseRelease(MouseState)));
 
-    // Toolbar for mode switching (demo)
-    QToolBar* tb = addToolBar("Tools");
-    QAction* actSelect = tb->addAction("Select");
-    QAction* actPan    = tb->addAction("Pan");
-    QAction* actSim    = tb->addAction("Simulation");
-
-    connect(actSelect, SIGNAL(triggered()), this, SLOT(setModeSelect()));
-    connect(actPan,    SIGNAL(triggered()), this, SLOT(setModePan()));
-    connect(actSim,    SIGNAL(triggered()), this, SLOT(setModeSimulation()));
-
-    statusBar()->showMessage("Ready (Mode: Select)");
-
-    m_canvas->setMode(LayoutCanvas::Mode_Select);
-}
-
-void MainWindow::setModeSelect()
-{
-    m_canvas->setMode(LayoutCanvas::Mode_Select);
-    statusBar()->showMessage("Mode: Select (rubber-band ON)");
-}
-
-void MainWindow::setModePan()
-{
-    m_canvas->setMode(LayoutCanvas::Mode_Pan);
-    statusBar()->showMessage("Mode: Pan (rubber-band OFF)");
-}
-
-void MainWindow::setModeSimulation()
-{
-    m_canvas->setMode(LayoutCanvas::Mode_Simulation);
-    statusBar()->showMessage("Mode: Simulation (rubber-band ON)");
-}
-
-bool MainWindow::shouldShowRubberBandByMode() const
-{
-    const int m = m_canvas->mode();
-    return (m == LayoutCanvas::Mode_Select) || (m == LayoutCanvas::Mode_Simulation);
+    statusBar()->showMessage("Ready (Preview via mouseUpdate, Commit via mouseRelease)");
 }
 
 void MainWindow::showBand(const QRect& r)
 {
     if (!m_band->isVisible())
         m_band->show();
-    m_band->setGeometry(r);
+
+    QRect rr = r;
+    if (rr.width() == 0)  rr.setWidth(1);
+    if (rr.height() == 0) rr.setHeight(1);
+
+    m_band->setGeometry(rr);
 }
 
 void MainWindow::hideBand()
@@ -84,55 +49,42 @@ void MainWindow::hideBand()
         m_band->hide();
 }
 
-void MainWindow::onModeChanged(int /*newMode*/)
+void MainWindow::onMouseUpdate(const MouseState& s)
 {
-    // When mode changes, immediately hide preview UI
-    hideBand();
-}
-
-void MainWindow::onBboxPreview(const QRect& viewRect)
-{
-    if (!shouldShowRubberBandByMode()) {
-        hideBand();
-        return;
+    if (s.hasPreview) {
+        showBand(s.previewRect);
     }
-    showBand(viewRect);
 }
 
-void MainWindow::onBboxCommitted(const QRect& viewRect)
+void MainWindow::onMouseRelease(const MouseState& s)
 {
-    if (!shouldShowRubberBandByMode()) {
+    if (s.flow == MouseState::Flow_Middle) {
+        // typical: middle cancels preview
         hideBand();
+        statusBar()->showMessage("Middle release");
         return;
     }
 
-    hideBand();
+    // If committed, hide preview and handle ROI
+    if (s.committed) {
+        hideBand();
+        const QRect& r = s.committedRect;
 
-    // Here is where you'd commit into state machine / dispatch action, per mode.
-    // Example: in Simulation mode, treat rect as simulation ROI; in Select, as selection ROI.
-
-    if (m_canvas->mode() == LayoutCanvas::Mode_Select) {
-        const QString msg = QString("Select ROI committed: x=%1 y=%2 w=%3 h=%4")
-                                .arg(viewRect.x()).arg(viewRect.y())
-                                .arg(viewRect.width()).arg(viewRect.height());
+        const QString msg = QString("Committed ROI: x=%1 y=%2 w=%3 h=%4 (flow=%5 btn=%6)")
+                                .arg(r.x()).arg(r.y())
+                                .arg(r.width()).arg(r.height())
+                                .arg((int)s.flow)
+                                .arg((int)s.button);
         statusBar()->showMessage(msg);
         qDebug() << msg;
-    } else if (m_canvas->mode() == LayoutCanvas::Mode_Simulation) {
-        const QString msg = QString("Simulation ROI committed: x=%1 y=%2 w=%3 h=%4")
-                                .arg(viewRect.x()).arg(viewRect.y())
-                                .arg(viewRect.width()).arg(viewRect.height());
-        statusBar()->showMessage(msg);
-        qDebug() << msg;
+        return;
+    }
+
+    // For first click of click-click, we usually keep showing the anchor (0-size rect)
+    if (s.hasPreview) {
+        showBand(s.previewRect);
     } else {
-        // should not happen due to shouldShowRubberBandByMode()
+        // Other releases: hide
+        hideBand();
     }
-}
-
-void MainWindow::onClicked(const QPoint& pos, Qt::MouseButton b, Qt::KeyboardModifiers mods)
-{
-    Q_UNUSED(mods);
-    const QString msg = QString("Clicked (%1,%2) button=%3")
-                            .arg(pos.x()).arg(pos.y()).arg((int)b);
-    statusBar()->showMessage(msg);
-    qDebug() << msg;
 }

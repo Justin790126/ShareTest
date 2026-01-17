@@ -1,35 +1,20 @@
 #include "LayoutCanvas.h"
 
-#include <QMouseEvent>
 #include <QPainter>
 #include <QtGlobal>
 
 LayoutCanvas::LayoutCanvas(QWidget* parent)
     : QWidget(parent),
-      m_iMode(Mode_Select),
       m_pressed(false),
       m_dragging(false),
       m_dragThreshold(3),
       m_pressButton(Qt::NoButton),
+      m_haveAnchor(false),
+      m_anchorButton(Qt::NoButton),
       m_lastPreviewRect()
 {
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
-}
-
-void LayoutCanvas::setMode(int m)
-{
-    if (m_iMode == m) return;
-    m_iMode = m;
-    emit modeChanged(m_iMode);
-
-    // cancel ongoing gesture on mode change
-    m_pressed = false;
-    m_dragging = false;
-    m_pressButton = Qt::NoButton;
-    m_lastPreviewRect = QRect();
-
-    update();
 }
 
 int LayoutCanvas::manhattanDist(const QPoint& a, const QPoint& b) const
@@ -39,47 +24,56 @@ int LayoutCanvas::manhattanDist(const QPoint& a, const QPoint& b) const
 
 QRect LayoutCanvas::normalizedRect(const QPoint& a, const QPoint& b) const
 {
-    const int x1 = qMin(a.x(), b.x());
-    const int y1 = qMin(a.y(), b.y());
-    const int x2 = qMax(a.x(), b.x());
-    const int y2 = qMax(a.y(), b.y());
-    return QRect(QPoint(x1, y1), QPoint(x2, y2));
+    return QRect(QPoint(qMin(a.x(), b.x()), qMin(a.y(), b.y())),
+                 QPoint(qMax(a.x(), b.x()), qMax(a.y(), b.y())));
 }
 
 void LayoutCanvas::mousePressEvent(QMouseEvent* e)
 {
-    // Common EDA behavior: left button initiates bbox gesture candidate
     m_pressed = true;
     m_dragging = false;
     m_pressPos = e->pos();
-    m_origin = e->pos();
     m_pressButton = e->button();
-    m_lastPreviewRect = QRect();
-
     e->accept();
 }
 
 void LayoutCanvas::mouseMoveEvent(QMouseEvent* e)
 {
+    MouseState s;
+    s.cursorPos = e->pos();
+
+    // Hover preview after first click anchor (no press)
     if (!m_pressed) {
+        if (m_haveAnchor) {
+            m_lastPreviewRect = normalizedRect(m_anchor, e->pos());
+
+            s.flow = MouseState::Flow_ClickClick;
+            s.hasPreview = true;
+            s.previewRect = m_lastPreviewRect;
+
+            emit mouseUpdate(s);
+            e->accept();
+            return;
+        }
         e->ignore();
         return;
     }
 
-    const QPoint cur = e->pos();
+    // Drag detection while pressed
+    if (!m_dragging &&
+        manhattanDist(e->pos(), m_pressPos) >= m_dragThreshold)
+        m_dragging = true;
 
-    if (!m_dragging) {
-        if (manhattanDist(cur, m_pressPos) >= m_dragThreshold)
-            m_dragging = true;
-    }
-
-    // Only treat left-button press as bbox gesture source
+    // Drag preview (Left only)
     if (m_dragging && m_pressButton == Qt::LeftButton) {
-        const QRect r = normalizedRect(m_origin, cur);
-        if (r != m_lastPreviewRect) {
-            m_lastPreviewRect = r;
-            emit bboxPreview(r);
-        }
+        const QPoint origin = m_haveAnchor ? m_anchor : m_pressPos;
+        m_lastPreviewRect = normalizedRect(origin, e->pos());
+
+        s.flow = MouseState::Flow_Drag;
+        s.hasPreview = true;
+        s.previewRect = m_lastPreviewRect;
+
+        emit mouseUpdate(s);
     }
 
     e->accept();
@@ -87,47 +81,115 @@ void LayoutCanvas::mouseMoveEvent(QMouseEvent* e)
 
 void LayoutCanvas::mouseReleaseEvent(QMouseEvent* e)
 {
+    MouseState s;
+    s.cursorPos = e->pos();
+    s.button = e->button();
+
+    // Middle release
+    if (s.button == Qt::MiddleButton) {
+        s.flow = MouseState::Flow_Middle;
+        emit mouseRelease(s);
+        m_pressed = false;
+        return;
+    }
+
+    // If we were not in pressed state, treat as other
     if (!m_pressed) {
-        e->ignore();
+        s.flow = MouseState::Flow_Other;
+        emit mouseRelease(s);
         return;
     }
 
     m_pressed = false;
 
-    const QPoint cur = e->pos();
-    const Qt::MouseButton releaseButton = e->button();
-
-    // Only respond to the same button that started the gesture
-    if (releaseButton != m_pressButton) {
-        m_dragging = false;
-        m_pressButton = Qt::NoButton;
-        m_lastPreviewRect = QRect();
-        e->accept();
+    if (s.button != m_pressButton) {
+        s.flow = MouseState::Flow_Other;
+        emit mouseRelease(s);
         return;
     }
 
+    // Drag commit (Left only)
     if (m_dragging && m_pressButton == Qt::LeftButton) {
-        const QRect r = normalizedRect(m_origin, cur);
-        emit bboxCommitted(r);
-    } else {
-        emit clicked(cur, releaseButton, e->modifiers());
+        s.flow = MouseState::Flow_Drag;
+        s.hasPreview = !m_lastPreviewRect.isNull();
+        s.previewRect = m_lastPreviewRect;
+
+        s.committed = true;
+        s.committedRect = m_lastPreviewRect;
+
+        // reset state
+        m_dragging = false;
+        m_haveAnchor = false;
+        m_anchorButton = Qt::NoButton;
+        m_lastPreviewRect = QRect();
+        m_pressButton = Qt::NoButton;
+
+        emit mouseRelease(s);
+        return;
     }
 
+    // Click-click (Left or Right)
+    if (m_pressButton == Qt::LeftButton || m_pressButton == Qt::RightButton) {
+        s.flow = MouseState::Flow_ClickClick;
+
+        if (!m_haveAnchor) {
+            // first click sets anchor
+            m_anchor = e->pos();
+            m_haveAnchor = true;
+            m_anchorButton = m_pressButton;
+
+            const QRect r = QRect(m_anchor, m_anchor);
+            m_lastPreviewRect = r;
+
+            s.hasPreview = true;
+            s.previewRect = r;
+
+            // not committed yet
+            s.committed = false;
+
+        } else if (m_pressButton == m_anchorButton) {
+            // second click commits
+            const QRect r = normalizedRect(m_anchor, e->pos());
+
+            s.hasPreview = !m_lastPreviewRect.isNull();
+            s.previewRect = m_lastPreviewRect;
+
+            s.committed = true;
+            s.committedRect = r;
+
+            // reset anchor
+            m_haveAnchor = false;
+            m_anchorButton = Qt::NoButton;
+            m_lastPreviewRect = QRect();
+
+        } else {
+            // mismatched button cancels
+            s.flow = MouseState::Flow_Other;
+
+            m_haveAnchor = false;
+            m_anchorButton = Qt::NoButton;
+            m_lastPreviewRect = QRect();
+        }
+
+        m_dragging = false;
+        m_pressButton = Qt::NoButton;
+
+        emit mouseRelease(s);
+        return;
+    }
+
+    // Other
+    s.flow = MouseState::Flow_Other;
     m_dragging = false;
     m_pressButton = Qt::NoButton;
-    m_lastPreviewRect = QRect();
-
-    e->accept();
+    emit mouseRelease(s);
 }
 
 void LayoutCanvas::paintEvent(QPaintEvent*)
 {
+    // Canvas background only; preview is drawn by MainWindow rubber band overlay
     QPainter p(this);
-
-    // White background
     p.fillRect(rect(), Qt::white);
-
-    // Light gray border
     p.setPen(QPen(QColor(180, 180, 180), 1));
     p.drawRect(rect().adjusted(0, 0, -1, -1));
 }

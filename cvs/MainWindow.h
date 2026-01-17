@@ -2,11 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QRect>
-#include <QPoint>
+#include "LayoutCanvas.h"
 
-class LayoutCanvas;
 class QRubberBand;
+class LayoutCanvas;
 
 class MainWindow : public QMainWindow
 {
@@ -15,19 +14,10 @@ public:
     explicit MainWindow(QWidget* parent = 0);
 
 private slots:
-    // From canvas
-    void onBboxPreview(const QRect& viewRect);
-    void onBboxCommitted(const QRect& viewRect);
-    void onClicked(const QPoint& pos, Qt::MouseButton b, Qt::KeyboardModifiers mods);
-    void onModeChanged(int newMode);
-
-    // Demo toolbar actions
-    void setModeSelect();
-    void setModePan();
-    void setModeSimulation();
+    void onMouseUpdate(const MouseState& s);
+    void onMouseRelease(const MouseState& s);
 
 private:
-    bool shouldShowRubberBandByMode() const;
     void showBand(const QRect& r);
     void hideBand();
 
@@ -36,4 +26,4 @@ private:
     QRubberBand*  m_band;
 };
 
-#endif // MAINWINDOW_H
+#endif
