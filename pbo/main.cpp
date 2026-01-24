@@ -1,12 +1,12 @@
 #include <QApplication>
-#include "BoolTableWidget.h"
+#include "ViewBoolTableWidget.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    BoolTableWidget w;
-    w.resize(800, 300);
+    ViewBoolTableWidget w;
+    w.resize(980, 300);
     w.show();
 
     return app.exec();

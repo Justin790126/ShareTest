@@ -6,11 +6,15 @@ include(${QT_USE_FILE})
 
 set(SOURCES
     main.cpp
-    BoolTableWidget.cpp
+    ViewBoolTableWidget.cpp
+    ViewPathPickerWidget.cpp
+    ViewOperationWidget.cpp
 )
 
 set(HEADERS
-    BoolTableWidget.h
+    ViewBoolTableWidget.h
+    ViewPathPickerWidget.h
+    ViewOperationWidget.h
 )
 
 qt4_wrap_cpp(MOC_SOURCES ${HEADERS})
